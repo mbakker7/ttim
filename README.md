@@ -1,4 +1,4 @@
-# TTim, A Multi-Layer, Transint, Analytic Element Model
+# TTim, A Multi-Layer, Transient, Analytic Element Model
 
 ## Introduction
 
