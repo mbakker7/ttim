@@ -13,8 +13,6 @@ import inspect # Used for storing the input
 import os, sys
 from mathieu_functions import mathieu
 
-__version__ = 0.23
-
 class TimModel:
     def __init__(self,kaq=[1,1],Haq=[1,1],c=[1e100,100],Saq=[0.3,0.003],Sll=[0],topboundary='imp',tmin=1,tmax=10,M=20):
         self.elementList = []
