@@ -56,6 +56,6 @@ model is created and solved but the figure is probably not shown (depending on y
 
 ## Documentation
 
-* * The manual is available from the docs directory or can be viewed [here](https://github.com/mbakker7/ttim/blob/master/docs/timml.pdf).
+* The manual is available from the docs directory or can be viewed [here](https://github.com/mbakker7/ttim/blob/master/docs/timml.pdf).
 Once you click on this link, you can click on the [Raw] button to download the pdf file. 
 * Example Notebooks are available from the git repository.
