@@ -44,6 +44,15 @@ To update TTim type:
 To uninstall TTim type:
 
     pip uninstall ttim
+    
+**Testing installation:**
+
+    ipython
+    import ttim.ttimtest
+    
+An example model is imported and two graphs are shown. When this is run from the regular Python prompt (not IPython), the
+model is created and solved but the figure is probably not shown (depending on your default settings of matplotlib). 
+
 
 ## Documentation
 
