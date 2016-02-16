@@ -238,6 +238,43 @@ class TimModel:
             for i in range(nx):
                 h[:,:,j,i] = self.head(xg[i],yg[j],t,layers)
         return h
+    #def velocity(self, x, y, t, layers=None, aq=None):
+    #    # implemented for Model3D
+    #    if aq is None: aq = self.aq.findAquiferData(x,y)
+    #    if layers is None:
+    #        pylayers = range(aq.Naq)
+    #    else:
+    #        pylayers = np.atleast_1d(layers)  # corrected for base zero
+    #    h = self.head(x, y, t, aq=aq)
+    #    qx, qy = self.discharge(x, y, t, aq=aq)
+    #
+    #
+    #    def velocity(self,x,y,z):
+    #    head = self.headVector(x,y)
+    #    [disx, disy] = self.dischargeCollection(x,y)
+    #    aqdata = self.aq.findAquiferData(x,y)
+    #    pyLayer = self.inWhichPyLayer(x,y,z,aqdata)
+    #    assert pyLayer != -9999 and pyLayer != 9999, 'TimML error: (x,y,z) outside aquifer '+str((x,y,z))
+    #    if pyLayer >= 0:  # In aquifer
+    #        vx = disx[pyLayer] / ( aqdata.H[pyLayer] * aqdata.n[pyLayer] )
+    #        vy = disy[pyLayer] / ( aqdata.H[pyLayer] * aqdata.n[pyLayer] )
+    #        if pyLayer > 0:
+    #            vztop = ( head[pyLayer] - head[pyLayer-1] ) / ( aqdata.c[pyLayer] * aqdata.n[pyLayer] )
+    #        else:
+    #            if aqdata.type == aqdata.conf:
+    #                vztop = self.qzTop(x,y) / aqdata.n[pyLayer]
+    #            elif aqdata.type == aqdata.semi:
+    #                vztop = ( head[0] - aqdata.hstar ) / ( aqdata.c[0] * aqdata.n[0] )
+    #        if pyLayer < aqdata.Naquifers-1:
+    #            vzbot = ( head[pyLayer+1] - head[pyLayer] ) / ( aqdata.c[pyLayer+1] * aqdata.n[pyLayer] )
+    #        else:
+    #            vzbot = 0.0
+    #        vz = (z - aqdata.zb[pyLayer]) * (vztop - vzbot) / aqdata.H[pyLayer] + vzbot
+    #    else:  # In leaky layer
+    #        vx = 0.0
+    #        vy = 0.0
+    #        vz = ( head[-pyLayer] - head[-pyLayer-1] ) / ( aqdata.c[-pyLayer] * aqdata.nll[-pyLayer] ) 
+    #    return array([vx,vy,vz])
     def inverseLapTran(self,pot,t):
         '''returns array of potentials of len(t)
         t must be ordered and tmin <= t <= tmax'''
@@ -483,6 +520,19 @@ class AquiferData:
     def isInside(self,x,y):
         print 'Must overload AquiferData.isInside method'
         return True
+    def inWhichPyLayer(self, z):
+        '''Returns -9999 if above top of system, +9999 if below bottom of system, negative for in leaky layer.
+        leaky layer -n is on top of aquifer n'''
+        if z > self.zt[0]:
+            return -9999
+        for i in range(self.Naquifers-1):
+            if z >= self.zb[i]:
+                return i
+            if z > self.zt[i+1]:
+                return -i-1
+        if z >= self.zb[self.Naquifers-1]:
+            return self.Naquifers - 1
+        return +9999
     
 class Aquifer(AquiferData):
     def __init__(self,model,kaq,Haq,c,Saq,Sll,topboundary):
@@ -1254,7 +1304,7 @@ class CircInhomRadial(Element,InhomEquation):
                 
 class CircInhom(Element,InhomEquation):
     def __init__(self,model,x0=0,y0=0,R=1.0,order=0,label=None,test=False):
-        Element.__init__(self, model, Nparam=2*model.aq.Naq*(2*order+1), Nunknowns=2*model.aq.Naq*(2*order+1), layers=range(1,model.aq.Naq+1), type='z', name='CircInhom', label=label)
+        Element.__init__(self, model, Nparam=2*model.aq.Naq*(2*order+1), Nunknowns=2*model.aq.Naq*(2*order+1), layers=range(model.aq.Naq), type='z', name='CircInhom', label=label)
         self.x0 = float(x0); self.y0 = float(y0); self.R = float(R)
         self.order = order
         self.approx = BesselRatioApprox(0,3)
