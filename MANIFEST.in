@@ -1,0 +1,9 @@
+include ttim/bessel.f95
+include ttim/bessel.so
+include ttim/bessel.pyd
+include ttim/invlap.f90
+include ttim/invlap.so
+include ttim/invlap.pyd
+include LICENSE
+include MANIFEST.in
+include README.md

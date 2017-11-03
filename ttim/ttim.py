@@ -1482,7 +1482,7 @@ def EllipseInhom3D(self,model,x0=0,y0=0,along=2.0,bshort=1.0,angle=0.0,order=1,k
 
 class EllipseInhom(Element,InhomEquation):
     def __init__(self,model,x0=0,y0=0,along=2.0,bshort=1.0,angle=0.0,order=0,label=None):
-        Element.__init__(self, model, Nparam=2*model.aq.Naq*(2*order+1), Nunknowns=2*model.aq.Naq*(2*order+1), layers=range(1,model.aq.Naq+1), \
+        Element.__init__(self, model, Nparam=2*model.aq.Naq*(2*order+1), Nunknowns=2*model.aq.Naq*(2*order+1), layers=range(0,model.aq.Naq), \
                          type='z', name='EllipseInhom', label=label)
         self.x0, self.y0, self.along, self.bshort, self.angle = float(x0), float(y0), float(along), float(bshort), float(angle)
         self.order = order
@@ -1753,8 +1753,8 @@ class CircAreaSink(Element):
         self.termout = self.aq.lab2 * self.R * self.an * iv(1,self.R/self.aq.lab2)
         self.termoutq= self.R * self.an * iv(1,self.R/self.aq.lab2)
 
-        self.strengthinf = self.an
-        self.strengthinflayers = np.sum(self.strengthinf * self.aq.eigvec[self.pylayers,:,:], 1) 
+        self.strengthinf = self.aq.coef[0,:] * self.flowcoef
+        self.strengthinflayers = np.sum(self.strengthinf * self.aq.eigvec[self.pylayers,:,:], 1)
 
     def setflowcoef(self):
         '''Separate function so that this can be overloaded for other types'''
@@ -2851,18 +2851,18 @@ class XsecInhom(Element, InhomEquation):
 #
 
 #ml = ModelMaq(kaq=[4,5],z=[4,2,1,0],c=[100],Saq=[1e-3,1e-4],Sll=[1e-6],tmin=1,tmax=10,M=20)
-#w = DischargeWell(ml,xw=.5,yw=0,rw=.1,tsandQ=[0,5.0],layers=1)
 ##ls = MscreenLineSinkDitchString(ml,[(-1,0),(0,0),(1,0)],tsandQ=[(0.0,1.0)],layers=[2])
-##e1a = EllipseInhomDataMaq(ml,0,0,along=2.0,bshort=1.0,angle=0.0,kaq=[10,2],z=[4,2,1,0],c=[200],Saq=[2e-3,2e-4],Sll=[1e-5])
-##e1 = EllipseInhom(ml,0,0,along=2.0,bshort=1.0,angle=0.0,order=5)
-##e1 = EllipseInhomMaq(ml,0,0,along=2.0,bshort=1.0,angle=0.0,order=5,kaq=[10,2],z=[4,2,1,0],c=[200],Saq=[2e-3,2e-4],Sll=[1e-5])
+#e1a = EllipseInhomDataMaq(ml,0,0,along=2.0,bshort=1.0,angle=0.0,kaq=[10,2],z=[4,2,1,0],c=[200],Saq=[2e-3,2e-4],Sll=[1e-5])
+#e1 = EllipseInhom(ml,0,0,along=2.0,bshort=1.0,angle=0.0,order=5)
+#e1 = EllipseInhomMaq(ml,0,0,along=2.0,bshort=1.0,angle=0.0,order=5,kaq=[10,2],z=[4,2,1,0],c=[200],Saq=[2e-3,2e-4],Sll=[1e-5])
 ## Same inside and outside
 #c1 = CircInhomMaq(ml,0,0,2.0,order=5,kaq=[4,5],z=[4,2,1,0],c=[100],Saq=[1e-3,1e-4],Sll=[1e-6])
-##c1 = CircInhomMaq(ml,0,0,2.0,order=5,kaq=[10,.1],z=[4,2,1,0],c=[200],Saq=[2e-3,2e-4],Sll=[1e-5])
+#c1 = CircInhomMaq(ml,0,0,2.0,order=5,kaq=[10,.1],z=[4,2,1,0],c=[200],Saq=[2e-3,2e-4],Sll=[1e-5])
 ##c2 = CircInhomMaq(ml,0,0,5000.0,order=1,kaq=[10,2],z=[4,2,1,0],c=[200],Saq=[2e-3,2e-4],Sll=[1e-5])
 ##ml.initialize()
 ##c2.circ_in_small[:] = 0
 ##c2.circ_out_small[:] = 0
+#w = DischargeWell(ml,xw=.5,yw=0,rw=.1,tsandQ=[0,5.0],layers=1)
 #ml.solve()
 
 #ml.solve()       
