@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from invlap import *
+from .invlap import *
 import inspect # Used for storing the input
 import sys
 from .aquifer_parameters import param_3d, param_maq

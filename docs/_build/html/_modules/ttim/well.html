@@ -1,0 +1,204 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ttim.well &#8212; ttim 0.4.a1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.4.a1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ttim.well</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="k">import</span> <span class="n">kv</span><span class="p">,</span><span class="n">iv</span> <span class="c1"># Needed for K1 in Well class, and in CircInhom</span>
+<span class="kn">import</span> <span class="nn">inspect</span> <span class="c1"># Used for storing the input</span>
+<span class="kn">from</span> <span class="nn">.element</span> <span class="k">import</span> <span class="n">Element</span>
+<span class="kn">from</span> <span class="nn">.equation</span> <span class="k">import</span> <span class="n">HeadEquation</span>
+
+<span class="k">class</span> <span class="nc">WellBase</span><span class="p">(</span><span class="n">Element</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Well Base Class. All Well elements are derived from this class&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">xw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">yw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">rw</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">tsandbc</span><span class="o">=</span><span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">)],</span><span class="n">res</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">layers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;WellBase&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">Element</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">Nparam</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nunknowns</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="n">layers</span><span class="p">,</span> <span class="n">tsandbc</span><span class="o">=</span><span class="n">tsandbc</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">type</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nparam</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pylayers</span><span class="p">)</span>  <span class="c1"># Defined here and not in Element as other elements can have multiple parameters per layers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xw</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xw</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">yw</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">yw</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">rw</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rw</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">res</span> <span class="o">=</span> <span class="n">res</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">addElement</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39; at &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">xw</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">yw</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">xw</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">rw</span><span class="p">]);</span> <span class="bp">self</span><span class="o">.</span><span class="n">yc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">yw</span><span class="p">])</span> <span class="c1"># Control point to make sure the point is always the same for all elements</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ncp</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xw</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">yw</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setbc</span><span class="p">()</span>
+        <span class="n">coef</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">coef</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pylayers</span><span class="p">,:]</span>
+        <span class="n">laboverrwk1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">lab</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rw</span> <span class="o">*</span> <span class="n">kv</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">rw</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">lab</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setflowcoef</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">term</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">laboverrwk1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowcoef</span> <span class="o">*</span> <span class="n">coef</span>  <span class="c1"># shape (self.Nparam,self.aq.Naq,self.model.Np)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">term2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">term</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nparam</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">Naq</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Nin</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Npin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strengthinf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowcoef</span> <span class="o">*</span> <span class="n">coef</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strengthinflayers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">strengthinf</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">eigvec</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pylayers</span><span class="p">,:,:],</span> <span class="mi">1</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">resfach</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">res</span> <span class="o">/</span> <span class="p">(</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">rw</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">Haq</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pylayers</span><span class="p">]</span> <span class="p">)</span>  <span class="c1"># Q = (h - hw) / resfach</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resfacp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resfach</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pylayers</span><span class="p">]</span>  <span class="c1"># Q = (Phi - Phiw) / resfacp</span>
+    <span class="k">def</span> <span class="nf">setflowcoef</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Separate function so that this can be overloaded for other types&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flowcoef</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">p</span>  <span class="c1"># Step function</span>
+    <span class="k">def</span> <span class="nf">potinf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Can be called with only one x,y value&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">aq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">aq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="p">)</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Nparam</span><span class="p">,</span><span class="n">aq</span><span class="o">.</span><span class="n">Naq</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Nin</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Npin</span><span class="p">),</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">aq</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">xw</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">yw</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+            <span class="n">pot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Npin</span><span class="p">,</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">r</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">rw</span><span class="p">:</span> <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rw</span>  <span class="c1"># If at well, set to at radius</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">Naq</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Nin</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">r</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">lab2</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rzero</span><span class="p">:</span>
+                        <span class="n">pot</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">kv</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">r</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">lab2</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,:])</span>
+                        <span class="c1">#quicker?</span>
+                        <span class="c1">#bessel.k0besselv( r / self.aq.lab2[i,j,:], pot )</span>
+                        <span class="n">rv</span><span class="p">[:,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">term2</span><span class="p">[:,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,:]</span> <span class="o">*</span> <span class="n">pot</span>
+        <span class="n">rv</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nparam</span><span class="p">,</span><span class="n">aq</span><span class="o">.</span><span class="n">Naq</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Np</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rv</span>
+    <span class="k">def</span> <span class="nf">disinf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Can be called with only one x,y value&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">aq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">aq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="p">)</span>
+        <span class="n">qx</span><span class="p">,</span><span class="n">qy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Nparam</span><span class="p">,</span><span class="n">aq</span><span class="o">.</span><span class="n">Naq</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Np</span><span class="p">),</span><span class="s1">&#39;D&#39;</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Nparam</span><span class="p">,</span><span class="n">aq</span><span class="o">.</span><span class="n">Naq</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Np</span><span class="p">),</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">aq</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="p">:</span>
+            <span class="n">qr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Nparam</span><span class="p">,</span><span class="n">aq</span><span class="o">.</span><span class="n">Naq</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Nin</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Npin</span><span class="p">),</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">xw</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">yw</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+            <span class="n">pot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Npin</span><span class="p">,</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">r</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">rw</span><span class="p">:</span> <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rw</span>  <span class="c1"># If at well, set to at radius</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">Naq</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Nin</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">r</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">lab2</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rzero</span><span class="p">:</span>
+                        <span class="n">qr</span><span class="p">[:,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">term2</span><span class="p">[:,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,:]</span> <span class="o">*</span> <span class="n">kv</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">lab2</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,:])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">lab2</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,:]</span>
+            <span class="n">qr</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nparam</span><span class="p">,</span><span class="n">aq</span><span class="o">.</span><span class="n">Naq</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Np</span><span class="p">)</span>
+            <span class="n">qx</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">qr</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">xw</span><span class="p">)</span> <span class="o">/</span> <span class="n">r</span><span class="p">;</span> <span class="n">qy</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">qr</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">yw</span><span class="p">)</span> <span class="o">/</span> <span class="n">r</span>
+        <span class="k">return</span> <span class="n">qx</span><span class="p">,</span><span class="n">qy</span>
+    <span class="k">def</span> <span class="nf">headinside</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">derivative</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns head inside the well for the layers that the well is screened in&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">yc</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">derivative</span><span class="o">=</span><span class="n">derivative</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">pylayers</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">resfach</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">strength</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">derivative</span><span class="o">=</span><span class="n">derivative</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;point&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">xw</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">yw</span>
+    
+<div class="viewcode-block" id="DischargeWell"><a class="viewcode-back" href="../../wells/well.html#ttim.well.DischargeWell">[docs]</a><span class="k">class</span> <span class="nc">DischargeWell</span><span class="p">(</span><span class="n">WellBase</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Well with non-zero and potentially variable discharge through time&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">xw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">yw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">rw</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">tsandQ</span><span class="o">=</span><span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">)],</span><span class="n">res</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">layers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storeinput</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">currentframe</span><span class="p">())</span>
+        <span class="n">WellBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">xw</span><span class="p">,</span><span class="n">yw</span><span class="p">,</span><span class="n">rw</span><span class="p">,</span><span class="n">tsandbc</span><span class="o">=</span><span class="n">tsandQ</span><span class="p">,</span><span class="n">res</span><span class="o">=</span><span class="n">res</span><span class="p">,</span><span class="n">layers</span><span class="o">=</span><span class="n">layers</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;DischargeWell&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="HeadWell"><a class="viewcode-back" href="../../wells/headwell.html#ttim.well.HeadWell">[docs]</a><span class="k">class</span> <span class="nc">HeadWell</span><span class="p">(</span><span class="n">WellBase</span><span class="p">,</span><span class="n">HeadEquation</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;HeadWell of which the head varies through time. May be screened in multiple layers but all with the same head&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">xw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">yw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">rw</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">tsandh</span><span class="o">=</span><span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">)],</span><span class="n">res</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">layers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storeinput</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">currentframe</span><span class="p">())</span>
+        <span class="n">WellBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">xw</span><span class="p">,</span><span class="n">yw</span><span class="p">,</span><span class="n">rw</span><span class="p">,</span><span class="n">tsandbc</span><span class="o">=</span><span class="n">tsandh</span><span class="p">,</span><span class="n">res</span><span class="o">=</span><span class="n">res</span><span class="p">,</span><span class="n">layers</span><span class="o">=</span><span class="n">layers</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;HeadWell&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nunknowns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nparam</span>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">WellBase</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Ngvbc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nparam</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Np</span><span class="p">),</span> <span class="s1">&#39;D&#39;</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pylayers</span><span class="p">]</span> <span class="c1"># Needed in solving; We solve for a unit head</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">ttim</a></h1>
+
+
+
+<p class="blurb">TTim is a transient multi-layer analytic element model</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=mbakker7&repo=ttim&type=watch&count=True&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../models/modelindex.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../aems.html">Elements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Mark Bakker.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/mbakker7/ttim" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

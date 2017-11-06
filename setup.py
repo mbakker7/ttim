@@ -9,7 +9,7 @@ from setuptools import setup
 #with open(path.join(here, 'README'), encoding='utf-8') as f:
 #    long_description = f.read()
 
-from ttim import __version__
+#from ttim import __version__
 
 l_d = ''
 try:
@@ -25,7 +25,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # http://packaging.python.org/en/latest/tutorial.html#version
-    version = __version__,
+    version = '0.4.a1',
 
     description = 'Transient multi-layer analytic element model',
     long_description = l_d,
@@ -49,11 +49,11 @@ setup(
         'License :: OSI Approved :: MIT License',
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2.7'
+        'Programming Language :: Python :: 3.6'
         ],
     platforms='Windows, Mac OS-X',
-    install_requires=['numpy>=1.9', 'matplotlib>=1.4'],
+    install_requires=['numpy>=1.12', 'matplotlib>=2.0'],
     packages=['ttim'],
     include_package_data = True,
-    package_data = {'ttim': ['bessel.f95', 'bessel.so', 'bessel.pyd', 'invlap.f90', 'invlap.so', 'invlap.pyd']}
+    package_data = {'ttim': ['bessel.f95', 'invlap.cpython-36m-darwin.so']}
     )
