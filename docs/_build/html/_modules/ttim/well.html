@@ -115,8 +115,48 @@
         <span class="k">return</span> <span class="s1">&#39;point&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">xw</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">yw</span>
     
 <div class="viewcode-block" id="DischargeWell"><a class="viewcode-back" href="../../wells/well.html#ttim.well.DischargeWell">[docs]</a><span class="k">class</span> <span class="nc">DischargeWell</span><span class="p">(</span><span class="n">WellBase</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Well with non-zero and potentially variable discharge through time&#39;&#39;&#39;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">xw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">yw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">rw</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">tsandQ</span><span class="o">=</span><span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">)],</span><span class="n">res</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">layers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Well Class to create a well with a specified discharge. The discharge</span>
+<span class="sd">    must be specified for each screened layer. The resistance of the screen may</span>
+<span class="sd">    be specified. The head is computed such that the discharge :math:`Q_i`</span>
+<span class="sd">    in layer :math:`i` is computed as</span>
+<span class="sd">    </span>
+<span class="sd">    .. math::</span>
+<span class="sd">        Q_i = 2\pi r_w(h_i - h_w)/c</span>
+<span class="sd">        </span>
+<span class="sd">    where :math:`c` is the resistance of the well screen and :math:`h_w` is</span>
+<span class="sd">    the head inside the well. </span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : Model object</span>
+<span class="sd">        model to which the element is added</span>
+<span class="sd">    xw : float</span>
+<span class="sd">        x-coordinate of the well</span>
+<span class="sd">    yw : float</span>
+<span class="sd">        y-coordinate of the well</span>
+<span class="sd">    tsandQ : list of tuples</span>
+<span class="sd">        tuples of starting time and discharge after starting time</span>
+<span class="sd">    rw : float</span>
+<span class="sd">        radius of the well</span>
+<span class="sd">    res : float</span>
+<span class="sd">        resistance of the well screen</span>
+<span class="sd">    layers : int, array or list</span>
+<span class="sd">        layer (int) or layers (list or array) where well is screened</span>
+<span class="sd">    label : string or None (default: None)</span>
+<span class="sd">        label of the well</span>
+<span class="sd">        </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Example of a well that pumps with a discharge of 100 between times</span>
+<span class="sd">    10 and 50, with a discharge of 20 between times 50 and 200, and zero</span>
+<span class="sd">    discharge after time 200.</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; Well(ml, tsandQ=[(10, 100), (50, 20), (200, 0)])</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">xw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">yw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tsandQ</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span> <span class="n">rw</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">res</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">storeinput</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">currentframe</span><span class="p">())</span>
         <span class="n">WellBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">xw</span><span class="p">,</span><span class="n">yw</span><span class="p">,</span><span class="n">rw</span><span class="p">,</span><span class="n">tsandbc</span><span class="o">=</span><span class="n">tsandQ</span><span class="p">,</span><span class="n">res</span><span class="o">=</span><span class="n">res</span><span class="p">,</span><span class="n">layers</span><span class="o">=</span><span class="n">layers</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;DischargeWell&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span></div>
         

@@ -48,8 +48,40 @@
 <h1>Well with specified discharge<a class="headerlink" href="#well-with-specified-discharge" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="ttim.well.DischargeWell">
-<em class="property">class </em><code class="descclassname">ttim.well.</code><code class="descname">DischargeWell</code><span class="sig-paren">(</span><em>model, xw=0, yw=0, rw=0.1, tsandQ=[(0.0, 1.0)], res=0.0, layers=0, label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/well.html#DischargeWell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.well.DischargeWell" title="Permalink to this definition">¶</a></dt>
-<dd><p>Well with non-zero and potentially variable discharge through time</p>
+<em class="property">class </em><code class="descclassname">ttim.well.</code><code class="descname">DischargeWell</code><span class="sig-paren">(</span><em>model, xw=0, yw=0, tsandQ=[(0, 1)], rw=0.1, res=0, layers=0, label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/well.html#DischargeWell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.well.DischargeWell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Well Class to create a well with a specified discharge. The discharge
+must be specified for each screened layer. The resistance of the screen may
+be specified. The head is computed such that the discharge <span class="math">\(Q_i\)</span>
+in layer <span class="math">\(i\)</span> is computed as</p>
+<div class="math">
+\[Q_i = 2\pi r_w(h_i - h_w)/c\]</div>
+<p>where <span class="math">\(c\)</span> is the resistance of the well screen and <span class="math">\(h_w\)</span> is
+the head inside the well.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model</strong> (<em>Model object</em>) – model to which the element is added</li>
+<li><strong>xw</strong> (<em>float</em>) – x-coordinate of the well</li>
+<li><strong>yw</strong> (<em>float</em>) – y-coordinate of the well</li>
+<li><strong>tsandQ</strong> (<em>list of tuples</em>) – tuples of starting time and discharge after starting time</li>
+<li><strong>rw</strong> (<em>float</em>) – radius of the well</li>
+<li><strong>res</strong> (<em>float</em>) – resistance of the well screen</li>
+<li><strong>layers</strong> (<em>int</em><em>, </em><em>array</em><em> or </em><em>list</em>) – layer (int) or layers (list or array) where well is screened</li>
+<li><strong>label</strong> (<em>string</em><em> or </em><em>None</em><em> (</em><em>default: None</em><em>)</em>) – label of the well</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>Example of a well that pumps with a discharge of 100 between times
+10 and 50, with a discharge of 20 between times 50 and 200, and zero
+discharge after time 200.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Well</span><span class="p">(</span><span class="n">ml</span><span class="p">,</span> <span class="n">tsandQ</span><span class="o">=</span><span class="p">[(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">)])</span>
+</pre></div>
+</div>
 <dl class="method">
 <dt id="ttim.well.DischargeWell.headinside">
 <code class="descname">headinside</code><span class="sig-paren">(</span><em>t</em>, <em>derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.well.DischargeWell.headinside" title="Permalink to this definition">¶</a></dt>
