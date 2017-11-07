@@ -21,8 +21,10 @@ class TimModel:
         self.name = 'TimModel'
         self.modelname = 'ml' # Used for writing out input
         #bessel.initialize()
+        
     def __repr__(self):
         return 'Model'
+    
     def initialize(self):
         self.gvbcList = self.gbcList + self.vbcList
         self.vzbcList = self.vbcList + self.zbcList
@@ -34,6 +36,7 @@ class TimModel:
         self.aq.initialize()
         for e in self.elementList:
             e.initialize()
+            
     def addElement(self,e):
         if e.label is not None: self.elementDict[e.label] = e
         if e.type == 'g':
@@ -42,6 +45,7 @@ class TimModel:
             self.vbcList.append(e)
         elif e.type == 'z':
             self.zbcList.append(e)
+            
     def removeElement(self,e):
         if e.label is not None: self.elementDict.pop(e.label)
         if e.type == 'g':
@@ -50,8 +54,10 @@ class TimModel:
             self.vbcList.remove(e)
         elif e.type == 'z':
             self.zbcList.remove(e)
+            
     def addInhom(self,inhom):
         self.aq.inhomList.append(inhom)
+        
     def compute_laplace_parameters(self):
         '''
         Nin: Number of time intervals
@@ -84,6 +90,7 @@ class TimModel:
         self.Np = len(self.p)
         self.Npin = 2 * self.M + 1
         self.aq.initialize()
+        
     def potential(self,x,y,t,pylayers=None,aq=None,derivative=0,returnphi=0):
         '''Returns pot[Naq,Ntimes] if layers=None, otherwise pot[len(pylayers,Ntimes)]
         t must be ordered '''
@@ -129,6 +136,7 @@ class TimModel:
                                     rv[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap( tp, self.tintervals[n], self.tintervals[n+1], pot[k,i,n*self.Npin:(n+1)*self.Npin], self.gamma[n], self.M, Nt )
                             it = it + Nt
         return rv
+    
     def discharge(self,x,y,t,layers=None,aq=None,derivative=0):
         '''Returns qx[Naq,Ntimes],qy[Naq,Ntimes] if layers=None, otherwise qx[len(layers,Ntimes)],qy[len(layers,Ntimes)]
         t must be ordered '''
@@ -176,6 +184,7 @@ class TimModel:
                                     rvy[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap( tp, self.tintervals[n], self.tintervals[n+1], disy[k,i,n*self.Npin:(n+1)*self.Npin], self.gamma[n], self.M, Nt )
                             it = it + Nt
         return rvx,rvy
+    
     def head(self,x,y,t,layers=None,aq=None,derivative=0):
         if aq is None: aq = self.aq.findAquiferData(x,y)
         if layers is None:
@@ -184,10 +193,13 @@ class TimModel:
             pylayers = np.atleast_1d(layers)  # corrected for base zero
         pot = self.potential(x,y,t,pylayers,aq,derivative)
         return aq.potentialToHead(pot,pylayers)
+    
     def headinside(self,elabel,t):
         return self.elementDict[elabel].headinside(t)
+    
     def strength(self,elabel,t):
         return self.elementDict[elabel].strength(t)
+    
     def headalongline(self,x,y,t,layers=None):
         '''Returns head[Nlayers,len(t),len(x)]
         Assumes same number of layers for each x and y
@@ -205,6 +217,7 @@ class TimModel:
         for i in range(nx):
             h[:,:,i] = self.head(xg[i],yg[i],t,layers)
         return h
+    
     def headgrid(self,x1,x2,nx,y1,y2,ny,t,layers=None,printrow=False):
         '''Returns h[Nlayers,Ntimes,Ny,Nx]. If layers is None, all layers are returned'''
         xg,yg = np.linspace(x1,x2,nx), np.linspace(y1,y2,ny)
@@ -220,6 +233,7 @@ class TimModel:
             for i in range(nx):
                 h[:,:,j,i] = self.head(xg[i],yg[j],t,layers)
         return h
+    
     def headgrid2(self,xg,yg,t,layers=None,printrow=False):
         '''Returns h[Nlayers,Ntimes,Ny,Nx]. If layers is None, all layers are returned'''
         nx,ny = len(xg), len(yg)
@@ -235,43 +249,7 @@ class TimModel:
             for i in range(nx):
                 h[:,:,j,i] = self.head(xg[i],yg[j],t,layers)
         return h
-    #def velocity(self, x, y, t, layers=None, aq=None):
-    #    # implemented for Model3D
-    #    if aq is None: aq = self.aq.findAquiferData(x,y)
-    #    if layers is None:
-    #        pylayers = range(aq.Naq)
-    #    else:
-    #        pylayers = np.atleast_1d(layers)  # corrected for base zero
-    #    h = self.head(x, y, t, aq=aq)
-    #    qx, qy = self.discharge(x, y, t, aq=aq)
-    #
-    #
-    #    def velocity(self,x,y,z):
-    #    head = self.headVector(x,y)
-    #    [disx, disy] = self.dischargeCollection(x,y)
-    #    aqdata = self.aq.findAquiferData(x,y)
-    #    pyLayer = self.inWhichPyLayer(x,y,z,aqdata)
-    #    assert pyLayer != -9999 and pyLayer != 9999, 'TimML error: (x,y,z) outside aquifer '+str((x,y,z))
-    #    if pyLayer >= 0:  # In aquifer
-    #        vx = disx[pyLayer] / ( aqdata.H[pyLayer] * aqdata.n[pyLayer] )
-    #        vy = disy[pyLayer] / ( aqdata.H[pyLayer] * aqdata.n[pyLayer] )
-    #        if pyLayer > 0:
-    #            vztop = ( head[pyLayer] - head[pyLayer-1] ) / ( aqdata.c[pyLayer] * aqdata.n[pyLayer] )
-    #        else:
-    #            if aqdata.type == aqdata.conf:
-    #                vztop = self.qzTop(x,y) / aqdata.n[pyLayer]
-    #            elif aqdata.type == aqdata.semi:
-    #                vztop = ( head[0] - aqdata.hstar ) / ( aqdata.c[0] * aqdata.n[0] )
-    #        if pyLayer < aqdata.Naquifers-1:
-    #            vzbot = ( head[pyLayer+1] - head[pyLayer] ) / ( aqdata.c[pyLayer+1] * aqdata.n[pyLayer] )
-    #        else:
-    #            vzbot = 0.0
-    #        vz = (z - aqdata.zb[pyLayer]) * (vztop - vzbot) / aqdata.H[pyLayer] + vzbot
-    #    else:  # In leaky layer
-    #        vx = 0.0
-    #        vy = 0.0
-    #        vz = ( head[-pyLayer] - head[-pyLayer-1] ) / ( aqdata.c[-pyLayer] * aqdata.nll[-pyLayer] ) 
-    #    return array([vx,vy,vz])
+    
     def inverseLapTran(self,pot,t):
         '''returns array of potentials of len(t)
         t must be ordered and tmin <= t <= tmax'''
@@ -292,33 +270,34 @@ class TimModel:
                         rv[it:it+Nt] = invlaptrans.invlap( tp, self.tintervals[n], self.tintervals[n+1], pot[n*self.Npin:(n+1)*self.Npin], self.gamma[n], self.M, Nt )
                     it = it + Nt
         return rv
-    def solve(self,printmat = 0,sendback=0,silent=False):
+    
+    def solve(self,printmat=0, sendback=0, silent=False):
         '''Compute solution'''
         # Initialize elements
         self.initialize()
         # Compute number of equations
-        self.Neq = np.sum( [e.Nunknowns for e in self.elementList] )
+        self.Neq = np.sum([e.Nunknowns for e in self.elementList])
         if silent is False:
-            print('self.Neq ',self.Neq)
+            print('self.Neq ', self.Neq)
         if self.Neq == 0:
             if silent is False:
                 print('No unknowns. Solution complete')
             return
-        mat = np.empty( (self.Neq,self.Neq,self.Np), 'D' )
-        rhs = np.empty( (self.Neq,self.Ngvbc,self.Np), 'D' )
+        mat = np.empty((self.Neq, self.Neq, self.Np), 'D')
+        rhs = np.empty((self.Neq, self.Ngvbc, self.Np), 'D')
         ieq = 0
         for e in self.elementList:
             if e.Nunknowns > 0:
-                mat[ ieq:ieq+e.Nunknowns, :, : ], rhs[ ieq:ieq+e.Nunknowns, :, : ] = e.equation()
+                mat[ieq:ieq+e.Nunknowns, :, :], rhs[ieq:ieq+e.Nunknowns, :, :] = e.equation()
                 ieq += e.Nunknowns
         if printmat:
-            return mat,rhs
-        for i in range( self.Np ):
-            sol = np.linalg.solve( mat[:,:,i], rhs[:,:,i] )
+            return mat, rhs
+        for i in range(self.Np):
+            sol = np.linalg.solve(mat[:, :, i], rhs[:, :, i])
             icount = 0
             for e in self.elementList:
                 for j in range(e.Nunknowns):
-                    e.parameters[:,j,i] = sol[icount,:]
+                    e.parameters[:, j, i] = sol[icount, :]
                     icount += 1
                 e.run_after_solve()
         if silent is False:
@@ -329,8 +308,10 @@ class TimModel:
         if sendback:
             return sol
         return
+    
     def storeinput(self,frame):
         self.inputargs, _, _, self.inputvalues = inspect.getargvalues(frame)
+        
     def write(self):
         rv = self.modelname + ' = '+self.name+'(\n'
         for key in self.inputargs[1:]:  # The first argument (self) is ignored
@@ -342,6 +323,7 @@ class TimModel:
                 rv += key + ' = ' + str(self.inputvalues[key]) + ',\n'
         rv += ')\n'
         return rv
+    
     def writemodel(self,fname):
         self.initialize()  # So that the model can be written without solving first
         f = open(fname,'w')
@@ -352,10 +334,12 @@ class TimModel:
         f.close()
         
 class ModelMaq(TimModel):
-    def __init__(self,kaq=[1],z=[1,0],c=[],Saq=[0.001],Sll=[0],topboundary='imp',phreatictop=False,tmin=1,tmax=10,M=20):
+    def __init__(self, kaq=[1], z=[1,0], c=[], Saq=[0.001], Sll=[0], \
+                 topboundary='imp', phreatictop=False, \
+                 tmin=1, tmax=10, M=20):
         self.storeinput(inspect.currentframe())
-        kaq,Haq,c,Saq,Sll = param_maq(kaq,z,c,Saq,Sll,topboundary,phreatictop)
-        TimModel.__init__(self,kaq,Haq,c,Saq,Sll,topboundary,tmin,tmax,M)
+        kaq, Haq, c, Saq, Sll = param_maq(kaq, z, c, Saq, Sll, topboundary, phreatictop)
+        TimModel.__init__(self, kaq, Haq, c, Saq, Sll, topboundary, tmin, tmax, M)
         self.name = 'ModelMaq'
         
 class Model3D(TimModel):
