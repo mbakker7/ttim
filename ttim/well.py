@@ -2,7 +2,7 @@ import numpy as np
 from scipy.special import kv,iv # Needed for K1 in Well class, and in CircInhom
 import inspect # Used for storing the input
 from .element import Element
-from .equation import HeadEquation
+from .equation import HeadEquation, WellBoreStorageEquation
 
 class WellBase(Element):
     '''Well Base Class. All Well elements are derived from this class'''
@@ -82,7 +82,9 @@ class WellBase(Element):
     
 class DischargeWell(WellBase):
     """
-    Well Class to create a well with a specified discharge. The discharge
+    Create a well with a specified discharge for each layer that the well
+    is screened in. This is not very common and is likely only used for testing
+    and comparison with other codes. The discharge
     must be specified for each screened layer. The resistance of the screen may
     be specified. The head is computed such that the discharge :math:`Q_i`
     in layer :math:`i` is computed as
@@ -126,6 +128,35 @@ class DischargeWell(WellBase):
         self.storeinput(inspect.currentframe())
         WellBase.__init__(self, model, xw, yw, rw, tsandbc=tsandQ, res=res,\
                           layers=layers, type='g', name='DischargeWell', label=label)
+        
+class Well(WellBase, WellBoreStorageEquation):
+    '''One or multi-screen well with wellbore storage'''
+    def __init__(self, model, xw=0, yw=0, rw=0.1, tsandQ=[(0, 1)], res=0,\
+                 layers=0, rc=None, wbstype='pumping', label=None):
+        self.storeinput(inspect.currentframe())
+        WellBase.__init__(self,model,xw,yw,rw,tsandbc=tsandQ,res=res,layers=layers,type='v',name='MscreenWell',label=label)
+        if (rc is None) or (rc <= 0.0):
+            self.rc = 0.0
+        else:
+            self.rc = rc
+        # hdiff is not used right now, but may be used in the future
+        self.hdiff = None
+        #if hdiff is not None:
+        #    self.hdiff = np.atleast_1d(hdiff)
+        #    assert len(self.hdiff) == self.Nlayers - 1, 'hdiff needs to have length len(layers) -1'
+        #else:
+        #    self.hdiff = hdiff
+        self.Nunknowns = self.Nparam
+        self.wbstype = wbstype
+    def initialize(self):
+        WellBase.initialize(self)
+        self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
+    def setflowcoef(self):
+        '''Separate function so that this can be overloaded for other types'''
+        if self.wbstype == 'pumping':
+            self.flowcoef = 1.0 / self.model.p  # Step function
+        elif self.wbstype == 'slug':
+            self.flowcoef = 1.0  # Delta function
         
 class HeadWell(WellBase,HeadEquation):
     """

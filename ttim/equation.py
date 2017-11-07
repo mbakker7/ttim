@@ -28,3 +28,36 @@ class HeadEquation:
                 for i in range(self.Nlayers):
                     rhs[istart+i,self.model.Ngbc+iself,:] = self.pc[istart+i] / self.model.p
         return mat, rhs
+    
+class WellBoreStorageEquation:
+    def equation(self):
+        '''Mix-in class that returns matrix rows for multi-aquifer element with
+        total given discharge, uniform but unknown head and InternalStorageEquation
+        '''
+        mat = np.zeros( (self.Nunknowns,self.model.Neq,self.model.Np), 'D' ) # Important to set to zero for some of the equations
+        rhs = np.zeros( (self.Nunknowns,self.model.Ngvbc,self.model.Np), 'D' )  # Needs to be initialized to zero
+        ieq = 0
+        for e in self.model.elementList:
+            if e.Nunknowns > 0:
+                head = e.potinflayers(self.xc,self.yc,self.pylayers) / self.aq.T[self.pylayers][:,np.newaxis,np.newaxis]
+                mat[:-1,ieq:ieq+e.Nunknowns,:] = head[:-1,:] - head[1:,:]
+                mat[-1,ieq:ieq+e.Nunknowns,:] -= np.pi * self.rc**2 * self.model.p * head[0,:]
+                if e == self:
+                    disterm = self.strengthinflayers * self.res / ( 2 * np.pi * self.rw * self.aq.Haq[self.pylayers][:,np.newaxis] )
+                    if self.Nunknowns > 1:  # Multiple layers
+                        for i in range(self.Nunknowns-1):
+                            mat[i,ieq+i,:] -= disterm[i]
+                            mat[i,ieq+i+1,:] += disterm[i+1]
+                    mat[-1,ieq:ieq+self.Nunknowns,:] += self.strengthinflayers
+                    mat[-1,ieq,:] += np.pi * self.rc**2 * self.model.p * disterm[0]
+                ieq += e.Nunknowns
+        for i in range(self.model.Ngbc):
+            head = self.model.gbcList[i].unitpotentiallayers(self.xc,self.yc,self.pylayers) / self.aq.T[self.pylayers][:,np.newaxis]
+            rhs[:-1,i,:] -= head[:-1,:] - head[1:,:]
+            rhs[-1,i,:] += np.pi * self.rc**2 * self.model.p * head[0,:]
+        if self.type == 'v':
+            iself = self.model.vbcList.index(self)
+            rhs[-1,self.model.Ngbc+iself,:] += self.flowcoef
+            if self.hdiff is not None:
+                rhs[:-1,self.model.Ngbc+iself,:] += self.hdiff[:,np.newaxis] / self.model.p  # head[0] - head[1] = hdiff
+        return mat, rhs
