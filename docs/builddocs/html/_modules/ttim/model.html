@@ -348,8 +348,7 @@
         <span class="k">if</span> <span class="n">silent</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;solution complete&#39;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="p">(</span><span class="n">silent</span> <span class="o">==</span> <span class="s1">&#39;dot&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">silent</span> <span class="o">==</span> <span class="s1">&#39;.&#39;</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,)</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>  <span class="c1"># Can be replaced with print with flush in Python 3.3</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">sendback</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">sol</span>
         <span class="k">return</span>

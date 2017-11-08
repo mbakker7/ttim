@@ -303,7 +303,7 @@ class TimModel:
         if silent is False:
             print('solution complete')
         elif (silent == 'dot') or (silent == '.'):
-            print('.', flush=True)
+            print('.', end='', flush=True)
         if sendback:
             return sol
         return
