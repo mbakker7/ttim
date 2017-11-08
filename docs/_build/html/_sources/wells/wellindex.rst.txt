@@ -8,10 +8,10 @@ Both types of wells may have an entry resistance (skin effect) defined by the re
     .. math::
         Q_i = 2\pi r_w(h_i - h_w)/c
 
-1. :class:`~ttim.well.DischargeWell` is a well for which the total discharge is specified. The total discharge is distributed across the layers in which the
+1. :class:`~ttim.well.Well` is a well for which the total discharge is specified. The total discharge is distributed across the layers in which the
 well is screened such that the head inside the well is the same in each screened layer. 
 
-2. :class:`~timml.well.HeadWell` is a well for which the head inside the well is specified. The discharge in each layer is computed such that
+2. :class:`~ttim.well.HeadWell` is a well for which the head inside the well is specified. The discharge in each layer is computed such that
 the head in all screened layers is equal to the specified head. 
     
 .. toctree::

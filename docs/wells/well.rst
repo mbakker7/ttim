@@ -1,5 +1,5 @@
 Well with specified discharge
 -----------------------------
 
-.. autoclass:: ttim.well.DischargeWell
+.. autoclass:: ttim.well.Well
     :members: headinside
