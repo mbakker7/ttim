@@ -31,7 +31,7 @@ def gausslag2(tau, p0, p1, f):
     rv = np.sin(-p1 / p0 * tau) * f(tau / p0)
     return rv
 
-def lag():
+def lag(func):
     x, w = np.polynomial.laguerre.laggauss(50)
     g1 = 0.0
     g2 = 0.0
@@ -40,5 +40,5 @@ def lag():
         g2 += w[i] * gausslag2(x[i], p0, p1, func)
     return (g1 + 1j * g2) / p0
     
-g = lag()
+g = lag(func)
 

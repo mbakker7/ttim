@@ -155,7 +155,7 @@ class Element:
     def strength(self, t, derivative=0):
         '''returns array of strengths (Nlayers,len(t)) t must be ordered and tmin <= t <= tmax'''
         # Could potentially be more efficient if s is pre-computed for all elements, but I don't know if that is worthwhile to store as it is quick now
-        time = np.atleast_1d(t).copy()
+        time = np.atleast_1d(t).astype('d')
         if (time[0] < self.model.tmin) or (time[-1] > self.model.tmax):
             print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
         rv = np.zeros((self.Nlayers, np.size(time)))
