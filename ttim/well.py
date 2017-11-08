@@ -126,16 +126,58 @@ class DischargeWell(WellBase):
     
     def __init__(self, model, xw=0, yw=0, tsandQ=[(0, 1)], rw=0.1, res=0, layers=0, label=None):
         self.storeinput(inspect.currentframe())
-        WellBase.__init__(self, model, xw, yw, rw, tsandbc=tsandQ, res=res,\
+        WellBase.__init__(self, model, xw, yw, rw, tsandbc=tsandQ, res=res, \
                           layers=layers, type='g', name='DischargeWell', label=label)
         
 class Well(WellBase, WellBoreStorageEquation):
-    '''One or multi-screen well with wellbore storage'''
-    def __init__(self, model, xw=0, yw=0, rw=0.1, tsandQ=[(0, 1)], res=0,\
-                 layers=0, rc=None, wbstype='pumping', label=None):
+    """
+    Create a well with a specified discharge.
+    The well may be screened in multiple layers. The discharge is
+    distributed across the layers such that the head inside the well
+    is the same in all screened layers.
+    Wellbore storage and skin effect may be taken into account.
+    The head is computed such that the discharge :math:`Q_i`
+    in layer :math:`i` is computed as
+    
+    .. math::
+        Q_i = 2\pi r_w(h_i - h_w)/c
+        
+    where :math:`c` is the resistance of the well screen and :math:`h_w` is
+    the head inside the well.
+    
+    Parameters
+    ----------
+    model : Model object
+        model to which the element is added
+    xw : float
+        x-coordinate of the well
+    yw : float
+        y-coordinate of the well
+    rw : float
+        radius of the well
+    tsandQ : list of tuples
+        tuples of starting time and discharge after starting time
+    res : float
+        resistance of the well screen
+    rc : float
+        radius of the caisson, the pipe where the water table inside
+        the well flucuates, which accounts for the wellbore storage
+    layers : int, array or list
+        layer (int) or layers (list or array) where well is screened
+    wbstype : string
+        'pumping': Q is the discharge of the well
+        'slug': volume of water instantaneously taken out of the well
+    label : string (default: None)
+        label of the well
+        
+    """
+    
+    def __init__(self, model, xw=0, yw=0, rw=0.1, tsandQ=[(0, 1)], res=0, \
+                 rc=None, layers=0, wbstype='pumping', label=None):
         self.storeinput(inspect.currentframe())
-        WellBase.__init__(self,model,xw,yw,rw,tsandbc=tsandQ,res=res,layers=layers,type='v',name='MscreenWell',label=label)
-        if (rc is None) or (rc <= 0.0):
+        WellBase.__init__(self, model, xw, yw, rw, tsandbc=tsandQ, res=res, \
+                          layers=layers, type='v', name='Well', label=label)
+        if (rc is None) or (rc <= 0):
             self.rc = 0.0
         else:
             self.rc = rc
@@ -150,7 +192,7 @@ class Well(WellBase, WellBoreStorageEquation):
         self.wbstype = wbstype
     def initialize(self):
         WellBase.initialize(self)
-        self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
+        self.parameters = np.zeros((self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
     def setflowcoef(self):
         '''Separate function so that this can be overloaded for other types'''
         if self.wbstype == 'pumping':
