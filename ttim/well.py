@@ -245,32 +245,11 @@ class HeadWell(WellBase,HeadEquation):
         self.pc = self.aq.T[self.pylayers] # Needed in solving; We solve for a unit head
         
 class TestWell(WellBase):
-    def __init__(self, model, xw=0, yw=0, tsandQ=[(0, 1)], rw=0.1, res=0, layers=0, label=None):
+    def __init__(self, model, xw=0, yw=0, tsandQ=[(0, 1)], rw=0.1, res=0, layers=0, label=None, fp=None):
         self.storeinput(inspect.currentframe())
         WellBase.__init__(self, model, xw, yw, rw, tsandbc=tsandQ, res=res, \
                           layers=layers, type='g', name='DischargeWell', label=label)
+        self.fp = fp
     def setflowcoef(self):
         '''Separate function so that this can be overloaded for other types'''
-        self.flowcoef = \
-        np.array([
-        0.97969747+0.j        ,  0.97969515-0.00150766j,
-        0.97968819-0.00301529j,  0.97967659-0.00452289j,
-        0.97966035-0.00603042j,  0.97963947-0.00753786j,
-        0.97961395-0.0090452j ,  0.97958379-0.01055241j,
-        0.97954900-0.01205946j,  0.97950957-0.01356635j,
-        0.97946551-0.01507305j,  0.97941681-0.01657953j,
-        0.97936348-0.01808577j,  0.97930552-0.01959176j,
-        0.97924293-0.02109747j,  0.97917571-0.02260288j,
-        0.97910387-0.02410797j,  0.97902740-0.02561272j,
-        0.97894632-0.0271171j ,  0.97886061-0.0286211j ,
-        0.97877029-0.03012469j,  0.97867535-0.03162786j,
-        0.97857580-0.03313058j,  0.97847165-0.03463283j,
-        0.97836288-0.03613459j,  0.97824952-0.03763583j,
-        0.97813156-0.03913654j,  0.97800900-0.0406367j ,
-        0.97788184-0.04213629j,  0.97775010-0.04363528j,
-        0.97761378-0.04513365j,  0.97747287-0.04663138j,
-        0.97732738-0.04812845j,  0.97717733-0.04962485j,
-        0.97702270-0.05112054j,  0.97686351-0.05261551j,
-        0.97669976-0.05410974j,  0.97653145-0.0556032j ,
-        0.97635859-0.05709589j,  0.97618119-0.05858776j,
-        0.97599925-0.06007881j])
+        self.flowcoef = self.fp
