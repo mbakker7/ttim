@@ -7,7 +7,8 @@ from .aquifer_parameters import param_3d, param_maq
 from .aquifer import Aquifer
 
 class TimModel:
-    def __init__(self,kaq=[1,1],Haq=[1,1],c=[1e100,100],Saq=[0.3,0.003],Sll=[0],topboundary='imp',tmin=1,tmax=10,M=20):
+    def __init__(self, kaq=[1, 1], Haq=[1, 1], c=[1e100, 100], Saq=[0.3, 0.003], \
+                 Sll=[0], topboundary='conf', phreatictop=False, tmin=1, tmax=10, M=20):
         self.elementList = []
         self.elementDict = {}
         self.vbcList = []  # List with variable boundary condition 'v' elements
@@ -16,7 +17,7 @@ class TimModel:
         self.tmin = float(tmin)
         self.tmax = float(tmax)
         self.M = M
-        self.aq = Aquifer(self,kaq,Haq,c,Saq,Sll,topboundary)
+        self.aq = Aquifer(self, kaq, Haq, c, Saq, Sll, topboundary, phreatictop)
         self.compute_laplace_parameters()
         self.name = 'TimModel'
         self.modelname = 'ml' # Used for writing out input
@@ -91,25 +92,27 @@ class TimModel:
         self.Npin = 2 * self.M + 1
         self.aq.initialize()
         
-    def potential(self,x,y,t,pylayers=None,aq=None,derivative=0,returnphi=0):
+    def potential(self, x, y, t, pylayers=None, aq=None, derivative=0, returnphi=0):
         '''Returns pot[Naq,Ntimes] if layers=None, otherwise pot[len(pylayers,Ntimes)]
         t must be ordered '''
-        if aq is None: aq = self.aq.findAquiferData(x,y)
-        if pylayers is None: pylayers = range(aq.Naq)
+        if aq is None: aq = self.aq.findAquiferData(x, y)
+        if pylayers is None:
+            pylayers = range(aq.Naq)
         Nlayers = len(pylayers)
         time = np.atleast_1d(t).copy()
-        pot = np.zeros((self.Ngvbc, aq.Naq, self.Np),'D')
+        pot = np.zeros((self.Ngvbc, aq.Naq, self.Np), 'D')
         for i in range(self.Ngbc):
-            pot[i,:] += self.gbcList[i].unitpotential(x,y,aq)
+            pot[i, :] += self.gbcList[i].unitpotential(x, y, aq)
         for e in self.vzbcList:
-            pot += e.potential(x,y,aq)
+            pot += e.potential(x, y, aq)
         if pylayers is None:
-            pot = np.sum( pot[:,np.newaxis,:,:] * aq.eigvec, 2 )
+            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec, 2)
         else:
-            pot = np.sum( pot[:,np.newaxis,:,:] * aq.eigvec[pylayers,:], 2 )
-        if derivative > 0: pot *= self.p**derivative
-        if returnphi: return pot
-        rv = np.zeros((Nlayers,len(time)))
+            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec[pylayers, :], 2 )
+        if derivative > 0: pot *= self.p ** derivative
+        if returnphi:
+            return pot
+        rv = np.zeros((Nlayers, len(time)))
         if (time[0] < self.tmin) or (time[-1] > self.tmax):
             print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
         #
@@ -119,9 +122,10 @@ class TimModel:
                 t = time - e.tstart[itime]
                 it = 0
                 if t[-1] >= self.tmin:  # Otherwise all zero
-                    if (t[0] < self.tmin): it = np.argmax( t >= self.tmin )  # clever call that should be replaced with find_first function when included in numpy
+                    if (t[0] < self.tmin):
+                        it = np.argmax(t >= self.tmin)  # clever call that should be replaced with find_first function when included in numpy
                     for n in range(self.Nin):
-                        tp = t[ (t >= self.tintervals[n]) & (t < self.tintervals[n+1]) ]
+                        tp = t[(t >= self.tintervals[n]) & (t < self.tintervals[n+1])]
                         ## I think these lines are not needed anymore as I modified tintervals[0] and tintervals[-1] by eps
                         #if n == self.Nin-1:
                         #    tp = t[ (t >= self.tintervals[n]) & (t <= self.tintervals[n+1]) ]
@@ -132,8 +136,12 @@ class TimModel:
                             for i in range(Nlayers):
                                 # I used to check the first value only, but it seems that checking that nothing is zero is needed and should be sufficient
                                 #if np.abs( pot[k,i,n*self.Npin] ) > 1e-20:  # First value very small
-                                if not np.any( pot[k,i,n*self.Npin:(n+1)*self.Npin] == 0.0) : # If there is a zero item, zero should be returned; funky enough this can be done with a straight equal comparison
-                                    rv[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap( tp, self.tintervals[n], self.tintervals[n+1], pot[k,i,n*self.Npin:(n+1)*self.Npin], self.gamma[n], self.M, Nt )
+                                if not np.any(pot[k, i, n * self.Npin: (n + 1) * self.Npin] == 0) : # If there is a zero item, zero should be returned; funky enough this can be done with a straight equal comparison
+                                    rv[i, it:it + Nt] += e.bc[itime] * \
+                                    invlaptrans.invlap(tp, self.tintervals[n],
+                                                       self.tintervals[n + 1],
+                                                       pot[k, i , n * self.Npin:(n + 1) * self.Npin],
+                                                       self.gamma[n], self.M, Nt)
                             it = it + Nt
         return rv
     
@@ -333,21 +341,69 @@ class TimModel:
         f.close()
         
 class ModelMaq(TimModel):
+    """
+    Create a Model object by specifying a mult-aquifer sequence of
+    aquifer-leakylayer-aquifer-leakylayer-aquifer etc
+    
+    Parameters
+    ----------
+    kaq : float, array or list
+        hydraulic conductivity of each aquifer from the top down
+        if float, hydraulic conductivity is the same in all aquifers
+    z : array or list
+        elevation tops and bottoms of the aquifers from the top down
+        leaky layers may have zero thickness
+        if top='conf': length is 2 * number of aquifers
+        if top='semi': length is 2 * number of aquifers + 1 as top
+        of leaky layer on top of systems needs to be specified
+    c : float, array or list
+        resistance of leaky layers from the top down
+        if float, resistance is the same for all leaky layers
+        if top='conf': length is number of aquifers - 1
+        if top='semi': length is number of aquifers
+    Saq : float, array or list
+        specific storage of all aquifers
+        if float, sepcific storage is same in all aquifers
+        if phreatictop is True and topboundary is 'conf', Saq of top
+        aquifer is phreatic storage coefficient (and not multiplied
+        with the layer thickness)
+    Sll : float, array or list
+        specific storage of all leaky layers
+        if float, sepcific storage is same in all leaky layers
+        if phreatictop is True and topboundary is 'semi', Sll of top
+        leaky layer is phreatic storage coefficient (and not multiplied
+        with the layer thickness)
+    topboundary : string, 'conf' or 'semi' (default is 'conf')
+        indicating whether the top is confined ('conf') or
+        semi-confined ('semi')
+    phreatictop : boolean
+        the storage coefficient of the top model layer is treated as
+        phreatic storage (and not multiplied with the aquifer thickness)
+    tmin : scalar
+        the minimum time for which heads can be computed after any change
+        in boundary condition.
+    tmax : scalar
+        the maximum time for which heads can be computed.
+    M : integer
+        the number of terms to be used in the numerical inversion algorithm.
+        20 is usually sufficient. If drawdown curves appear to oscillate,
+        more terms may be needed, but this seldom happens. 
+    
+    """
+    
     def __init__(self, kaq=[1], z=[1,0], c=[], Saq=[0.001], Sll=[0], \
-                 topboundary='imp', phreatictop=False, \
+                 topboundary='conf', phreatictop=False, \
                  tmin=1, tmax=10, M=20):
         self.storeinput(inspect.currentframe())
         kaq, Haq, c, Saq, Sll = param_maq(kaq, z, c, Saq, Sll, topboundary, phreatictop)
-        TimModel.__init__(self, kaq, Haq, c, Saq, Sll, topboundary, tmin, tmax, M)
+        TimModel.__init__(self, kaq, Haq, c, Saq, Sll, topboundary, phreatictop, tmin, tmax, M)
         self.name = 'ModelMaq'
         
 class Model3D(TimModel):
-    def __init__(self,kaq=1,z=[4,3,2,1],Saq=0.001,kzoverkh=0.1,phreatictop=True,semi=False,tmin=1,tmax=10,M=20):
+    def __init__(self, kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, \
+                 topboundar='conf', phreatictop=True, tmin=1, tmax=10, M=20):
         '''z must have the length of the number of layers + 1'''
         self.storeinput(inspect.currentframe())
-        kaq,H,c,Saq,Sll = param_3d(kaq,z,Saq,kzoverkh,phreatictop,semi)
-        if semi is False:
-            TimModel.__init__(self,kaq,H,c,Saq,Sll,'imp',tmin,tmax,M)
-        else:
-            TimModel.__init__(self,kaq,H,c,Saq,Sll,'semi',tmin,tmax,M)
+        kaq, Haq, c, Saq, Sll = param_3d(kaq, z, Saq, kzoverkh, phreatictop, topboundary)
+        TimModel.__init__(self, kaq, Haq, c, Saq, Sll, topboundary, phreatictop, tmin, tmax, M)
         self.name = 'Model3D'

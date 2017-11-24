@@ -53,7 +53,7 @@ class Element:
         pass
     
     def potinf(self, x, y, aq=None):
-        '''Returns complex array of size (Nparam,Naq,Np)'''
+        '''Returns complex array of size (Nparam, Naq, Np)'''
         raise 'Must overload Element.potinf()'
     
     def potential(self, x, y, aq=None):

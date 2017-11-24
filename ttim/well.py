@@ -16,8 +16,10 @@ class WellBase(Element):
         self.rw = float(rw)
         self.res = res
         self.model.addElement(self)
+        
     def __repr__(self):
         return self.name + ' at ' + str((self.xw, self.yw))
+    
     def initialize(self):
         self.xc = np.array([self.xw + self.rw])
         self.yc = np.array([self.yw]) # Control point to make sure the point is always the same for all elements
@@ -33,9 +35,11 @@ class WellBase(Element):
         self.strengthinflayers = np.sum(self.strengthinf * self.aq.eigvec[self.pylayers, :, :], 1) 
         self.resfach = self.res / (2 * np.pi * self.rw * self.aq.Haq[self.pylayers])  # Q = (h - hw) / resfach
         self.resfacp = self.resfach * self.aq.T[self.pylayers]  # Q = (Phi - Phiw) / resfacp
+        
     def setflowcoef(self):
         '''Separate function so that this can be overloaded for other types'''
         self.flowcoef = 1.0 / self.model.p  # Step function
+        
     def potinf(self, x, y, aq=None):
         '''Can be called with only one x,y value'''
         if aq is None: aq = self.model.aq.findAquiferData(x, y)
@@ -54,6 +58,7 @@ class WellBase(Element):
                         rv[:, i, j, :] = self.term2[:, i, j, :] * pot
         rv.shape = (self.Nparam, aq.Naq, self.model.Np)
         return rv
+    
     def disinf(self, x, y, aq=None):
         '''Can be called with only one x,y value'''
         if aq is None: aq = self.model.aq.findAquiferData(x, y)
@@ -73,10 +78,12 @@ class WellBase(Element):
             qx[:] = qr * (x - self.xw) / r
             qy[:] = qr * (y - self.yw) / r
         return qx,qy
+    
     def headinside(self, t, derivative=0):
         '''Returns head inside the well for the layers that the well is screened in'''
         return self.model.head(self.xc, self.yc, t, derivative=derivative)[self.pylayers] - \
                self.resfach[:, np.newaxis] * self.strength(t, derivative=derivative)
+            
     def layout(self):
         return 'point', self.xw, self.yw
     
@@ -190,9 +197,11 @@ class Well(WellBase, WellBoreStorageEquation):
         #    self.hdiff = hdiff
         self.Nunknowns = self.Nparam
         self.wbstype = wbstype
+        
     def initialize(self):
         WellBase.initialize(self)
         self.parameters = np.zeros((self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
+        
     def setflowcoef(self):
         '''Separate function so that this can be overloaded for other types'''
         if self.wbstype == 'pumping':
@@ -250,6 +259,7 @@ class TestWell(WellBase):
         WellBase.__init__(self, model, xw, yw, rw, tsandbc=tsandQ, res=res, \
                           layers=layers, type='g', name='DischargeWell', label=label)
         self.fp = fp
+        
     def setflowcoef(self):
         '''Separate function so that this can be overloaded for other types'''
         self.flowcoef = self.fp

@@ -9,7 +9,7 @@ library of Python scripts and FORTRAN extensions.
 '''
 
 #--version number
-__name__='timml'
+__name__='ttim'
 __author__='Mark Bakker'
 from .version import __version__
 
@@ -17,3 +17,4 @@ from .version import __version__
 from .model import ModelMaq, Model3D
 from .well import DischargeWell, HeadWell, Well, TestWell
 from .util import xsection
+from .fit import Calibrate
