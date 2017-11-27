@@ -7,12 +7,10 @@ class Calibrate:
         self.lmfitparams = Parameters()
         self.parameterdict = {}
         self.seriesdict = {}
-    def parameter(self, name, par=None, initial=0, vmin=None, vmax=None, vary=True):
+    def parameter(self, name, par=None, layer=0, initial=0, pmin=None, pmax=None, vary=True):
         if par is not None:
-            if type(par) != np.ndarray:
-                p = np.array(par)
-            else:
-                p = par
+            assert type(par) == np.ndarray, "Error: par needs to be array"
+            p = par[layer:layer + 1]
         else:
             if name[:3] == 'kaq':
                 layer = int(name[3:])
@@ -23,7 +21,7 @@ class Calibrate:
             else:
                 print('parameter name not recognized or no par reference supplied')
                 return
-        self.lmfitparams.add(name, value=initial, min=vmin, max=vmax, vary=vary)
+        self.lmfitparams.add(name, value=initial, min=pmin, max=pmax, vary=vary)
         self.parameterdict[name] = p
     def series(self, name, x, y, layer, t, h):
         s = Series(x, y, layer, t, h)
@@ -65,6 +63,5 @@ class Series:
         self.layer = layer
         self.t = t
         self.h = h
-        
-################
+
 
