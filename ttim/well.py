@@ -185,9 +185,9 @@ class Well(WellBase, WellBoreStorageEquation):
         WellBase.__init__(self, model, xw, yw, rw, tsandbc=tsandQ, res=res, \
                           layers=layers, type='v', name='Well', label=label)
         if (rc is None) or (rc <= 0):
-            self.rc = 0.0
+            self.rc = np.zeros(1)
         else:
-            self.rc = rc
+            self.rc = np.array([rc])
         # hdiff is not used right now, but may be used in the future
         self.hdiff = None
         #if hdiff is not None:
