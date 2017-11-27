@@ -48,8 +48,51 @@
 <h1>ModelMaq<a class="headerlink" href="#modelmaq" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="ttim.model.ModelMaq">
-<em class="property">class </em><code class="descclassname">ttim.model.</code><code class="descname">ModelMaq</code><span class="sig-paren">(</span><em>kaq=[1], z=[1, 0], c=[], Saq=[0.001], Sll=[0], topboundary=’imp’, phreatictop=False, tmin=1, tmax=10, M=20</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/model.html#ModelMaq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.model.ModelMaq" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<em class="property">class </em><code class="descclassname">ttim.model.</code><code class="descname">ModelMaq</code><span class="sig-paren">(</span><em>kaq=[1], z=[1, 0], c=[], Saq=[0.001], Sll=[0], topboundary=’conf’, phreatictop=False, tmin=1, tmax=10, M=20</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/model.html#ModelMaq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.model.ModelMaq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a Model object by specifying a mult-aquifer sequence of
+aquifer-leakylayer-aquifer-leakylayer-aquifer etc</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>kaq</strong> (<em>float</em><em>, </em><em>array</em><em> or </em><em>list</em>) – hydraulic conductivity of each aquifer from the top down
+if float, hydraulic conductivity is the same in all aquifers</li>
+<li><strong>z</strong> (<em>array</em><em> or </em><em>list</em>) – elevation tops and bottoms of the aquifers from the top down
+leaky layers may have zero thickness
+if top=’conf’: length is 2 * number of aquifers
+if top=’semi’: length is 2 * number of aquifers + 1 as top
+of leaky layer on top of systems needs to be specified</li>
+<li><strong>c</strong> (<em>float</em><em>, </em><em>array</em><em> or </em><em>list</em>) – resistance of leaky layers from the top down
+if float, resistance is the same for all leaky layers
+if top=’conf’: length is number of aquifers - 1
+if top=’semi’: length is number of aquifers</li>
+<li><strong>Saq</strong> (<em>float</em><em>, </em><em>array</em><em> or </em><em>list</em>) – specific storage of all aquifers
+if float, sepcific storage is same in all aquifers
+if phreatictop is True and topboundary is ‘conf’, Saq of top
+aquifer is phreatic storage coefficient (and not multiplied
+with the layer thickness)</li>
+<li><strong>Sll</strong> (<em>float</em><em>, </em><em>array</em><em> or </em><em>list</em>) – specific storage of all leaky layers
+if float, sepcific storage is same in all leaky layers
+if phreatictop is True and topboundary is ‘semi’, Sll of top
+leaky layer is phreatic storage coefficient (and not multiplied
+with the layer thickness)</li>
+<li><strong>topboundary</strong> (<em>string</em><em>, </em><em>'conf'</em><em> or </em><em>'semi'</em><em> (</em><em>default is 'conf'</em><em>)</em>) – indicating whether the top is confined (‘conf’) or
+semi-confined (‘semi’)</li>
+<li><strong>phreatictop</strong> (<em>boolean</em>) – the storage coefficient of the top model layer is treated as
+phreatic storage (and not multiplied with the aquifer thickness)</li>
+<li><strong>tmin</strong> (<em>scalar</em>) – the minimum time for which heads can be computed after any change
+in boundary condition.</li>
+<li><strong>tmax</strong> (<em>scalar</em>) – the maximum time for which heads can be computed.</li>
+<li><strong>M</strong> (<em>integer</em>) – the number of terms to be used in the numerical inversion algorithm.
+20 is usually sufficient. If drawdown curves appear to oscillate,
+more terms may be needed, but this seldom happens.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
 <dt id="ttim.model.ModelMaq.solve">
 <code class="descname">solve</code><span class="sig-paren">(</span><em>printmat=0</em>, <em>sendback=0</em>, <em>silent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.ModelMaq.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute solution</p>
