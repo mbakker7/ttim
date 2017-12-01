@@ -16,5 +16,5 @@ from .version import __version__
 # Import all classes and functions
 from .model import ModelMaq, Model3D
 from .well import DischargeWell, HeadWell, Well, TestWell
-from .util import xsection
+from .linesink import HeadLineSink, HeadLineSinkString
 from .fit import Calibrate

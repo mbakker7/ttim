@@ -182,9 +182,6 @@ class Element:
         print("This function not implemented for this element")
         return
     
-    def layout(self):
-        return '', '', ''
-    
     def storeinput(self, frame):
         self.inputargs, _, _, self.inputvalues = inspect.getargvalues(frame)
         
@@ -204,5 +201,8 @@ class Element:
         '''function to run after a solution is completed.
         for most elements nothing needs to be done,
         but for strings of elements some arrays may need to be filled'''
+        pass
+    
+    def plot(self):
         pass
         

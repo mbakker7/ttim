@@ -1,6 +1,237 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import inspect # Used for storing the input
 from .element import Element
+from .bessel import *
+from .equation import HeadEquation, HeadEquationNores
+
+class LineSinkBase(Element):
+    '''LineSink Base Class. All LineSink elements are derived from this class'''
+    def __init__(self,model,x1=-1,y1=0,x2=1,y2=0,tsandbc=[(0.0,1.0)],res=0.0,wh='H',layers=0,type='',name='LineSinkBase',label=None,addtomodel=True):
+        Element.__init__(self, model, Nparam=1, Nunknowns=0, layers=layers,
+                         tsandbc=tsandbc, type=type, name=name, label=label)
+        self.Nparam = len(self.pylayers)
+        self.x1 = float(x1)
+        self.y1 = float(y1)
+        self.x2 = float(x2)
+        self.y2 = float(y2)
+        self.res = res
+        self.wh = wh
+        if addtomodel: self.model.addElement(self)
+        self.xa,self.ya,self.xb,self.yb,self.np = np.zeros(1),np.zeros(1),np.zeros(1),np.zeros(1),np.zeros(1,'i')  # needed to call bessel.circle_line_intersection
+
+    def __repr__(self):
+        return self.name + ' from ' + str((self.x1,self.y1)) +' to '+str((self.x2,self.y2))
+
+    def initialize(self):
+        self.xc = np.array([0.5*(self.x1+self.x2)]); self.yc = np.array([0.5*(self.y1+self.y2)])
+        self.Ncp = 1
+        self.z1 = self.x1 + 1j*self.y1; self.z2 = self.x2 + 1j*self.y2
+        self.L = np.abs(self.z1-self.z2)
+        self.order = 0 # This is for univform strength only
+        self.aq = self.model.aq.findAquiferData(self.xc,self.yc)
+        self.setbc()
+        coef = self.aq.coef[self.pylayers,:]
+        self.setflowcoef()
+        self.term = self.flowcoef * coef  # shape (self.Nparam,self.aq.Naq,self.model.Np)
+        self.term2 = self.term.reshape(self.Nparam,self.aq.Naq,self.model.Nin,self.model.Npin)
+        self.strengthinf = self.flowcoef * coef
+        self.strengthinflayers = np.sum(self.strengthinf * self.aq.eigvec[self.pylayers,:,:], 1)
+        if type(self.wh) is str:
+            if self.wh == 'H':
+                self.wh = self.aq.Haq[self.pylayers]
+            elif self.wh == '2H':
+                self.wh = 2.0 * self.aq.Haq[self.pylayers]
+        else:
+            self.wh = np.atleast_1d(self.wh) * np.ones(self.Nlayers)
+        self.resfach = self.res / (self.wh * self.L)  # Q = (h - hls) / resfach
+        self.resfacp = self.resfach * self.aq.T[self.pylayers]  # Q = (Phi - Phils) / resfacp
+
+    def setflowcoef(self):
+        '''Separate function so that this can be overloaded for other types'''
+        self.flowcoef = 1.0 / self.model.p  # Step function
+
+    def potinf(self, x, y, aq=None):
+        '''Can be called with only one x,y value'''
+        if aq is None:
+            aq = self.model.aq.findAquiferData(x, y)
+        rv = np.zeros((self.Nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D')
+        if aq == self.aq:
+            pot = np.zeros(self.model.Npin, 'D')
+            for i in range(self.aq.Naq):
+                for j in range(self.model.Nin):
+                    bessel.circle_line_intersection(self.z1,self.z2,x+y*1j,self.Rzero*abs(self.model.aq.lab2[i,j,0]),self.xa,self.ya,self.xb,self.yb,self.np)
+                    if self.np > 0:
+                        za = complex(self.xa,self.ya); zb = complex(self.xb,self.yb) # f2py has problem returning complex arrays -> fixed in new numpy
+                        bessel.bessellsuniv(x,y,za,zb,self.aq.lab2[i,j,:],pot)
+                        rv[:,i,j,:] = self.term2[:,i,j,:] * pot / self.L  # Divide by L as the parameter is now total discharge
+        rv.shape = (self.Nparam,aq.Naq,self.model.Np)
+        return rv
+
+    def disinf(self,x,y,aq=None):
+        '''Can be called with only one x,y value'''
+        if aq is None:
+            aq = self.model.aq.findAquiferData(x, y)
+        rvx = np.zeros((self.Nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D'),
+        rvy = np.zeros((self.Nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D')
+        if aq == self.aq:
+            qxqy = np.zeros((2,self.model.Npin),'D')
+            for i in range(self.aq.Naq):
+                for j in range(self.model.Nin):
+                    if bessel.isinside(self.z1,self.z2,x+y*1j,self.Rzero*self.aq.lababs[i,j]):
+                        qxqy[:,:] = bessel.bessellsqxqyv2(x,y,self.z1,self.z2,self.aq.lab2[i,j,:],self.order,self.Rzero*self.aq.lababs[i,j]) / self.L  # Divide by L as the parameter is now total discharge
+                        rvx[:,i,j,:] = self.term2[:,i,j,:] * qxqy[0]
+                        rvy[:,i,j,:] = self.term2[:,i,j,:] * qxqy[1]
+        rvx.shape = (self.Nparam, aq.Naq, self.model.Np)
+        rvy.shape = (self.Nparam, aq.Naq, self.model.Np)
+        return rvx, rvy
+
+    def headinside(self,t):
+        return self.model.head(self.xc,self.yc,t)[self.pylayers] - self.resfach[:,np.newaxis] * self.strength(t)
+
+    def plot(self):
+        plt.plot([self.x1, self.x2], [self.y1, self.y2], 'k')
+    
+class ZeroHeadLineSink(LineSinkBase,HeadEquation):
+    '''HeadLineSink that remains zero and constant through time'''
+    def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, res=0.0, wh='H', \
+                 layers=0, label=None, addtomodel=True):
+        self.storeinput(inspect.currentframe())
+        LineSinkBase.__init__(self, model, x1=x1, y1=y1, x2=x2, y2=y2, \
+                              tsandbc=[(0, 0)], res=res, wh=wh, layers=layers, \
+                              type='z', name='ZeroHeadLineSink', label=label, \
+                              addtomodel=addtomodel)
+        self.Nunknowns = self.Nparam
+        
+    def initialize(self):
+        LineSinkBase.initialize(self)
+        self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
+        
+class HeadLineSink(LineSinkBase, HeadEquation):
+    '''HeadLineSink of which the head varies through time. May be screened in multiple layers but all with the same head'''
+    def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandh=[(0, 1)], \
+                 res=0, wh='H', layers=0, label=None, addtomodel=True):
+        self.storeinput(inspect.currentframe())
+        if tsandh == 'fixed':
+            tsandh = [(0, 0)]
+            etype = 'z'
+        else:
+            etype = 'v'
+        LineSinkBase.__init__(self, model, x1=x1, y1=y1, x2=x2, y2=y2, \
+                              tsandbc=tsandh, res=res, wh=wh, layers=layers, \
+                              type=etype, name='HeadLineSink', label=label, \
+                              addtomodel=addtomodel)
+        self.Nunknowns = self.Nparam
+
+    def initialize(self):
+        LineSinkBase.initialize(self)
+        self.parameters = np.zeros((self.model.Ngvbc, self.Nparam, self.model.Np), 'D')
+        self.pc = self.aq.T[self.pylayers] # Needed in solving; We solve for a unit head
+        
+class LineSinkStringBase(Element):
+    def __init__(self, model, tsandbc=[(0, 1)], layers=0, type='',
+                 name='LineSinkStringBase', label=None):
+        Element.__init__(self, model, Nparam=1, Nunknowns=0, layers=layers, \
+                         tsandbc=tsandbc, type=type, name=name, label=label)
+        self.lsList = []
+
+    def __repr__(self):
+        return self.name + ' with nodes ' + str(zip(self.x,self.y))
+
+    def initialize(self):
+        self.Ncp = self.Nls
+        self.Nparam = self.Nlayers * self.Nls
+        self.Nunknowns = self.Nparam
+        self.xls,self.yls = np.empty((self.Nls,2)), np.empty((self.Nls,2))
+        for i,ls in enumerate(self.lsList):
+            ls.initialize()
+            self.xls[i,:] = [ls.x1,ls.x2]
+            self.yls[i,:] = [ls.y1,ls.y2]
+        self.xlslayout = np.hstack((self.xls[:,0],self.xls[-1,1])) # Only used for layout when it is a continuous string
+        self.ylslayout = np.hstack((self.yls[:,0],self.yls[-1,1]))
+        self.aq = self.model.aq.findAquiferData(self.lsList[0].xc,self.lsList[0].yc)
+        self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
+        self.setbc()
+        # As parameters are only stored for the element not the list, we need to combine the following
+        self.resfach = []; self.resfacp = []
+        for ls in self.lsList:
+            ls.initialize()
+            self.resfach.extend( ls.resfach.tolist() )  # Needed in solving
+            self.resfacp.extend( ls.resfacp.tolist() )  # Needed in solving
+        self.resfach = np.array(self.resfach); self.resfacp = np.array(self.resfacp)
+        self.strengthinf = np.zeros((self.Nparam,self.aq.Naq,self.model.Np),'D')
+        self.strengthinflayers = np.zeros((self.Nparam,self.model.Np),'D')
+        self.xc, self.yc = np.zeros(self.Nls), np.zeros(self.Nls)
+        for i in range(self.Nls):
+            self.strengthinf[i*self.Nlayers:(i+1)*self.Nlayers,:] = self.lsList[i].strengthinf[:]
+            self.strengthinflayers[i*self.Nlayers:(i+1)*self.Nlayers,:] = self.lsList[i].strengthinflayers
+            self.xc[i], self.yc[i] = self.lsList[i].xc, self.lsList[i].yc
+
+    def potinf(self,x,y,aq=None):
+        '''Returns array (Nunknowns,Nperiods)'''
+        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        rv = np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
+        for i in range(self.Nls):
+            rv[i*self.Nlayers:(i+1)*self.Nlayers,:] = self.lsList[i].potinf(x,y,aq)
+        return rv
+
+    def disinf(self,x,y,aq=None):
+        '''Returns array (Nunknowns,Nperiods)'''
+        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        rvx,rvy = np.zeros((self.Nparam,aq.Naq,self.model.Np),'D'),np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
+        for i in range(self.Nls):
+            qx,qy = self.lsList[i].disinf(x,y,aq)
+            rvx[i*self.Nlayers:(i+1)*self.Nlayers,:] = qx
+            rvy[i*self.Nlayers:(i+1)*self.Nlayers,:] = qy
+        return rvx,rvy
+
+    def headinside(self,t,derivative=0):
+        rv = np.zeros((self.Nls,self.Nlayers,np.size(t)))
+        Q = self.strength_list(t,derivative=derivative)
+        for i in range(self.Nls):
+            rv[i,:,:] = self.model.head(self.xc[i],self.yc[i],t,derivative=derivative)[self.pylayers] - self.resfach[i*self.Nlayers:(i+1)*self.Nlayers,np.newaxis] * Q[i]
+        return rv
+    
+    def plot(self):
+        plt.plot(self.xlslayout, self.ylslayout, 'k')
+
+    def run_after_solve(self):
+        for i in range(self.Nls):
+            self.lsList[i].parameters[:] = self.parameters[:,i*self.Nlayers:(i+1)*self.Nlayers,:]
+
+    def strength_list(self,t,derivative=0):
+        # conveniently using the strength functions of the individual line-sinks
+        rv = np.zeros((self.Nls,self.Nlayers,np.size(t)))
+        for i in range(self.Nls):
+            rv[i,:,:] = self.lsList[i].strength(t,derivative=derivative)
+            
+class HeadLineSinkString(LineSinkStringBase, HeadEquation):
+    def __init__(self, model, xy=[(-1, 0), (1, 0)], tsandh=[(0, 1)], \
+                 res=0, wh='H', layers=0, label=None):
+        if tsandh == 'fixed':
+            tsandh = [(0, 0)]
+            etype = 'z'
+        else:
+            etype = 'v'
+        LineSinkStringBase.__init__(self, model, tsandbc=tsandh, layers=layers, \
+                                    type=etype, name='HeadLineSinkString', label=label)
+        xy = np.atleast_2d(xy).astype('d')
+        self.x = xy[:, 0]
+        self.y = xy[:, 1]
+        self.Nls = len(self.x) - 1
+        for i in range(self.Nls):
+            self.lsList.append(HeadLineSink(model, x1=self.x[i], y1=self.y[i], \
+                                            x2=self.x[i + 1], y2=self.y[i + 1], \
+                                            tsandh=tsandh, res=res, wh=wh, \
+                                            layers=layers, label=None, \
+                                            addtomodel=False) )
+        self.model.addElement(self)
+
+    def initialize(self):
+        LineSinkStringBase.initialize(self)
+        self.pc = np.zeros(self.Nls * self.Nlayers)
+        for i in range(self.Nls):
+            self.pc[i * self.Nlayers:(i + 1) * self.Nlayers] = self.lsList[i].pc
 
 class LineSinkHoBase(Element):
     '''Higher Order LineSink Base Class. All Higher Order Line Sink elements are derived from this class'''
@@ -101,8 +332,8 @@ class LineSinkHoBase(Element):
     def headinside(self, t):
         return self.model.head(self.xc, self.yc, t)[self.pylayers] - self.resfach[:, np.newaxis] * self.strength(t)
 
-    def layout(self):
-        return 'line', [self.x1, self.x2], [self.y1, self.y2]
+    def plot(self):
+        plt.plot([self.x1, self.x2], [self.y1, self.y2], 'k')
     
 class HeadLineSinkHo(LineSinkHoBase, HeadEquationNores):
     '''HeadLineSink of which the head varies through time. May be screened in multiple layers but all with the same head'''

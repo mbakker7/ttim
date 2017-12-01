@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.special import kv,iv # Needed for K1 in Well class, and in CircInhom
 import inspect # Used for storing the input
 from .element import Element
@@ -84,8 +85,8 @@ class WellBase(Element):
         return self.model.head(self.xc, self.yc, t, derivative=derivative)[self.pylayers] - \
                self.resfach[:, np.newaxis] * self.strength(t, derivative=derivative)
             
-    def layout(self):
-        return 'point', self.xw, self.yw
+    def plot(self):
+        plt.plot(self.xw, self.yw, 'k.')
     
 class DischargeWell(WellBase):
     """

@@ -5,8 +5,10 @@ import inspect # Used for storing the input
 import sys
 from .aquifer_parameters import param_3d, param_maq
 from .aquifer import Aquifer
+from .bessel import *
+from .util import PlotTtim
 
-class TimModel:
+class TimModel(PlotTtim):
     def __init__(self, kaq=[1, 1], Haq=[1, 1], c=[1e100, 100], Saq=[0.3, 0.003], \
                  Sll=[0], topboundary='conf', phreatictop=False, tmin=1, tmax=10, M=20):
         self.elementList = []
@@ -21,7 +23,7 @@ class TimModel:
         self.compute_laplace_parameters()
         self.name = 'TimModel'
         self.modelname = 'ml' # Used for writing out input
-        #bessel.initialize()
+        bessel.initialize()
         
     def __repr__(self):
         return 'Model'
@@ -208,11 +210,11 @@ class TimModel:
     def strength(self,elabel,t):
         return self.elementDict[elabel].strength(t)
     
-    def headalongline(self,x,y,t,layers=None):
+    def headalongline(self, x, y, t, layers=None):
         '''Returns head[Nlayers,len(t),len(x)]
         Assumes same number of layers for each x and y
         layers may be None or list of layers for which head is computed'''
-        xg,yg = np.atleast_1d(x),np.atleast_1d(y)
+        xg, yg = np.atleast_1d(x),np.atleast_1d(y)
         if layers is None:
             Nlayers = self.aq.findAquiferData(xg[0],yg[0]).Naq
         else:
@@ -226,9 +228,10 @@ class TimModel:
             h[:,:,i] = self.head(xg[i],yg[i],t,layers)
         return h
     
-    def headgrid(self,x1,x2,nx,y1,y2,ny,t,layers=None,printrow=False):
-        '''Returns h[Nlayers,Ntimes,Ny,Nx]. If layers is None, all layers are returned'''
-        xg,yg = np.linspace(x1,x2,nx), np.linspace(y1,y2,ny)
+    def headgrid(self, xg, yg, t, layers=None, printrow=False):
+        '''Returns h[Nlayers, Ntimes, Ny, Nx]. If layers is None, all layers are returned'''
+        nx = len(xg)
+        ny = len(yg)
         if layers is None:
             Nlayers = self.aq.findAquiferData(xg[0],yg[0]).Naq
         else:
@@ -242,21 +245,11 @@ class TimModel:
                 h[:,:,j,i] = self.head(xg[i],yg[j],t,layers)
         return h
     
-    def headgrid2(self,xg,yg,t,layers=None,printrow=False):
+    def headgrid2(self, x1, x2, nx, y1, y2, ny, t, layers=None, printrow=False):
         '''Returns h[Nlayers,Ntimes,Ny,Nx]. If layers is None, all layers are returned'''
-        nx,ny = len(xg), len(yg)
-        if layers is None:
-            Nlayers = self.aq.findAquiferData(xg[0],yg[0]).Naq
-        else:
-            Nlayers = len(np.atleast_1d(layers))
-        t = np.atleast_1d(t)
-        h = np.empty( (Nlayers,len(t),ny,nx) )
-        for j in range(ny):
-            if printrow:
-                print(str(j)+' ')
-            for i in range(nx):
-                h[:,:,j,i] = self.head(xg[i],yg[j],t,layers)
-        return h
+        xg = np.linspace(x1, x2, nx)
+        yg = np.linspace(y1, y2, ny)
+        return self.headgrid(xg, yg, t, layers, printrow)
     
     def inverseLapTran(self,pot,t):
         '''returns array of potentials of len(t)
