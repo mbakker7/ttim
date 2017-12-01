@@ -305,7 +305,56 @@
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nls</span><span class="p">):</span>
             <span class="n">rv</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsList</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">strength</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">derivative</span><span class="o">=</span><span class="n">derivative</span><span class="p">)</span>
             
-<span class="k">class</span> <span class="nc">HeadLineSinkString</span><span class="p">(</span><span class="n">LineSinkStringBase</span><span class="p">,</span> <span class="n">HeadEquation</span><span class="p">):</span>
+<div class="viewcode-block" id="HeadLineSinkString"><a class="viewcode-back" href="../../linesinks/headlinesinkstring.html#ttim.linesink.HeadLineSinkString">[docs]</a><span class="k">class</span> <span class="nc">HeadLineSinkString</span><span class="p">(</span><span class="n">LineSinkStringBase</span><span class="p">,</span> <span class="n">HeadEquation</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create string of head-specified line-sinks</span>
+<span class="sd">    which may optionally have a width and resistance</span>
+<span class="sd">    Inflow per unit length of line-sink is computed as</span>
+<span class="sd">    </span>
+<span class="sd">    .. math::</span>
+<span class="sd">        \sigma = w(h_{aq} - h_{ls})/c</span>
+<span class="sd">    </span>
+<span class="sd">    where :math:`c` is the resistance of the bottom of the line-sink,</span>
+<span class="sd">    :math:`w` is the width over which water enters the line-sink,</span>
+<span class="sd">    :math:`h_{aq}` is the head in the aquifer at the center of the line-sink,</span>
+<span class="sd">    :math:`h_{ls}` is the specified head inside the line-sink</span>
+<span class="sd">    Note that all that matters is the conductance term :math:`w/c` but</span>
+<span class="sd">    both are specified separately</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    </span>
+<span class="sd">    model : Model object</span>
+<span class="sd">        Model to which the element is added</span>
+<span class="sd">    xy : array or list</span>
+<span class="sd">        list or array of (x,y) pairs of coordinates of end-points of</span>
+<span class="sd">        line-sinks in string</span>
+<span class="sd">    tsandh : list or 2D array of (time, head) values or string</span>
+<span class="sd">        if list or 2D array: pairs of time and head after that time</span>
+<span class="sd">        if &#39;fixed&#39;: head is fixed (no change in head) during entire simulation</span>
+<span class="sd">    res : scalar (default is 0)</span>
+<span class="sd">        resistance of line-sink</span>
+<span class="sd">    wh : scalar or str</span>
+<span class="sd">        distance over which water enters line-sink</span>
+<span class="sd">        if &#39;H&#39;: (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)</span>
+<span class="sd">        if &#39;2H&#39;: distance is twice the thickness of the aquifer layer (when flow comes from both sides)</span>
+<span class="sd">        if scalar: the width of the stream that partially penetrates the aquifer layer</span>
+<span class="sd">    order : int (default is 0)</span>
+<span class="sd">        polynomial order or inflow along line-sink</span>
+<span class="sd">    layers : scalar, list or array</span>
+<span class="sd">        layer(s) in which element is placed</span>
+<span class="sd">        if scalar: element is placed in this layer</span>
+<span class="sd">        if list or array: element is placed in all these layers </span>
+<span class="sd">    label: str or None</span>
+<span class="sd">        label of element</span>
+<span class="sd">    </span>
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    </span>
+<span class="sd">    :class:`.HeadLineSink`</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)],</span> <span class="n">tsandh</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span> \
                  <span class="n">res</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">wh</span><span class="o">=</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">tsandh</span> <span class="o">==</span> <span class="s1">&#39;fixed&#39;</span><span class="p">:</span>
@@ -331,7 +380,7 @@
         <span class="n">LineSinkStringBase</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nls</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nls</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pc</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">:(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsList</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">pc</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pc</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">:(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsList</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">pc</span></div>
 
 <span class="k">class</span> <span class="nc">LineSinkHoBase</span><span class="p">(</span><span class="n">Element</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Higher Order LineSink Base Class. All Higher Order Line Sink elements are derived from this class&#39;&#39;&#39;</span>
