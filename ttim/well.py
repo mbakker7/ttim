@@ -32,8 +32,8 @@ class WellBase(Element):
         self.setflowcoef()
         self.term = -1.0 / (2 * np.pi) * laboverrwk1 * self.flowcoef * coef  # shape (self.Nparam,self.aq.Naq,self.model.Np)
         self.term2 = self.term.reshape(self.Nparam, self.aq.Naq, self.model.Nin, self.model.Npin)
-        self.strengthinf = self.flowcoef * coef
-        self.strengthinflayers = np.sum(self.strengthinf * self.aq.eigvec[self.pylayers, :, :], 1) 
+        self.dischargeinf = self.flowcoef * coef
+        self.dischargeinflayers = np.sum(self.dischargeinf * self.aq.eigvec[self.pylayers, :, :], 1) 
         self.resfach = self.res / (2 * np.pi * self.rw * self.aq.Haq[self.pylayers])  # Q = (h - hw) / resfach
         self.resfacp = self.resfach * self.aq.T[self.pylayers]  # Q = (Phi - Phiw) / resfacp
         
@@ -83,7 +83,7 @@ class WellBase(Element):
     def headinside(self, t, derivative=0):
         '''Returns head inside the well for the layers that the well is screened in'''
         return self.model.head(self.xc, self.yc, t, derivative=derivative)[self.pylayers] - \
-               self.resfach[:, np.newaxis] * self.strength(t, derivative=derivative)
+               self.resfach[:, np.newaxis] * self.discharge(t, derivative=derivative)
             
     def plot(self):
         plt.plot(self.xw, self.yw, 'k.')

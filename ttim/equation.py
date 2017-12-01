@@ -19,7 +19,7 @@ class HeadEquation:
                 if e.Nunknowns > 0:
                     mat[istart:istart+self.Nlayers,ieq:ieq+e.Nunknowns,:] = e.potinflayers(self.xc[icp],self.yc[icp],self.pylayers)
                     if e == self:
-                        for i in range(self.Nlayers): mat[istart+i,ieq+istart+i,:] -= self.resfacp[istart+i] * e.strengthinflayers[istart+i]
+                        for i in range(self.Nlayers): mat[istart+i,ieq+istart+i,:] -= self.resfacp[istart+i] * e.dischargeinflayers[istart+i]
                     ieq += e.Nunknowns
             for i in range(self.model.Ngbc):
                 rhs[istart:istart+self.Nlayers,i,:] -= self.model.gbcList[i].unitpotentiallayers(self.xc[icp],self.yc[icp],self.pylayers)  # Pretty cool that this works, really
@@ -43,12 +43,12 @@ class WellBoreStorageEquation:
                 mat[:-1,ieq:ieq+e.Nunknowns,:] = head[:-1,:] - head[1:,:]
                 mat[-1,ieq:ieq+e.Nunknowns,:] -= np.pi * self.rc**2 * self.model.p * head[0,:]
                 if e == self:
-                    disterm = self.strengthinflayers * self.res / ( 2 * np.pi * self.rw * self.aq.Haq[self.pylayers][:,np.newaxis] )
+                    disterm = self.dischargeinflayers * self.res / ( 2 * np.pi * self.rw * self.aq.Haq[self.pylayers][:,np.newaxis] )
                     if self.Nunknowns > 1:  # Multiple layers
                         for i in range(self.Nunknowns-1):
                             mat[i,ieq+i,:] -= disterm[i]
                             mat[i,ieq+i+1,:] += disterm[i+1]
-                    mat[-1,ieq:ieq+self.Nunknowns,:] += self.strengthinflayers
+                    mat[-1,ieq:ieq+self.Nunknowns,:] += self.dischargeinflayers
                     mat[-1,ieq,:] += np.pi * self.rc**2 * self.model.p * disterm[0]
                 ieq += e.Nunknowns
         for i in range(self.model.Ngbc):

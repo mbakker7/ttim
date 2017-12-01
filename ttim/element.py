@@ -152,21 +152,21 @@ class Element:
         return rvx[pylayers, :], rvy[pylayers, :]
     
     # Other functions
-    def strength(self, t, derivative=0):
-        '''returns array of strengths (Nlayers,len(t)) t must be ordered and tmin <= t <= tmax'''
+    def discharge(self, t, derivative=0):
+        '''returns array of discharges (Nlayers,len(t)) t must be ordered and tmin <= t <= tmax'''
         # Could potentially be more efficient if s is pre-computed for all elements, but I don't know if that is worthwhile to store as it is quick now
         time = np.atleast_1d(t).astype('d')
         if (time[0] < self.model.tmin) or (time[-1] > self.model.tmax):
             print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
         rv = np.zeros((self.Nlayers, np.size(time)))
         if self.type == 'g':
-            s = self.strengthinflayers * self.model.p ** derivative
+            s = self.dischargeinflayers * self.model.p ** derivative
             for itime in range(self.Ntstart):
                 time -=  self.tstart[itime]
                 for i in range(self.Nlayers):
                     rv[i] += self.bc[itime] * self.model.inverseLapTran(s[i], time)
         else:
-            s = np.sum(self.parameters[:, :, np.newaxis, :] * self.strengthinf, 1)
+            s = np.sum(self.parameters[:, :, np.newaxis, :] * self.dischargeinf, 1)
             s = np.sum(s[:, np.newaxis, :, :] * self.aq.eigvec, 2)
             s = s[:, self.pylayers, :] * self.model.p ** derivative
             for k in range(self.model.Ngvbc):

@@ -30,15 +30,15 @@ class LineSinkBase(Element):
         self.Ncp = 1
         self.z1 = self.x1 + 1j*self.y1; self.z2 = self.x2 + 1j*self.y2
         self.L = np.abs(self.z1-self.z2)
-        self.order = 0 # This is for univform strength only
+        self.order = 0 # This is for univform discharge only
         self.aq = self.model.aq.findAquiferData(self.xc,self.yc)
         self.setbc()
         coef = self.aq.coef[self.pylayers,:]
         self.setflowcoef()
         self.term = self.flowcoef * coef  # shape (self.Nparam,self.aq.Naq,self.model.Np)
         self.term2 = self.term.reshape(self.Nparam,self.aq.Naq,self.model.Nin,self.model.Npin)
-        self.strengthinf = self.flowcoef * coef
-        self.strengthinflayers = np.sum(self.strengthinf * self.aq.eigvec[self.pylayers,:,:], 1)
+        self.dischargeinf = self.flowcoef * coef
+        self.dischargeinflayers = np.sum(self.dischargeinf * self.aq.eigvec[self.pylayers,:,:], 1)
         if type(self.wh) is str:
             if self.wh == 'H':
                 self.wh = self.aq.Haq[self.pylayers]
@@ -89,25 +89,36 @@ class LineSinkBase(Element):
         return rvx, rvy
 
     def headinside(self,t):
-        return self.model.head(self.xc,self.yc,t)[self.pylayers] - self.resfach[:,np.newaxis] * self.strength(t)
+        return self.model.head(self.xc,self.yc,t)[self.pylayers] - self.resfach[:,np.newaxis] * self.discharge(t)
 
     def plot(self):
         plt.plot([self.x1, self.x2], [self.y1, self.y2], 'k')
-    
-class ZeroHeadLineSink(LineSinkBase,HeadEquation):
-    '''HeadLineSink that remains zero and constant through time'''
-    def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, res=0.0, wh='H', \
-                 layers=0, label=None, addtomodel=True):
-        self.storeinput(inspect.currentframe())
-        LineSinkBase.__init__(self, model, x1=x1, y1=y1, x2=x2, y2=y2, \
-                              tsandbc=[(0, 0)], res=res, wh=wh, layers=layers, \
-                              type='z', name='ZeroHeadLineSink', label=label, \
-                              addtomodel=addtomodel)
-        self.Nunknowns = self.Nparam
         
-    def initialize(self):
-        LineSinkBase.initialize(self)
-        self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
+class LineSink(LineSinkBase):
+    '''LineSink with non-zero and potentially variable discharge through time
+    really only used for testing'''
+    def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandQ=[(0, 1)], \
+                 res=0, wh='H', layers=0, label=None, addtomodel=True):
+        self.storeinput(inspect.currentframe())
+        LineSinkBase.__init__(self, model, x1=x1, y1=y1, x2=x2, y2=y2, tsandbc=tsandQ, \
+                              res=res, wh=wh, layers=layers, type='g', name='LineSink', \
+                              label=label,addtomodel=addtomodel)
+
+    
+#class ZeroHeadLineSink(LineSinkBase,HeadEquation):
+    #'''HeadLineSink that remains zero and constant through time'''
+    #def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, res=0.0, wh='H', \
+    #             layers=0, label=None, addtomodel=True):
+    #    self.storeinput(inspect.currentframe())
+    #    LineSinkBase.__init__(self, model, x1=x1, y1=y1, x2=x2, y2=y2, \
+    #                          tsandbc=[(0, 0)], res=res, wh=wh, layers=layers, \
+    #                          type='z', name='ZeroHeadLineSink', label=label, \
+    #                          addtomodel=addtomodel)
+    #    self.Nunknowns = self.Nparam
+    #    
+    #def initialize(self):
+    #    LineSinkBase.initialize(self)
+    #    self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
         
 class HeadLineSink(LineSinkBase, HeadEquation):
     """
@@ -148,8 +159,6 @@ class HeadLineSink(LineSinkBase, HeadEquation):
         if 'H': (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)
         if '2H': distance is twice the thickness of the aquifer layer (when flow comes from both sides)
         if scalar: the width of the stream that partially penetrates the aquifer layer
-    order : int (default is 0)
-        polynomial order or inflow along line-sink
     layers : scalar, list or array
         layer(s) in which element is placed
         if scalar: element is placed in this layer
@@ -214,12 +223,12 @@ class LineSinkStringBase(Element):
             self.resfach.extend( ls.resfach.tolist() )  # Needed in solving
             self.resfacp.extend( ls.resfacp.tolist() )  # Needed in solving
         self.resfach = np.array(self.resfach); self.resfacp = np.array(self.resfacp)
-        self.strengthinf = np.zeros((self.Nparam,self.aq.Naq,self.model.Np),'D')
-        self.strengthinflayers = np.zeros((self.Nparam,self.model.Np),'D')
+        self.dischargeinf = np.zeros((self.Nparam,self.aq.Naq,self.model.Np),'D')
+        self.dischargeinflayers = np.zeros((self.Nparam,self.model.Np),'D')
         self.xc, self.yc = np.zeros(self.Nls), np.zeros(self.Nls)
         for i in range(self.Nls):
-            self.strengthinf[i*self.Nlayers:(i+1)*self.Nlayers,:] = self.lsList[i].strengthinf[:]
-            self.strengthinflayers[i*self.Nlayers:(i+1)*self.Nlayers,:] = self.lsList[i].strengthinflayers
+            self.dischargeinf[i*self.Nlayers:(i+1)*self.Nlayers,:] = self.lsList[i].dischargeinf[:]
+            self.dischargeinflayers[i*self.Nlayers:(i+1)*self.Nlayers,:] = self.lsList[i].dischargeinflayers
             self.xc[i], self.yc[i] = self.lsList[i].xc, self.lsList[i].yc
 
     def potinf(self,x,y,aq=None):
@@ -242,7 +251,7 @@ class LineSinkStringBase(Element):
 
     def headinside(self,t,derivative=0):
         rv = np.zeros((self.Nls,self.Nlayers,np.size(t)))
-        Q = self.strength_list(t,derivative=derivative)
+        Q = self.discharge_list(t,derivative=derivative)
         for i in range(self.Nls):
             rv[i,:,:] = self.model.head(self.xc[i],self.yc[i],t,derivative=derivative)[self.pylayers] - self.resfach[i*self.Nlayers:(i+1)*self.Nlayers,np.newaxis] * Q[i]
         return rv
@@ -254,13 +263,60 @@ class LineSinkStringBase(Element):
         for i in range(self.Nls):
             self.lsList[i].parameters[:] = self.parameters[:,i*self.Nlayers:(i+1)*self.Nlayers,:]
 
-    def strength_list(self,t,derivative=0):
-        # conveniently using the strength functions of the individual line-sinks
+    def discharge_list(self,t,derivative=0):
+        # conveniently using the discharge functions of the individual line-sinks
         rv = np.zeros((self.Nls,self.Nlayers,np.size(t)))
         for i in range(self.Nls):
-            rv[i,:,:] = self.lsList[i].strength(t,derivative=derivative)
+            rv[i,:,:] = self.lsList[i].discharge(t,derivative=derivative)
             
 class HeadLineSinkString(LineSinkStringBase, HeadEquation):
+    """
+    Create string of head-specified line-sinks
+    which may optionally have a width and resistance
+    Inflow per unit length of line-sink is computed as
+    
+    .. math::
+        \sigma = w(h_{aq} - h_{ls})/c
+    
+    where :math:`c` is the resistance of the bottom of the line-sink,
+    :math:`w` is the width over which water enters the line-sink,
+    :math:`h_{aq}` is the head in the aquifer at the center of the line-sink,
+    :math:`h_{ls}` is the specified head inside the line-sink
+    Note that all that matters is the conductance term :math:`w/c` but
+    both are specified separately
+    
+    Parameters
+    ----------
+    
+    model : Model object
+        Model to which the element is added
+    xy : array or list
+        list or array of (x,y) pairs of coordinates of end-points of
+        line-sinks in string
+    tsandh : list or 2D array of (time, head) values or string
+        if list or 2D array: pairs of time and head after that time
+        if 'fixed': head is fixed (no change in head) during entire simulation
+    res : scalar (default is 0)
+        resistance of line-sink
+    wh : scalar or str
+        distance over which water enters line-sink
+        if 'H': (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)
+        if '2H': distance is twice the thickness of the aquifer layer (when flow comes from both sides)
+        if scalar: the width of the stream that partially penetrates the aquifer layer
+    layers : scalar, list or array
+        layer(s) in which element is placed
+        if scalar: element is placed in this layer
+        if list or array: element is placed in all these layers 
+    label: str or None
+        label of element
+    
+    See Also
+    --------
+    
+    :class:`.HeadLineSink`
+    
+    """
+    
     def __init__(self, model, xy=[(-1, 0), (1, 0)], tsandh=[(0, 1)], \
                  res=0, wh='H', layers=0, label=None):
         if tsandh == 'fixed':
@@ -333,8 +389,8 @@ class LineSinkHoBase(Element):
         #self.term2 = np.empty((self.Nparam,self.aq.Naq,self.model.Nin,self.model.Npin),'D')
         #for i in range(self.Nlayers):
         #    self.term2[i*(self.order+1):(i+1)*(self.order+1),:,:,:] = self.term[i,:,:].reshape((1,self.aq.Naq,self.model.Nin,self.model.Npin))
-        self.strengthinf = self.flowcoef * coef
-        self.strengthinflayers = np.sum(self.strengthinf * self.aq.eigvec[self.pylayers, :, :], 1)
+        self.dischargeinf = self.flowcoef * coef
+        self.dischargeinflayers = np.sum(self.dischargeinf * self.aq.eigvec[self.pylayers, :, :], 1)
         if self.wh == 'H':
             self.wh = self.aq.Haq[self.pylayers]
         elif self.wh == '2H':
@@ -385,7 +441,7 @@ class LineSinkHoBase(Element):
         return rvx, rvy
 
     def headinside(self, t):
-        return self.model.head(self.xc, self.yc, t)[self.pylayers] - self.resfach[:, np.newaxis] * self.strength(t)
+        return self.model.head(self.xc, self.yc, t)[self.pylayers] - self.resfach[:, np.newaxis] * self.discharge(t)
 
     def plot(self):
         plt.plot([self.x1, self.x2], [self.y1, self.y2], 'k')
