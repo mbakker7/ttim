@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Well with specified head &#8212; ttim 0.4.a1 documentation</title>
+    <title>String of head-specified line-sinks &#8212; ttim 0.4.a1 documentation</title>
     
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -27,8 +27,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Line-sinks" href="../linesinks/linesinkindex.html" />
-    <link rel="prev" title="Well with specified discharge" href="well.html" />
+    <link rel="prev" title="Line-sink with specified head" href="headlinesink.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -44,41 +43,46 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="well-with-specified-head">
-<h1>Well with specified head<a class="headerlink" href="#well-with-specified-head" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="string-of-head-specified-line-sinks">
+<h1>String of head-specified line-sinks<a class="headerlink" href="#string-of-head-specified-line-sinks" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="ttim.well.HeadWell">
-<em class="property">class </em><code class="descclassname">ttim.well.</code><code class="descname">HeadWell</code><span class="sig-paren">(</span><em>model, xw=0, yw=0, rw=0.1, tsandh=[(0, 1)], res=0, layers=0, label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/well.html#HeadWell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.well.HeadWell" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a well with a specified head inside the well.
-The well may be screened in multiple layers. The resistance of the screen
-may be specified. The head is computed such that the discharge <span class="math">\(Q_i\)</span>
-in layer <span class="math">\(i\)</span> is computed as</p>
-<div class="math">
-\[Q_i = 2\pi r_w(h_i - h_w)/c\]</div>
-<p>where <span class="math">\(c\)</span> is the resistance of the well screen and <span class="math">\(h_w\)</span> is
-the head inside the well.</p>
+<dt id="timml.linesink.HeadLineSinkString">
+<em class="property">class </em><code class="descclassname">timml.linesink.</code><code class="descname">HeadLineSinkString</code><span class="sig-paren">(</span><em>model, xy=[(-1, 0), (1, 0)], hls=0, res=0, wh=1, order=0, layers=0, label=None, name=’HeadLineSinkString’</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/timml/linesink.html#HeadLineSinkString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#timml.linesink.HeadLineSinkString" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to create a string of head-specified line-sinks
+which may optionally have a width and resistance</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>model</strong> (<em>Model object</em>) – model to which the element is added</li>
-<li><strong>xw</strong> (<em>float</em>) – x-coordinate of the well</li>
-<li><strong>yw</strong> (<em>float</em>) – y-coordinate of the well</li>
-<li><strong>rw</strong> (<em>float</em>) – radius of the well</li>
-<li><strong>tsandh</strong> (<em>list of tuples</em>) – tuples of starting time and discharge after starting time</li>
-<li><strong>res</strong> (<em>float</em>) – resistance of the well screen</li>
-<li><strong>layers</strong> (<em>int</em><em>, </em><em>array</em><em> or </em><em>list</em>) – layer (int) or layers (list or array) where well is screened</li>
-<li><strong>label</strong> (<em>string</em><em> (</em><em>default: None</em><em>)</em>) – label of the well</li>
+<li><strong>model</strong> (<em>Model object</em>) – Model to which the element is added</li>
+<li><strong>xy</strong> (<em>array</em><em> or </em><em>list</em>) – list or array of (x,y) pairs of coordinates of end-points of
+line-sinks in string</li>
+<li><strong>hls</strong> (<em>scalar</em><em>, </em><em>array</em><em> or </em><em>list</em>) – head along string
+if scalar: head is the same everywhere along the string
+if list or array of length 2: head at beginning and end of string
+if list or array with same length as xy: heads at nodes, which
+may contain nans, except for first and last point</li>
+<li><strong>res</strong> (<em>scalar</em><em> (</em><em>default is 0</em><em>)</em>) – resistance of line-sink</li>
+<li><strong>wh</strong> (<em>scalar</em><em> or </em><em>str</em>) – distance over which water enters line-sink</li>
+<li><strong>order</strong> (<em>int</em><em> (</em><em>default is 0</em><em>)</em>) – order of all line-sinks in string</li>
+<li><strong>layers</strong> (<em>scalar</em><em>, </em><em>list</em><em> or </em><em>array</em>) – layer(s) in which element is placed
+if scalar: element is placed in this layer
+if list or array: element is placed in all these layers</li>
+<li><strong>label</strong> (<em>str</em><em> or </em><em>None</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="headlinesink.html#timml.linesink.HeadLineSink" title="timml.linesink.HeadLineSink"><code class="xref py py-class docutils literal"><span class="pre">HeadLineSink</span></code></a></p>
+</div>
 <dl class="method">
-<dt id="ttim.well.HeadWell.headinside">
-<code class="descname">headinside</code><span class="sig-paren">(</span><em>t</em>, <em>derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.well.HeadWell.headinside" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns head inside the well for the layers that the well is screened in</p>
+<dt id="timml.linesink.HeadLineSinkString.discharge">
+<code class="descname">discharge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#timml.linesink.HeadLineSinkString.discharge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Discharge of the element in each layer</p>
 </dd></dl>
 
 </dd></dl>
@@ -113,12 +117,12 @@ the head inside the well.</p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../models/modelindex.html">Models</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../aems.html">Elements</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="wellindex.html">Wells</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="well.html">Well</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">HeadWell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../wells/wellindex.html">Wells</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="linesinkindex.html">Line-sinks</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="headlinesink.html">HeadLineSink</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">HeadLineSinkString</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../linesinks/linesinkindex.html">Line-sinks</a></li>
 </ul>
 </li>
 </ul>
@@ -128,9 +132,8 @@ the head inside the well.</p>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../aems.html">Elements</a><ul>
-  <li><a href="wellindex.html">Wells</a><ul>
-      <li>Previous: <a href="well.html" title="previous chapter">Well with specified discharge</a></li>
-      <li>Next: <a href="../linesinks/linesinkindex.html" title="next chapter">Line-sinks</a></li>
+  <li><a href="linesinkindex.html">Line-sinks</a><ul>
+      <li>Previous: <a href="headlinesink.html" title="previous chapter">Line-sink with specified head</a></li>
   </ul></li>
   </ul></li>
   </ul></li>
@@ -158,7 +161,7 @@ the head inside the well.</p>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="../_sources/wells/headwell.rst.txt"
+      <a href="../_sources/linesinks/headlinesinkstring.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

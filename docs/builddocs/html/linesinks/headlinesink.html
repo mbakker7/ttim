@@ -1,0 +1,183 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Line-sink with specified head &#8212; ttim 0.4.a1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.4.a1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="String of head-specified line-sinks" href="headlinesinkstring.html" />
+    <link rel="prev" title="Line-sinks" href="linesinkindex.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="line-sink-with-specified-head">
+<h1>Line-sink with specified head<a class="headerlink" href="#line-sink-with-specified-head" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="ttim.linesink.HeadLineSink">
+<em class="property">class </em><code class="descclassname">ttim.linesink.</code><code class="descname">HeadLineSink</code><span class="sig-paren">(</span><em>model, x1=-1, y1=0, x2=1, y2=0, tsandh=[(0, 1)], res=0, wh=’H’, layers=0, label=None, addtomodel=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/linesink.html#HeadLineSink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.linesink.HeadLineSink" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a head-specified line-sink
+which may optionally have a width and resistance
+Inflow per unit length of line-sink is computed as</p>
+<div class="math">
+\[\sigma = w(h_{aq} - h_{ls})/c\]</div>
+<p>where <span class="math">\(c\)</span> is the resistance of the bottom of the line-sink,
+<span class="math">\(w\)</span> is the width over which water enters the line-sink,
+<span class="math">\(h_{aq}\)</span> is the head in the aquifer at the center of the line-sink,
+<span class="math">\(h_{ls}\)</span> is the specified head inside the line-sink
+Note that all that matters is the conductance term <span class="math">\(w/c\)</span> but
+both are specified separately</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model</strong> (<em>Model object</em>) – Model to which the element is added</li>
+<li><strong>x1</strong> (<em>scalar</em>) – x-coordinate of fist point of line-sink</li>
+<li><strong>y1</strong> (<em>scalar</em>) – y-coordinate of fist point of line-sink</li>
+<li><strong>x2</strong> (<em>scalar</em>) – x-coordinate of second point of line-sink</li>
+<li><strong>y2</strong> (<em>scalar</em>) – y-coordinate of second point of line-sink</li>
+<li><strong>tsandh</strong> (<em>list</em><em> or </em><em>2D array of</em><em> (</em><em>time</em><em>, </em><em>head</em><em>) </em><em>values</em><em> or </em><em>string</em>) – if list or 2D array: pairs of time and head after that time
+if ‘fixed’: head is fixed (no change in head) during entire simulation</li>
+<li><strong>res</strong> (<em>scalar</em><em> (</em><em>default is 0</em><em>)</em>) – resistance of line-sink</li>
+<li><strong>wh</strong> (<em>scalar</em><em> or </em><em>str</em>) – distance over which water enters line-sink
+if ‘H’: (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)
+if ‘2H’: distance is twice the thickness of the aquifer layer (when flow comes from both sides)
+if scalar: the width of the stream that partially penetrates the aquifer layer</li>
+<li><strong>order</strong> (<em>int</em><em> (</em><em>default is 0</em><em>)</em>) – polynomial order or inflow along line-sink</li>
+<li><strong>layers</strong> (<em>scalar</em><em>, </em><em>list</em><em> or </em><em>array</em>) – layer(s) in which element is placed
+if scalar: element is placed in this layer
+if list or array: element is placed in all these layers</li>
+<li><strong>label</strong> (<em>str</em><em> or </em><em>None</em>) – label of element</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="headlinesinkstring.html#timml.linesink.HeadLineSinkString" title="timml.linesink.HeadLineSinkString"><code class="xref py py-class docutils literal"><span class="pre">HeadLineSinkString</span></code></a></p>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">ttim</a></h1>
+
+
+
+<p class="blurb">TTim is a transient multi-layer analytic element model</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=mbakker7&repo=ttim&type=watch&count=True&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../models/modelindex.html">Models</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../aems.html">Elements</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../wells/wellindex.html">Wells</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="linesinkindex.html">Line-sinks</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">HeadLineSink</a></li>
+<li class="toctree-l3"><a class="reference internal" href="headlinesinkstring.html">HeadLineSinkString</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../aems.html">Elements</a><ul>
+  <li><a href="linesinkindex.html">Line-sinks</a><ul>
+      <li>Previous: <a href="linesinkindex.html" title="previous chapter">Line-sinks</a></li>
+      <li>Next: <a href="headlinesinkstring.html" title="next chapter">String of head-specified line-sinks</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Mark Bakker.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/linesinks/headlinesink.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/mbakker7/ttim" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

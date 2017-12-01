@@ -7,7 +7,9 @@ from .equation import HeadEquation, HeadEquationNores
 
 class LineSinkBase(Element):
     '''LineSink Base Class. All LineSink elements are derived from this class'''
-    def __init__(self,model,x1=-1,y1=0,x2=1,y2=0,tsandbc=[(0.0,1.0)],res=0.0,wh='H',layers=0,type='',name='LineSinkBase',label=None,addtomodel=True):
+    def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandbc=[(0, 1)], \
+                 res=0, wh='H', layers=0, type='', name='LineSinkBase', \
+                 label=None, addtomodel=True):
         Element.__init__(self, model, Nparam=1, Nunknowns=0, layers=layers,
                          tsandbc=tsandbc, type=type, name=name, label=label)
         self.Nparam = len(self.pylayers)
@@ -15,7 +17,7 @@ class LineSinkBase(Element):
         self.y1 = float(y1)
         self.x2 = float(x2)
         self.y2 = float(y2)
-        self.res = res
+        self.res = np.atleast_1d(res).astype(float)
         self.wh = wh
         if addtomodel: self.model.addElement(self)
         self.xa,self.ya,self.xb,self.yb,self.np = np.zeros(1),np.zeros(1),np.zeros(1),np.zeros(1),np.zeros(1,'i')  # needed to call bessel.circle_line_intersection
@@ -108,7 +110,60 @@ class ZeroHeadLineSink(LineSinkBase,HeadEquation):
         self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
         
 class HeadLineSink(LineSinkBase, HeadEquation):
-    '''HeadLineSink of which the head varies through time. May be screened in multiple layers but all with the same head'''
+    """
+    Create a head-specified line-sink
+    which may optionally have a width and resistance
+    Inflow per unit length of line-sink is computed as
+    
+    .. math::
+        \sigma = w(h_{aq} - h_{ls})/c
+    
+    where :math:`c` is the resistance of the bottom of the line-sink,
+    :math:`w` is the width over which water enters the line-sink,
+    :math:`h_{aq}` is the head in the aquifer at the center of the line-sink,
+    :math:`h_{ls}` is the specified head inside the line-sink
+    Note that all that matters is the conductance term :math:`w/c` but
+    both are specified separately
+    
+    Parameters
+    ----------
+    
+    model : Model object
+        Model to which the element is added
+    x1 : scalar
+        x-coordinate of fist point of line-sink
+    y1 : scalar
+        y-coordinate of fist point of line-sink
+    x2 : scalar
+        x-coordinate of second point of line-sink
+    y2 : scalar
+        y-coordinate of second point of line-sink
+    tsandh : list or 2D array of (time, head) values or string
+        if list or 2D array: pairs of time and head after that time
+        if 'fixed': head is fixed (no change in head) during entire simulation
+    res : scalar (default is 0)
+        resistance of line-sink
+    wh : scalar or str
+        distance over which water enters line-sink
+        if 'H': (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)
+        if '2H': distance is twice the thickness of the aquifer layer (when flow comes from both sides)
+        if scalar: the width of the stream that partially penetrates the aquifer layer
+    order : int (default is 0)
+        polynomial order or inflow along line-sink
+    layers : scalar, list or array
+        layer(s) in which element is placed
+        if scalar: element is placed in this layer
+        if list or array: element is placed in all these layers 
+    label: str or None
+        label of element
+    
+    See Also
+    --------
+    
+    :class:`.HeadLineSinkString`
+    
+    """
+    
     def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandh=[(0, 1)], \
                  res=0, wh='H', layers=0, label=None, addtomodel=True):
         self.storeinput(inspect.currentframe())

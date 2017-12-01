@@ -188,7 +188,7 @@ class Well(WellBase, WellBoreStorageEquation):
         if (rc is None) or (rc <= 0):
             self.rc = np.zeros(1)
         else:
-            self.rc = np.array([rc])
+            self.rc = np.atleast_1d(rc).atype('float')
         # hdiff is not used right now, but may be used in the future
         self.hdiff = None
         #if hdiff is not None:

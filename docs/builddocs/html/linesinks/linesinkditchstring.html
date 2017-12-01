@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Wells &#8212; ttim 0.4.a1 documentation</title>
+    <title>Line-sink ditch string &#8212; ttim 0.4.a1 documentation</title>
     
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -27,8 +27,6 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Well with specified discharge" href="well.html" />
-    <link rel="prev" title="Elements" href="../aems.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -44,23 +42,42 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="wells">
-<h1>Wells<a class="headerlink" href="#wells" title="Permalink to this headline">¶</a></h1>
-<p>Wells may be defined by specifying the discharge of the well or by specifying the (desired) head inside the well.
-Wells may have an entry resistance (skin effect) defined by the resistance <span class="math">\(c\)</span> (dimension: time). The discharge <span class="math">\(Q_i\)</span> in layer <span class="math">\(i\)</span> is a function of the head
-<span class="math">\(h_i\)</span> in layer <span class="math">\(i\)</span> just outside the well and the head <span class="math">\(h_w\)</span> inside the well:</p>
-<blockquote>
-<div><div class="math">
-\[Q_i = 2\pi r_w(h_i - h_w)/c\]</div>
-</div></blockquote>
-<p>The following types of wells are implemented:</p>
-<p>1. <a class="reference internal" href="well.html#ttim.well.Well" title="ttim.well.Well"><code class="xref py py-class docutils literal"><span class="pre">Well</span></code></a> is a well for which the total discharge is specified.
-The discharge may be continuous between specified times or may be a slug. The total discharge is distributed across the layers in which the
-well is screened such that the head inside the well is the same in each screened layer. Skin effect and wellbore storage may be included.</p>
-<p>2. <a class="reference internal" href="headwell.html#ttim.well.HeadWell" title="ttim.well.HeadWell"><code class="xref py py-class docutils literal"><span class="pre">HeadWell</span></code></a> is a well for which the head inside the well is specified. The discharge in each layer is computed such that
-the head in all screened layers is equal to the specified head. Skin effect may be included.</p>
-<div class="toctree-wrapper compound">
+  <div class="section" id="line-sink-ditch-string">
+<h1>Line-sink ditch string<a class="headerlink" href="#line-sink-ditch-string" title="Permalink to this headline">¶</a></h1>
+<p>Specified total discharge with unknown but uniform head</p>
+<dl class="class">
+<dt id="timml.linesink.LineSinkDitchString">
+<em class="property">class </em><code class="descclassname">timml.linesink.</code><code class="descname">LineSinkDitchString</code><span class="sig-paren">(</span><em>model, xy=[(-1, 0), (1, 0)], Qls=1, res=0, wh=1, order=0, layers=0, label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/timml/linesink.html#LineSinkDitchString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#timml.linesink.LineSinkDitchString" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to create a string of LineSinkDitch elements for which the
+total discharge of the string is specified, and for which the head
+along the entire string is uniform but unknown.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model</strong> (<em>Model object</em>) – Model to which the element is added</li>
+<li><strong>xy</strong> (<em>array</em><em> or </em><em>list</em>) – list or array of (x,y) pairs of coordinates of end-points of
+line-sinks in string</li>
+<li><strong>Qls</strong> (<em>scalar</em>) – total discharge of the string</li>
+<li><strong>res</strong> (<em>scalar</em><em> (</em><em>default is 0</em><em>)</em>) – resistance of line-sinks in string</li>
+<li><strong>wh</strong> (<em>scalar</em><em> or </em><em>str</em>) – distance over which water enters the string</li>
+<li><strong>order</strong> (<em>int</em><em> (</em><em>default is 0</em><em>)</em>) – polynomial order or inflow along each line-sink in string</li>
+<li><strong>layers</strong> (<em>scalar</em><em>, </em><em>list</em><em> or </em><em>array</em>) – layer(s) in which element is placed
+if scalar: element is placed in this layer
+if list or array: element is placed in all these layers</li>
+<li><strong>label</strong> (<em>str</em><em> or </em><em>None</em>) – label of element</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="linesinkditch.html#timml.linesink.LineSinkDitch" title="timml.linesink.LineSinkDitch"><code class="xref py py-class docutils literal"><span class="pre">LineSinkDitch</span></code></a></p>
 </div>
+</dd></dl>
+
 </div>
 
 
@@ -88,27 +105,15 @@ the head in all screened layers is equal to the specified head. Skin effect may 
 
 
 <h3>Navigation</h3>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../models/modelindex.html">Models</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../aems.html">Elements</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Wells</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="well.html">Well</a></li>
-<li class="toctree-l3"><a class="reference internal" href="headwell.html">HeadWell</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../linesinks/linesinkindex.html">Line-sinks</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="../aems.html">Elements</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="../aems.html">Elements</a><ul>
-      <li>Previous: <a href="../aems.html" title="previous chapter">Elements</a></li>
-      <li>Next: <a href="well.html" title="next chapter">Well with specified discharge</a></li>
-  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -134,7 +139,7 @@ the head in all screened layers is equal to the specified head. Skin effect may 
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="../_sources/wells/wellindex.rst.txt"
+      <a href="../_sources/linesinks/linesinkditchstring.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

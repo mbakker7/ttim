@@ -44,6 +44,7 @@
             
   <h1>Source code for ttim.well</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">scipy.special</span> <span class="k">import</span> <span class="n">kv</span><span class="p">,</span><span class="n">iv</span> <span class="c1"># Needed for K1 in Well class, and in CircInhom</span>
 <span class="kn">import</span> <span class="nn">inspect</span> <span class="c1"># Used for storing the input</span>
 <span class="kn">from</span> <span class="nn">.element</span> <span class="k">import</span> <span class="n">Element</span>
@@ -129,8 +130,8 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">yc</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">derivative</span><span class="o">=</span><span class="n">derivative</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">pylayers</span><span class="p">]</span> <span class="o">-</span> \
                <span class="bp">self</span><span class="o">.</span><span class="n">resfach</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">strength</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">derivative</span><span class="o">=</span><span class="n">derivative</span><span class="p">)</span>
             
-    <span class="k">def</span> <span class="nf">layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s1">&#39;point&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">yw</span>
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">yw</span><span class="p">,</span> <span class="s1">&#39;k.&#39;</span><span class="p">)</span>
     
 <span class="k">class</span> <span class="nc">DischargeWell</span><span class="p">(</span><span class="n">WellBase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -232,7 +233,7 @@
         <span class="k">if</span> <span class="p">(</span><span class="n">rc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">rc</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">rc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">rc</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span><span class="o">.</span><span class="n">atype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
         <span class="c1"># hdiff is not used right now, but may be used in the future</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hdiff</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1">#if hdiff is not None:</span>
