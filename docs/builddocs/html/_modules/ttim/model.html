@@ -256,9 +256,25 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">elementDict</span><span class="p">[</span><span class="n">elabel</span><span class="p">]</span><span class="o">.</span><span class="n">strength</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
     
     <span class="k">def</span> <span class="nf">headalongline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Returns head[Nlayers,len(t),len(x)]</span>
-<span class="sd">        Assumes same number of layers for each x and y</span>
-<span class="sd">        layers may be None or list of layers for which head is computed&#39;&#39;&#39;</span>
+        <span class="sd">&quot;&quot;&quot;Head along line or curve</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array</span>
+<span class="sd">            x values of line</span>
+<span class="sd">        y : array</span>
+<span class="sd">            y values of line</span>
+<span class="sd">        t : list or array</span>
+<span class="sd">            times for which grid is returned</span>
+<span class="sd">        layers : integer, list or array, optional</span>
+<span class="sd">            layers for which grid is returned</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        h : array size `nlayers, ntimes, nx`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
         <span class="n">xg</span><span class="p">,</span> <span class="n">yg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">x</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">layers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">Nlayers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span><span class="n">xg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">yg</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">Naq</span>
@@ -274,24 +290,74 @@
         <span class="k">return</span> <span class="n">h</span>
     
     <span class="k">def</span> <span class="nf">headgrid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xg</span><span class="p">,</span> <span class="n">yg</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">printrow</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Returns h[Nlayers, Ntimes, Ny, Nx]. If layers is None, all layers are returned&#39;&#39;&#39;</span>
+        <span class="sd">&quot;&quot;&quot;Grid of heads</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xg : array</span>
+<span class="sd">            x values of grid</span>
+<span class="sd">        yg : array</span>
+<span class="sd">            y values of grid</span>
+<span class="sd">        t : list or array</span>
+<span class="sd">            times for which grid is returned</span>
+<span class="sd">        layers : integer, list or array, optional</span>
+<span class="sd">            layers for which grid is returned</span>
+<span class="sd">        printrow : boolean, optional</span>
+<span class="sd">            prints dot to screen for each row of grid if set to `True`</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        h : array size `nlayers, ntimes, ny, nx`</span>
+<span class="sd">        </span>
+<span class="sd">        See also</span>
+<span class="sd">        --------</span>
+<span class="sd">        </span>
+<span class="sd">        :func:`~ttim.model.Model.headgrid2`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
         <span class="n">nx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">xg</span><span class="p">)</span>
         <span class="n">ny</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">yg</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">layers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">Nlayers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span><span class="n">xg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">yg</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">Naq</span>
+            <span class="n">nlayers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span><span class="n">xg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">yg</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">Naq</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">Nlayers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">layers</span><span class="p">))</span>
+            <span class="n">nlayers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">layers</span><span class="p">))</span>
         <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-        <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span> <span class="p">(</span><span class="n">Nlayers</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">),</span><span class="n">ny</span><span class="p">,</span><span class="n">nx</span><span class="p">)</span> <span class="p">)</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span> <span class="p">(</span><span class="n">nlayers</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">),</span><span class="n">ny</span><span class="p">,</span><span class="n">nx</span><span class="p">)</span> <span class="p">)</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ny</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">printrow</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nx</span><span class="p">):</span>
-                <span class="n">h</span><span class="p">[:,:,</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">xg</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">yg</span><span class="p">[</span><span class="n">j</span><span class="p">],</span><span class="n">t</span><span class="p">,</span><span class="n">layers</span><span class="p">)</span>
+                <span class="n">h</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">xg</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">yg</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">t</span><span class="p">,</span> <span class="n">layers</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">h</span>
     
     <span class="k">def</span> <span class="nf">headgrid2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">printrow</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Returns h[Nlayers,Ntimes,Ny,Nx]. If layers is None, all layers are returned&#39;&#39;&#39;</span>
+        <span class="sd">&quot;&quot;&quot;Grid of heads</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xg : array</span>
+<span class="sd">            x values are generated as linspace(x1, x2, nx)</span>
+<span class="sd">        yg : array</span>
+<span class="sd">            y values are generated as linspace(y1, y2, ny)</span>
+<span class="sd">        t : list or array</span>
+<span class="sd">            times for which grid is returned</span>
+<span class="sd">        layers : integer, list or array, optional</span>
+<span class="sd">            layers for which grid is returned</span>
+<span class="sd">        printrow : boolean, optional</span>
+<span class="sd">            prints dot to screen for each row of grid if set to `True`</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        h : array size `nlayers, ntimes, ny, nx`</span>
+<span class="sd">        </span>
+<span class="sd">        See also</span>
+<span class="sd">        --------</span>
+<span class="sd">        </span>
+<span class="sd">        :func:`~ttim.model.Model.headgrid`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
         <span class="n">xg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
         <span class="n">yg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">ny</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">headgrid</span><span class="p">(</span><span class="n">xg</span><span class="p">,</span> <span class="n">yg</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">printrow</span><span class="p">)</span>
@@ -318,7 +384,10 @@
         <span class="k">return</span> <span class="n">rv</span>
     
     <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">printmat</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sendback</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Compute solution&#39;&#39;&#39;</span>
+        <span class="sd">&quot;&quot;&quot;Compute solution</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
         <span class="c1"># Initialize elements</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
         <span class="c1"># Compute number of equations</span>

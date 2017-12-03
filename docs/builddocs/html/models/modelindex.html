@@ -28,7 +28,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="ModelMaq" href="modelmaq.html" />
-    <link rel="prev" title="Welcome to ttim’s documentation" href="../index.html" />
+    <link rel="prev" title="Welcome to Ttim’s documentation" href="../index.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -49,22 +49,27 @@
 <p>There are three ways to start a model:</p>
 <p>1. <a class="reference internal" href="modelmaq.html#ttim.model.ModelMaq" title="ttim.model.ModelMaq"><code class="xref py py-class docutils literal"><span class="pre">ModelMaq</span></code></a>, which is model consisting of a regular sequence of aquifer - leaky layer - aquifer - leaky layer, aquifer, etc.
 The top of the system can be either an aquifer or a leaky layer. The head is computed in all aquifer layers only.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">ml</span> <span class="o">=</span> <span class="n">ModelMaq</span><span class="p">(</span><span class="n">kaq</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="n">z</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">25</span><span class="p">,</span> <span class="o">-</span><span class="mi">35</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="p">[</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">])</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">ml</span> <span class="o">=</span> <span class="n">ModelMaq</span><span class="p">(</span><span class="n">kaq</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="n">z</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">25</span><span class="p">,</span> <span class="o">-</span><span class="mi">35</span><span class="p">],</span> \
+              <span class="n">c</span><span class="o">=</span><span class="p">[</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">],</span> <span class="n">Saq</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">,</span> <span class="mf">2e-4</span><span class="p">],</span> \
+              <span class="n">phreatictop</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="figure" id="id1">
 <img alt="../_images/modelmaq.png" src="../_images/modelmaq.png" />
-<p class="caption"><span class="caption-text">A <cite>ModelMaq</cite> example with three aquifers and two leaky layers</span></p>
+<p class="caption"><span class="caption-text">A <cite>ModelMaq</cite> example with three aquifers and two leaky layers. Top layer is phreatic.
+Minimum time is 0.01 day, maximum time is 10 days.</span></p>
 </div>
 <p>2. <a class="reference internal" href="model3d.html#ttim.model.Model3D" title="ttim.model.Model3D"><code class="xref py py-class docutils literal"><span class="pre">Model3D</span></code></a>, which is a model consisting of a stack of aquifer layers. The resistance between the aquifer layers is computed
 as the resistance from the middle of one layer to the middle of the next layer. Vertical anisotropy can be specified. The system
 may be bounded on top by a leaky layer.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">Model3D</span><span class="p">(</span><span class="n">kaq</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mf">0.0025</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="n">z</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">25</span><span class="p">,</span> <span class="o">-</span><span class="mi">35</span><span class="p">],</span> <span class="n">kzoverkh</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">Model3D</span><span class="p">(</span><span class="n">kaq</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mf">0.0025</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="n">z</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">25</span><span class="p">,</span> <span class="o">-</span><span class="mi">35</span><span class="p">],</span> \
+        <span class="n">kzoverkh</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">Saq</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="figure" id="id2">
 <img alt="../_images/model3d.png" src="../_images/model3d.png" />
-<p class="caption"><span class="caption-text">A  <cite>Model3D</cite> example consisting of five layers all treated as aquifers and a vertical anisotropy of 0.1</span></p>
+<p class="caption"><span class="caption-text">A  <cite>Model3D</cite> example consisting of five layers all treated as aquifers and a vertical anisotropy of 0.1
+Minimum time is 0.01 day, maximum time is 10 days.</span></p>
 </div>
 <div class="toctree-wrapper compound">
 </div>
@@ -108,7 +113,7 @@ may be bounded on top by a leaky layer.</p>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="../index.html" title="previous chapter">Welcome to ttim’s documentation</a></li>
+      <li>Previous: <a href="../index.html" title="previous chapter">Welcome to Ttim’s documentation</a></li>
       <li>Next: <a href="modelmaq.html" title="next chapter">ModelMaq</a></li>
   </ul></li>
 </ul>

@@ -211,9 +211,25 @@ class TimModel(PlotTtim):
         return self.elementDict[elabel].strength(t)
     
     def headalongline(self, x, y, t, layers=None):
-        '''Returns head[Nlayers,len(t),len(x)]
-        Assumes same number of layers for each x and y
-        layers may be None or list of layers for which head is computed'''
+        """Head along line or curve
+        
+        Parameters
+        ----------
+        x : array
+            x values of line
+        y : array
+            y values of line
+        t : list or array
+            times for which grid is returned
+        layers : integer, list or array, optional
+            layers for which grid is returned
+        
+        Returns
+        -------
+        h : array size `nlayers, ntimes, nx`
+
+        """
+        
         xg, yg = np.atleast_1d(x),np.atleast_1d(y)
         if layers is None:
             Nlayers = self.aq.findAquiferData(xg[0],yg[0]).Naq
@@ -229,24 +245,74 @@ class TimModel(PlotTtim):
         return h
     
     def headgrid(self, xg, yg, t, layers=None, printrow=False):
-        '''Returns h[Nlayers, Ntimes, Ny, Nx]. If layers is None, all layers are returned'''
+        """Grid of heads
+        
+        Parameters
+        ----------
+        xg : array
+            x values of grid
+        yg : array
+            y values of grid
+        t : list or array
+            times for which grid is returned
+        layers : integer, list or array, optional
+            layers for which grid is returned
+        printrow : boolean, optional
+            prints dot to screen for each row of grid if set to `True`
+        
+        Returns
+        -------
+        h : array size `nlayers, ntimes, ny, nx`
+        
+        See also
+        --------
+        
+        :func:`~ttim.model.Model.headgrid2`
+
+        """
+        
         nx = len(xg)
         ny = len(yg)
         if layers is None:
-            Nlayers = self.aq.findAquiferData(xg[0],yg[0]).Naq
+            nlayers = self.aq.findAquiferData(xg[0],yg[0]).Naq
         else:
-            Nlayers = len(np.atleast_1d(layers))
+            nlayers = len(np.atleast_1d(layers))
         t = np.atleast_1d(t)
-        h = np.empty( (Nlayers,len(t),ny,nx) )
+        h = np.empty( (nlayers,len(t),ny,nx) )
         for j in range(ny):
             if printrow:
-                print(str(j)+' ')
+                print('.', end='', flush=True)
             for i in range(nx):
-                h[:,:,j,i] = self.head(xg[i],yg[j],t,layers)
+                h[:, :, j, i] = self.head(xg[i], yg[j], t, layers)
         return h
     
     def headgrid2(self, x1, x2, nx, y1, y2, ny, t, layers=None, printrow=False):
-        '''Returns h[Nlayers,Ntimes,Ny,Nx]. If layers is None, all layers are returned'''
+        """Grid of heads
+        
+        Parameters
+        ----------
+        xg : array
+            x values are generated as linspace(x1, x2, nx)
+        yg : array
+            y values are generated as linspace(y1, y2, ny)
+        t : list or array
+            times for which grid is returned
+        layers : integer, list or array, optional
+            layers for which grid is returned
+        printrow : boolean, optional
+            prints dot to screen for each row of grid if set to `True`
+        
+        Returns
+        -------
+        h : array size `nlayers, ntimes, ny, nx`
+        
+        See also
+        --------
+        
+        :func:`~ttim.model.Model.headgrid`
+
+        """
+        
         xg = np.linspace(x1, x2, nx)
         yg = np.linspace(y1, y2, ny)
         return self.headgrid(xg, yg, t, layers, printrow)
@@ -273,7 +339,10 @@ class TimModel(PlotTtim):
         return rv
     
     def solve(self,printmat=0, sendback=0, silent=False):
-        '''Compute solution'''
+        """Compute solution
+        
+        """
+        
         # Initialize elements
         self.initialize()
         # Compute number of equations
