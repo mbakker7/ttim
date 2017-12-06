@@ -240,7 +240,25 @@
                             <span class="n">it</span> <span class="o">=</span> <span class="n">it</span> <span class="o">+</span> <span class="n">Nt</span>
         <span class="k">return</span> <span class="n">rvx</span><span class="p">,</span><span class="n">rvy</span>
     
-    <span class="k">def</span> <span class="nf">head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">layers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">derivative</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">derivative</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Head at x, y, t where t can be multiple times</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : float</span>
+<span class="sd">        y : float</span>
+<span class="sd">        t : list or array</span>
+<span class="sd">            times for which grid is returned</span>
+<span class="sd">        layers : integer, list or array, optional</span>
+<span class="sd">            layers for which grid is returned</span>
+<span class="sd">            if None: all layers are returned</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        h : array size `nlayers, ntimes`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
         <span class="k">if</span> <span class="n">aq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">aq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">layers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">pylayers</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">aq</span><span class="o">.</span><span class="n">Naq</span><span class="p">)</span>
@@ -577,10 +595,6 @@
       
     </div>
 
-    
-    <a href="https://github.com/mbakker7/ttim" class="github">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
-    </a>
     
 
     

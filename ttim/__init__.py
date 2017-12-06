@@ -17,4 +17,5 @@ from .version import __version__
 from .model import ModelMaq, Model3D
 from .well import DischargeWell, HeadWell, Well, TestWell
 from .linesink import HeadLineSink, HeadLineSinkString
+from .linedoublet import LeakyLineDoublet, LeakyLineDoubletString
 from .fit import Calibrate

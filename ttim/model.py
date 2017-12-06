@@ -195,7 +195,25 @@ class TimModel(PlotTtim):
                             it = it + Nt
         return rvx,rvy
     
-    def head(self,x,y,t,layers=None,aq=None,derivative=0):
+    def head(self, x, y, t, layers=None, aq=None, derivative=0):
+        """Head at x, y, t where t can be multiple times
+        
+        Parameters
+        ----------
+        x : float
+        y : float
+        t : list or array
+            times for which grid is returned
+        layers : integer, list or array, optional
+            layers for which grid is returned
+            if None: all layers are returned
+        
+        Returns
+        -------
+        h : array size `nlayers, ntimes`
+
+        """
+        
         if aq is None: aq = self.aq.findAquiferData(x,y)
         if layers is None:
             pylayers = range(aq.Naq)

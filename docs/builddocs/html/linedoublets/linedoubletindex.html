@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Line-sink ditch string &#8212; ttim 0.4.a1 documentation</title>
+    <title>Line-doublets &#8212; ttim 0.4.a1 documentation</title>
     
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -27,6 +27,8 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Leaky wall" href="leakylinedoublet.html" />
+    <link rel="prev" title="String of head-specified line-sinks" href="../linesinks/headlinesinkstring.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -42,42 +44,22 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="line-sink-ditch-string">
-<h1>Line-sink ditch string<a class="headerlink" href="#line-sink-ditch-string" title="Permalink to this headline">¶</a></h1>
-<p>Specified total discharge with unknown but uniform head</p>
-<dl class="class">
-<dt id="timml.linesink.LineSinkDitchString">
-<em class="property">class </em><code class="descclassname">timml.linesink.</code><code class="descname">LineSinkDitchString</code><span class="sig-paren">(</span><em>model, xy=[(-1, 0), (1, 0)], Qls=1, res=0, wh=1, order=0, layers=0, label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/timml/linesink.html#LineSinkDitchString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#timml.linesink.LineSinkDitchString" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to create a string of LineSinkDitch elements for which the
-total discharge of the string is specified, and for which the head
-along the entire string is uniform but unknown.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>model</strong> (<em>Model object</em>) – Model to which the element is added</li>
-<li><strong>xy</strong> (<em>array</em><em> or </em><em>list</em>) – list or array of (x,y) pairs of coordinates of end-points of
-line-sinks in string</li>
-<li><strong>Qls</strong> (<em>scalar</em>) – total discharge of the string</li>
-<li><strong>res</strong> (<em>scalar</em><em> (</em><em>default is 0</em><em>)</em>) – resistance of line-sinks in string</li>
-<li><strong>wh</strong> (<em>scalar</em><em> or </em><em>str</em>) – distance over which water enters the string</li>
-<li><strong>order</strong> (<em>int</em><em> (</em><em>default is 0</em><em>)</em>) – polynomial order or inflow along each line-sink in string</li>
-<li><strong>layers</strong> (<em>scalar</em><em>, </em><em>list</em><em> or </em><em>array</em>) – layer(s) in which element is placed
-if scalar: element is placed in this layer
-if list or array: element is placed in all these layers</li>
-<li><strong>label</strong> (<em>str</em><em> or </em><em>None</em>) – label of element</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="linesinkditch.html#timml.linesink.LineSinkDitch" title="timml.linesink.LineSinkDitch"><code class="xref py py-class docutils literal"><span class="pre">LineSinkDitch</span></code></a></p>
+  <div class="section" id="line-doublets">
+<h1>Line-doublets<a class="headerlink" href="#line-doublets" title="Permalink to this headline">¶</a></h1>
+<p>Line-doublets are used to simulate leaky and impermeable walls.
+The flux normal to an impermeable wall is zero. The flux through a leaky wall (the normal component <span class="math">\(q_{n}\)</span>) is defined as</p>
+<blockquote>
+<div><div class="math">
+\[q_n = (h^- - h^+)/c\]</div>
+</div></blockquote>
+<p>where <span class="math">\(h^-\)</span> and <span class="math">\(h^-\)</span> are the heads on the minus and plus sides of the wall, and <span class="math">\(c\)</span> is the resistance against flow
+through the walll. An impermeable wall is equivalent to a leaky wall with a resistance that is equal to infinity.</p>
+<ol class="arabic simple">
+<li><a class="reference internal" href="leakylinedoublet.html#ttim.linedoublet.LeakyLineDoublet" title="ttim.linedoublet.LeakyLineDoublet"><code class="xref py py-class docutils literal"><span class="pre">LeakyLineDoublet</span></code></a> is used to simulate one straight leaky wall</li>
+<li><a class="reference internal" href="leakylinedoubletstring.html#ttim.linedoublet.LeakyLineDoubletString" title="ttim.linedoublet.LeakyLineDoubletString"><code class="xref py py-class docutils literal"><span class="pre">LeakyLineDoubletString</span></code></a> is a leaky wall represented by a poly line of straight segments</li>
+</ol>
+<div class="toctree-wrapper compound">
 </div>
-</dd></dl>
-
 </div>
 
 
@@ -105,15 +87,28 @@ if list or array: element is placed in all these layers</li>
 
 
 <h3>Navigation</h3>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../models/modelindex.html">Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aems.html">Elements</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../aems.html">Elements</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../wells/wellindex.html">Wells</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linesinks/linesinkindex.html">Line-sinks</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Line-doublets</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="leakylinedoublet.html">LeakyLineDoublet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="leakylinedoubletstring.html">LeakyLineDoubletString</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../aems.html">Elements</a><ul>
+      <li>Previous: <a href="../linesinks/headlinesinkstring.html" title="previous chapter">String of head-specified line-sinks</a></li>
+      <li>Next: <a href="leakylinedoublet.html" title="next chapter">Leaky wall</a></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -139,7 +134,7 @@ if list or array: element is placed in all these layers</li>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="../_sources/linesinks/linesinkditchstring.rst.txt"
+      <a href="../_sources/linedoublets/linedoubletindex.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

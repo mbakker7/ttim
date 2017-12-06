@@ -21,7 +21,7 @@ The two types of line-sinks may be entered one by one or as a string. For a stri
 end of the string and the head is interpolated between these values. Alternatively, the head may be specified at the beginning and end of some or all line-sinks in the string
 For a string of line-sink ditch elements, the head is uniform along the entire string while the total discharge of all the line-sinks in the string is equal to the specified value. 
 
-1. :class:`~ttim.linesink.HeadLineSink` is a line-sink for which the head is specified along the line-sink. `Example Notebook. <https://github.com/mbakker7/timml/blob/master/notebooks/test_linesink_discharge.ipynb>`_ 
+1. :class:`~ttim.linesink.HeadLineSink` is a line-sink for which the head is specified along the line-sink.
 
 2. :class:`~ttim.linesink.HeadLineSinkString` is a string of head-specified line-sinks
 

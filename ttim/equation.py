@@ -84,3 +84,32 @@ class HeadEquationNores:
                 for i in range(self.Nlayers):
                     rhs[istart+i,self.model.Ngbc+iself,:] = self.pc[istart+i] / self.model.p
         return mat, rhs
+    
+class LeakyWallEquation:
+    def equation(self):
+        '''Mix-in class that returns matrix rows for leaky-wall condition
+        Returns matrix part Nunknowns,Neq,Np, complex
+        Returns rhs part Nunknowns,Nvbc,Np, complex
+        '''
+        mat = np.empty( (self.Nunknowns,self.model.Neq,self.model.Np), 'D' )
+        rhs = np.zeros( (self.Nunknowns,self.model.Ngvbc,self.model.Np), 'D' )  # Needs to be initialized to zero
+        for icp in range(self.Ncp):
+            istart = icp*self.Nlayers
+            ieq = 0  
+            for e in self.model.elementList:
+                if e.Nunknowns > 0:
+                    qx,qy = e.disinflayers(self.xc[icp],self.yc[icp],self.pylayers)
+                    mat[istart:istart+self.Nlayers,ieq:ieq+e.Nunknowns,:] = qx * self.cosout[icp] + qy * self.sinout[icp]
+                    if e == self:
+                        hmin = e.potinflayers(self.xcneg[icp],self.ycneg[icp],self.pylayers) / self.aq.T[self.pylayers][:,np.newaxis,np.newaxis]
+                        hplus = e.potinflayers(self.xc[icp],self.yc[icp],self.pylayers) / self.aq.T[self.pylayers][:,np.newaxis,np.newaxis]
+                        mat[istart:istart+self.Nlayers,ieq:ieq+e.Nunknowns,:] -= self.resfac[:,np.newaxis,np.newaxis] * (hplus-hmin)
+                    ieq += e.Nunknowns
+            for i in range(self.model.Ngbc):
+                qx,qy = self.model.gbcList[i].unitdischargelayers(self.xc[icp],self.yc[icp],self.pylayers)
+                rhs[istart:istart+self.Nlayers,i,:] -=  qx * self.cosout[icp] + qy * self.sinout[icp]
+            #if self.type == 'v':
+            #    iself = self.model.vbcList.index(self)
+            #    for i in range(self.Nlayers):
+            #        rhs[istart+i,self.model.Ngbc+iself,:] = self.pc[istart+i] / self.model.p
+        return mat, rhs

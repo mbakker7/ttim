@@ -1,7 +1,7 @@
 Starting a Model
 ----------------
 
-There are three ways to start a model:
+There are two ways to start a model:
 
 1. :class:`~ttim.model.ModelMaq`, which is model consisting of a regular sequence of aquifer - leaky layer - aquifer - leaky layer, aquifer, etc.
 The top of the system can be either an aquifer or a leaky layer. The head is computed in all aquifer layers only.
@@ -10,7 +10,8 @@ The top of the system can be either an aquifer or a leaky layer. The head is com
 
    ml = ModelMaq(kaq=[10, 30, 20], z=[0, -5, -10, -20, -25, -35], \
                  c=[2000, 5000], Saq=[0.1, 1e-4, 2e-4], \
-                 phreatictop=True, tmin=0.01, tmax=10))
+                 Sll=[1e-4, 4e-4], phreatictop=True, \
+                 tmin=0.01, tmax=10))
 
 .. figure:: modelmaq.png
 
@@ -23,7 +24,7 @@ may be bounded on top by a leaky layer.
 
 .. code-block:: python
 
-    Model3D(kaq=[10, 0.0025, 30, 0.001, 20], z=[0, -5, -10, -20, -25, -35], \
+    Model3D(kaq=[10, 0.025, 30, 0.01, 20], z=[0, -5, -10, -20, -25, -35], \
             kzoverkh=0.1, Saq=1e-4, tmin=0.01, tmax=10)
 
 .. figure:: model3d.png

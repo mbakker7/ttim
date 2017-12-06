@@ -80,6 +80,33 @@ if list of strings: use strings as names in legend</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="ttim.model.Model3D.head">
+<code class="descname">head</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>t</em>, <em>layers=None</em>, <em>aq=None</em>, <em>derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.head" title="Permalink to this definition">¶</a></dt>
+<dd><p>Head at x, y, t where t can be multiple times</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>float</em>) – </li>
+<li><strong>y</strong> (<em>float</em>) – </li>
+<li><strong>t</strong> (<em>list</em><em> or </em><em>array</em>) – times for which grid is returned</li>
+<li><strong>layers</strong> (<em>integer</em><em>, </em><em>list</em><em> or </em><em>array</em><em>, </em><em>optional</em>) – layers for which grid is returned
+if None: all layers are returned</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>h</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array size <cite>nlayers, ntimes</cite></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="ttim.model.Model3D.headalongline">
 <code class="descname">headalongline</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>t</em>, <em>layers=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.headalongline" title="Permalink to this definition">¶</a></dt>
 <dd><p>Head along line or curve</p>
@@ -262,10 +289,6 @@ if list of strings: use strings as names in legend</li>
           rel="nofollow">Page source</a>
     </div>
 
-    
-    <a href="https://github.com/mbakker7/ttim" class="github">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
-    </a>
     
 
     
