@@ -409,7 +409,7 @@
 <span class="c1">#    def setparams(self, sol):</span>
 <span class="c1">#        self.parameters[:, 0] = sol</span>
         
-<div class="viewcode-block" id="HeadLineSink"><a class="viewcode-back" href="../../linesinks/headlinesink.html#timml.linesink.HeadLineSink">[docs]</a><span class="k">class</span> <span class="nc">HeadLineSink</span><span class="p">(</span><span class="n">LineSinkHoBase</span><span class="p">,</span> <span class="n">HeadEquation</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">HeadLineSink</span><span class="p">(</span><span class="n">LineSinkHoBase</span><span class="p">,</span> <span class="n">HeadEquation</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a head-specified line-sink</span>
 <span class="sd">    which may optionally have a width and resistance</span>
@@ -436,6 +436,9 @@
 <span class="sd">        resistance of line-sink</span>
 <span class="sd">    wh : scalar or str</span>
 <span class="sd">        distance over which water enters line-sink</span>
+<span class="sd">        if &#39;H&#39;: (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)</span>
+<span class="sd">        if &#39;2H&#39;: distance is twice the thickness of the aquifer layer (when flow comes from both sides)</span>
+<span class="sd">        if scalar: the width of the stream that partially penetrates the aquifer layer</span>
 <span class="sd">    order : int (default is 0)</span>
 <span class="sd">        polynomial order or inflow along line-sink</span>
 <span class="sd">    layers : scalar, list or array</span>
@@ -485,7 +488,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">hc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlayers</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">setparams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sol</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">sol</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">sol</span>
         
 <div class="viewcode-block" id="LineSinkDitch"><a class="viewcode-back" href="../../linesinks/linesinkditch.html#timml.linesink.LineSinkDitch">[docs]</a><span class="k">class</span> <span class="nc">LineSinkDitch</span><span class="p">(</span><span class="n">HeadLineSink</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -512,6 +515,9 @@
 <span class="sd">        resistance of line-sink</span>
 <span class="sd">    wh : scalar or str</span>
 <span class="sd">        distance over which water enters line-sink</span>
+<span class="sd">        if &#39;H&#39;: (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)</span>
+<span class="sd">        if &#39;2H&#39;: distance is twice the thickness of the aquifer layer (when flow comes from both sides)</span>
+<span class="sd">        if scalar: the width of the stream that partially penetrates the aquifer layer</span>
 <span class="sd">    order : int (default is 0)</span>
 <span class="sd">        polynomial order or inflow along line-sink</span>
 <span class="sd">    layers : scalar, list or array</span>
@@ -798,7 +804,7 @@
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="s1">&#39;k&#39;</span><span class="p">)</span>
         
-<div class="viewcode-block" id="HeadLineSinkString"><a class="viewcode-back" href="../../linesinks/headlinesinkstring.html#timml.linesink.HeadLineSinkString">[docs]</a><span class="k">class</span> <span class="nc">HeadLineSinkString</span><span class="p">(</span><span class="n">LineSinkStringBase2</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">HeadLineSinkString</span><span class="p">(</span><span class="n">LineSinkStringBase2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class to create a string of head-specified line-sinks</span>
 <span class="sd">    which may optionally have a width and resistance</span>
@@ -821,6 +827,9 @@
 <span class="sd">        resistance of line-sink</span>
 <span class="sd">    wh : scalar or str</span>
 <span class="sd">        distance over which water enters line-sink</span>
+<span class="sd">        if &#39;H&#39;: (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)</span>
+<span class="sd">        if &#39;2H&#39;: distance is twice the thickness of the aquifer layer (when flow comes from both sides)</span>
+<span class="sd">        if scalar: the width of the stream that partially penetrates the aquifer layer</span>
 <span class="sd">    order : int (default is 0)</span>
 <span class="sd">        order of all line-sinks in string</span>
 <span class="sd">    layers : scalar, list or array</span>
@@ -904,9 +913,9 @@
                 <span class="n">mat</span><span class="p">[</span><span class="n">irow</span><span class="p">:</span><span class="n">irow</span><span class="o">+</span> <span class="n">ls</span><span class="o">.</span><span class="n">nlayers</span><span class="p">,</span> <span class="n">jcol</span><span class="p">:</span><span class="n">jcol</span> <span class="o">+</span> <span class="n">ls</span><span class="o">.</span><span class="n">nunknowns</span><span class="p">]</span> <span class="o">-=</span> <span class="n">ls</span><span class="o">.</span><span class="n">resfac</span><span class="p">[</span><span class="n">icp</span><span class="p">]</span>
                 <span class="n">irow</span> <span class="o">+=</span> <span class="n">ls</span><span class="o">.</span><span class="n">nlayers</span>
             <span class="n">jcol</span> <span class="o">+=</span> <span class="n">ls</span><span class="o">.</span><span class="n">nunknowns</span>
-        <span class="k">return</span> <span class="n">mat</span><span class="p">,</span> <span class="n">rhs</span></div>
+        <span class="k">return</span> <span class="n">mat</span><span class="p">,</span> <span class="n">rhs</span>
     
-<div class="viewcode-block" id="LineSinkDitchString"><a class="viewcode-back" href="../../linesinks/linesinkditchstring.html#timml.linesink.LineSinkDitchString">[docs]</a><span class="k">class</span> <span class="nc">LineSinkDitchString</span><span class="p">(</span><span class="n">HeadLineSinkString</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">LineSinkDitchString</span><span class="p">(</span><span class="n">HeadLineSinkString</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class to create a string of LineSinkDitch elements for which the</span>
 <span class="sd">    total discharge of the string is specified, and for which the head</span>
@@ -925,7 +934,10 @@
 <span class="sd">    res : scalar (default is 0)</span>
 <span class="sd">        resistance of line-sinks in string</span>
 <span class="sd">    wh : scalar or str</span>
-<span class="sd">        distance over which water enters the string</span>
+<span class="sd">        distance over which water enters line-sink</span>
+<span class="sd">        if &#39;H&#39;: (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)</span>
+<span class="sd">        if &#39;2H&#39;: distance is twice the thickness of the aquifer layer (when flow comes from both sides)</span>
+<span class="sd">        if scalar: the width of the stream that partially penetrates the aquifer layer</span>
 <span class="sd">    order : int (default is 0)</span>
 <span class="sd">        polynomial order or inflow along each line-sink in string</span>
 <span class="sd">    layers : scalar, list or array</span>
@@ -971,7 +983,7 @@
         <span class="k">return</span> <span class="n">mat</span><span class="p">,</span> <span class="n">rhs</span>
 
     <span class="k">def</span> <span class="nf">setparams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sol</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">sol</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">sol</span>
 
 </pre></div>
 

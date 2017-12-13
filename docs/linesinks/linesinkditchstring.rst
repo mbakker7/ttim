@@ -1,6 +1,6 @@
 Line-sink ditch string
 ----------------------
-Specified total discharge with unknown but uniform head
+String of line-sinks with specified total discharge with unknown but uniform head
 
-.. autoclass:: timml.linesink.LineSinkDitchString
-    :members: headinside
+.. autoclass:: ttim.linesink.LineSinkDitchString
+    :members: headinside, discharge, discharge_list

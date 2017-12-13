@@ -36,7 +36,7 @@ def param_maq(kaq=[1],z=[1,0],c=[],Saq=[0.001],Sll=[0],topboundary='conf',phreat
     return kaq,Haq,c,Saq,Sll
     
 def param_3d(kaq=[1], z=[1, 0], Saq=[0.001], kzoverkh=1, phreatictop=False, \
-             topboundary='conf'):
+             topboundary='conf', topres=0):
     # Computes the parameters for a TimModel from input for a 3D model
     kaq = np.atleast_1d(kaq).astype('d')
     z = np.atleast_1d(z).astype('d')
@@ -54,6 +54,6 @@ def param_3d(kaq=[1], z=[1, 0], Saq=[0.001], kzoverkh=1, phreatictop=False, \
         Saq[0] = Saq[0] / H[0]
     c = np.hstack((1e100, c))
     if topboundary == 'semi':
-        c[0] = 0.5 * H[0] / (kzoverkh[0] * kaq[0])
+        c[0] = topres
     Sll = 1e-20 * np.ones(len(c))
     return kaq, H, c, Saq, Sll

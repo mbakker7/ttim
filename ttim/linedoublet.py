@@ -24,31 +24,34 @@ class LineDoubletHoBase(Element):
 
     def initialize(self):
         self.Ncp = self.order + 1
-        self.z1 = self.x1 + 1j*self.y1; self.z2 = self.x2 + 1j*self.y2
-        self.L = np.abs(self.z1-self.z2)
-        self.thetaNormOut = np.arctan2(self.y2-self.y1,self.x2-self.x1) - np.pi/2.0
-        self.cosout = np.cos( self.thetaNormOut ) * np.ones(self.Ncp); self.sinout = np.sin( self.thetaNormOut ) * np.ones(self.Ncp)
+        self.z1 = self.x1 + 1j * self.y1
+        self.z2 = self.x2 + 1j * self.y2
+        self.L = np.abs(self.z1 - self.z2)
+        self.thetaNormOut = np.arctan2(self.y2 - self.y1, self.x2 - self.x1) - np.pi / 2
+        self.cosout = np.cos(self.thetaNormOut) * np.ones(self.Ncp)
+        self.sinout = np.sin(self.thetaNormOut) * np.ones(self.Ncp)
         #
-        thetacp = np.arange(np.pi,0,-np.pi/self.Ncp) - 0.5 * np.pi/self.Ncp
-        Zcp = np.zeros( self.Ncp, 'D' )
+        thetacp = np.arange(np.pi, 0, -np.pi / self.Ncp) - 0.5 * np.pi / self.Ncp
+        Zcp = np.zeros(self.Ncp, 'D')
         Zcp.real = np.cos(thetacp)
         Zcp.imag = 1e-6  # control point just on positive site (this is handy later on)
-        zcp = Zcp * (self.z2 - self.z1) / 2.0 + 0.5 * (self.z1 + self.z2)
-        self.xc = zcp.real; self.yc = zcp.imag
+        zcp = Zcp * (self.z2 - self.z1) / 2 + 0.5 * (self.z1 + self.z2)
+        self.xc = zcp.real
+        self.yc = zcp.imag
         Zcp.imag = -1e-6  # control point just on negative side (this is needed for building the system of equations)
-        zcp = Zcp * (self.z2 - self.z1) / 2.0 + 0.5 * (self.z1 + self.z2)
-        self.xcneg = zcp.real; self.ycneg = zcp.imag  # control points just on negative side     
+        zcp = Zcp * (self.z2 - self.z1) / 2 + 0.5 * (self.z1 + self.z2)
+        self.xcneg = zcp.real
+        self.ycneg = zcp.imag  # control points just on negative side     
         #
-        self.aq = self.model.aq.findAquiferData(self.xc[0],self.yc[0])
+        self.aq = self.model.aq.findAquiferData(self.xc[0], self.yc[0])
         self.setbc()
-        coef = self.aq.coef[self.pylayers,:]
+        coef = self.aq.coef[self.pylayers, :]
         self.setflowcoef()
         self.term = self.flowcoef * coef  # shape (self.Nlayers,self.aq.Naq,self.model.Np)
-        self.term2 = self.term.reshape(self.Nlayers,self.aq.Naq,self.model.Nin,self.model.Npin)
+        self.term2 = self.term.reshape(self.Nlayers, self.aq.Naq, self.model.Nin, self.model.Npin)
         self.resfac = self.aq.Haq[self.pylayers] / self.res
-        # Still gotta change strengthinf
-        self.strengthinf = self.flowcoef * coef
-        self.strengthinflayers = np.sum(self.strengthinf * self.aq.eigvec[self.pylayers,:,:], 1)
+        self.dischargeinf = self.flowcoef * coef
+        self.dischargeinflayers = np.sum(self.dischargeinf * self.aq.eigvec[self.pylayers, :, :], 1)
 
     def setflowcoef(self):
         '''Separate function so that this can be overloaded for other types'''

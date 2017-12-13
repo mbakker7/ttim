@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import inspect # Used for storing the input
 from .element import Element
 from .bessel import *
-from .equation import HeadEquation, HeadEquationNores
+from .equation import HeadEquation, HeadEquationNores, MscreenEquation, MscreenDitchEquation
 
 class LineSinkBase(Element):
     '''LineSink Base Class. All LineSink elements are derived from this class'''
@@ -89,6 +89,20 @@ class LineSinkBase(Element):
         return rvx, rvy
 
     def headinside(self,t):
+        """The head inside the line-sink
+        
+        Parameters
+        ----------
+        t : array or float
+            time(s) for whih head is computed
+        
+        Returns
+        -------
+        array (length number of layers)
+            Head inside the line-sink for each layer that the line-sink is screened in
+            
+        """
+        
         return self.model.head(self.xc,self.yc,t)[self.pylayers] - self.resfach[:,np.newaxis] * self.discharge(t)
 
     def plot(self):
@@ -249,7 +263,22 @@ class LineSinkStringBase(Element):
             rvy[i*self.Nlayers:(i+1)*self.Nlayers,:] = qy
         return rvx,rvy
 
-    def headinside(self,t,derivative=0):
+    def headinside(self, t, derivative=0):
+        """The head inside the line-sink string
+        
+        Parameters
+        ----------
+        t : array or float
+            time(s) for whih head is computed
+        
+        Returns
+        -------
+        array size nline-sinks, nlayers, ntimes
+            Head inside the line-sink for each line-sink, each layer that
+            the line-sink is screened in, and each time
+            
+        """
+        
         rv = np.zeros((self.Nls,self.Nlayers,np.size(t)))
         Q = self.discharge_list(t,derivative=derivative)
         for i in range(self.Nls):
@@ -264,10 +293,24 @@ class LineSinkStringBase(Element):
             self.lsList[i].parameters[:] = self.parameters[:,i*self.Nlayers:(i+1)*self.Nlayers,:]
 
     def discharge_list(self,t,derivative=0):
-        # conveniently using the discharge functions of the individual line-sinks
+        """The discharge of each line-sink in the string
+        
+        Parameters
+        ----------
+        t : array or float
+            time(s) for whih discharge is computed
+        
+        Returns
+        -------
+        array size nline-sinks, nlayers, ntimes
+            Discharge for each line-sink, each layer that
+            the line-sink is screened in, and each time
+            
+        """
         rv = np.zeros((self.Nls,self.Nlayers,np.size(t)))
         for i in range(self.Nls):
             rv[i,:,:] = self.lsList[i].discharge(t,derivative=derivative)
+        return rv
             
 class HeadLineSinkString(LineSinkStringBase, HeadEquation):
     """
@@ -343,6 +386,85 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
         self.pc = np.zeros(self.Nls * self.Nlayers)
         for i in range(self.Nls):
             self.pc[i * self.Nlayers:(i + 1) * self.Nlayers] = self.lsList[i].pc
+            
+class MscreenLineSink(LineSinkBase,MscreenEquation):
+    '''MscreenLineSink that varies through time. Must be screened in multiple layers but heads are same in all screened layers'''
+    def __init__(self,model,x1=-1,y1=0,x2=1,y2=0,tsandQ=[(0.0,1.0)],res=0.0,wh='H',layers=[0,1],vres=0.0,wv=1.0,label=None,addtomodel=True):
+        #assert len(layers) > 1, "TTim input error: number of layers for MscreenLineSink must be at least 2"
+        self.storeinput(inspect.currentframe())
+        LineSinkBase.__init__(self,model,x1=x1,y1=y1,x2=x2,y2=y2,tsandbc=tsandQ,res=res,wh=wh,layers=layers,type='v',name='MscreenLineSink',label=label,addtomodel=addtomodel)
+        self.Nunknowns = self.Nparam
+        self.vres = np.atleast_1d(vres)  # Vertical resistance inside line-sink
+        self.wv = wv
+        if len(self.vres) == 1: self.vres = self.vres[0] * np.ones(self.Nlayers-1)
+    def initialize(self):
+        LineSinkBase.initialize(self)
+        self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
+        self.vresfac = self.vres / (self.wv * self.L)  # Qv = (hn - hn-1) / vresfac[n-1]
+            
+class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
+    """
+    Create ditch consisting of a string of line-sink.
+    The total discharge for the string is specified and divided over the
+    line-sinks such that the head at the center inside each line-sink is
+    equal. A width and resistance may optionally be specified.
+    Inflow per unit length of line-sink is computed as
+    
+    .. math::
+        \sigma = w(h_{aq} - h_{ls})/c
+    
+    where :math:`c` is the resistance of the bottom of the line-sink,
+    :math:`w` is the width over which water enters the line-sink,
+    :math:`h_{aq}` is the head in the aquifer at the center of the line-sink,
+    :math:`h_{ls}` is the specified head inside the line-sink
+    Note that all that matters is the conductance term :math:`w/c` but
+    both are specified separately
+    
+    Parameters
+    ----------
+    
+    model : Model object
+        Model to which the element is added
+    xy : array or list
+        list or array of (x,y) pairs of coordinates of end-points of
+        line-sinks in string
+    tsandQ : list or 2D array of (time, discharge) values
+        if list or 2D array: pairs of time and discharge after that time
+    res : scalar (default is 0)
+        resistance of line-sink
+    wh : scalar or str
+        distance over which water enters line-sink
+        if 'H': (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)
+        if '2H': distance is twice the thickness of the aquifer layer (when flow comes from both sides)
+        if scalar: the width of the stream that partially penetrates the aquifer layer
+    layers : scalar, list or array
+        layer(s) in which element is placed
+        if scalar: element is placed in this layer
+        if list or array: element is placed in all these layers 
+    label: str or None
+        label of element
+    
+    """
+    
+    def __init__(self, model, xy=[(-1, 0), (1, 0)], tsandQ=[(0, 1)], res=0, \
+                 wh='H', layers=0, Astorage=None, label=None):
+        self.storeinput(inspect.currentframe())
+        LineSinkStringBase.__init__(self, model, tsandbc=tsandQ, layers=layers, \
+                                    type='v', name='LineSinkDitchString', \
+                                    label=label)
+        xy = np.atleast_2d(xy).astype('d')
+        self.x,self.y = xy[:, 0], xy[:, 1]
+        self.Nls = len(self.x) - 1
+        for i in range(self.Nls):
+            self.lsList.append(MscreenLineSink(model, x1=self.x[i], y1=self.y[i], \
+                                               x2=self.x[i + 1], y2=self.y[i + 1], \
+                                               tsandQ=tsandQ, res=res, wh=wh,
+                                               layers=layers, label=None, addtomodel=False))
+        self.Astorage = Astorage
+        self.model.addElement(self)
+    def initialize(self):
+        LineSinkStringBase.initialize(self)
+        self.vresfac = np.zeros_like(self.resfach)  # set to zero, as I don't quite know what it would mean if it is not zero
 
 class LineSinkHoBase(Element):
     '''Higher Order LineSink Base Class. All Higher Order Line Sink elements are derived from this class'''
@@ -441,6 +563,15 @@ class LineSinkHoBase(Element):
         return rvx, rvy
 
     def headinside(self, t):
+        """The head inside the line-sink
+        
+        Returns
+        -------
+        array (length number of screens)
+            Head inside the well for each screen
+            
+        """
+        
         return self.model.head(self.xc, self.yc, t)[self.pylayers] - self.resfach[:, np.newaxis] * self.discharge(t)
 
     def plot(self):

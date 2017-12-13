@@ -48,7 +48,7 @@
 <span class="kn">import</span> <span class="nn">inspect</span> <span class="c1"># Used for storing the input</span>
 <span class="kn">from</span> <span class="nn">.element</span> <span class="k">import</span> <span class="n">Element</span>
 <span class="kn">from</span> <span class="nn">.bessel</span> <span class="k">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">.equation</span> <span class="k">import</span> <span class="n">HeadEquation</span><span class="p">,</span> <span class="n">HeadEquationNores</span>
+<span class="kn">from</span> <span class="nn">.equation</span> <span class="k">import</span> <span class="n">HeadEquation</span><span class="p">,</span> <span class="n">HeadEquationNores</span><span class="p">,</span> <span class="n">MscreenEquation</span><span class="p">,</span> <span class="n">MscreenDitchEquation</span>
 
 <span class="k">class</span> <span class="nc">LineSinkBase</span><span class="p">(</span><span class="n">Element</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;LineSink Base Class. All LineSink elements are derived from this class&#39;&#39;&#39;</span>
@@ -134,6 +134,20 @@
         <span class="k">return</span> <span class="n">rvx</span><span class="p">,</span> <span class="n">rvy</span>
 
     <span class="k">def</span> <span class="nf">headinside</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">t</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The head inside the line-sink</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : array or float</span>
+<span class="sd">            time(s) for whih head is computed</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array (length number of layers)</span>
+<span class="sd">            Head inside the line-sink for each layer that the line-sink is screened in</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">yc</span><span class="p">,</span><span class="n">t</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">pylayers</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">resfach</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">discharge</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -294,7 +308,22 @@
             <span class="n">rvy</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">:(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">qy</span>
         <span class="k">return</span> <span class="n">rvx</span><span class="p">,</span><span class="n">rvy</span>
 
-    <span class="k">def</span> <span class="nf">headinside</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">derivative</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">headinside</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">derivative</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The head inside the line-sink string</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : array or float</span>
+<span class="sd">            time(s) for whih head is computed</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array size nline-sinks, nlayers, ntimes</span>
+<span class="sd">            Head inside the line-sink for each line-sink, each layer that</span>
+<span class="sd">            the line-sink is screened in, and each time</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
         <span class="n">rv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Nls</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">t</span><span class="p">)))</span>
         <span class="n">Q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discharge_list</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">derivative</span><span class="o">=</span><span class="n">derivative</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nls</span><span class="p">):</span>
@@ -309,10 +338,24 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">lsList</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">parameters</span><span class="p">[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[:,</span><span class="n">i</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">:(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">,:]</span>
 
     <span class="k">def</span> <span class="nf">discharge_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">derivative</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="c1"># conveniently using the discharge functions of the individual line-sinks</span>
+        <span class="sd">&quot;&quot;&quot;The discharge of each line-sink in the string</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : array or float</span>
+<span class="sd">            time(s) for whih discharge is computed</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array size nline-sinks, nlayers, ntimes</span>
+<span class="sd">            Discharge for each line-sink, each layer that</span>
+<span class="sd">            the line-sink is screened in, and each time</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Nls</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">t</span><span class="p">)))</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nls</span><span class="p">):</span>
             <span class="n">rv</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsList</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">discharge</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">derivative</span><span class="o">=</span><span class="n">derivative</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rv</span>
             
 <div class="viewcode-block" id="HeadLineSinkString"><a class="viewcode-back" href="../../linesinks/headlinesinkstring.html#ttim.linesink.HeadLineSinkString">[docs]</a><span class="k">class</span> <span class="nc">HeadLineSinkString</span><span class="p">(</span><span class="n">LineSinkStringBase</span><span class="p">,</span> <span class="n">HeadEquation</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -388,6 +431,85 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">pc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nls</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nls</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pc</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">:(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsList</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">pc</span></div>
+            
+<span class="k">class</span> <span class="nc">MscreenLineSink</span><span class="p">(</span><span class="n">LineSinkBase</span><span class="p">,</span><span class="n">MscreenEquation</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;MscreenLineSink that varies through time. Must be screened in multiple layers but heads are same in all screened layers&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">x1</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span><span class="n">y1</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">x2</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">y2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">tsandQ</span><span class="o">=</span><span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">)],</span><span class="n">res</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">wh</span><span class="o">=</span><span class="s1">&#39;H&#39;</span><span class="p">,</span><span class="n">layers</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="n">vres</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">wv</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">addtomodel</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="c1">#assert len(layers) &gt; 1, &quot;TTim input error: number of layers for MscreenLineSink must be at least 2&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storeinput</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">currentframe</span><span class="p">())</span>
+        <span class="n">LineSinkBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">x1</span><span class="o">=</span><span class="n">x1</span><span class="p">,</span><span class="n">y1</span><span class="o">=</span><span class="n">y1</span><span class="p">,</span><span class="n">x2</span><span class="o">=</span><span class="n">x2</span><span class="p">,</span><span class="n">y2</span><span class="o">=</span><span class="n">y2</span><span class="p">,</span><span class="n">tsandbc</span><span class="o">=</span><span class="n">tsandQ</span><span class="p">,</span><span class="n">res</span><span class="o">=</span><span class="n">res</span><span class="p">,</span><span class="n">wh</span><span class="o">=</span><span class="n">wh</span><span class="p">,</span><span class="n">layers</span><span class="o">=</span><span class="n">layers</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;MscreenLineSink&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span><span class="n">addtomodel</span><span class="o">=</span><span class="n">addtomodel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nunknowns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nparam</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">vres</span><span class="p">)</span>  <span class="c1"># Vertical resistance inside line-sink</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wv</span> <span class="o">=</span> <span class="n">wv</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vres</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">vres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vres</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">LineSinkBase</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Ngvbc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nparam</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Np</span><span class="p">),</span> <span class="s1">&#39;D&#39;</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vresfac</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vres</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wv</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">)</span>  <span class="c1"># Qv = (hn - hn-1) / vresfac[n-1]</span>
+            
+<div class="viewcode-block" id="LineSinkDitchString"><a class="viewcode-back" href="../../linesinks/linesinkditchstring.html#ttim.linesink.LineSinkDitchString">[docs]</a><span class="k">class</span> <span class="nc">LineSinkDitchString</span><span class="p">(</span><span class="n">LineSinkStringBase</span><span class="p">,</span> <span class="n">MscreenDitchEquation</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create ditch consisting of a string of line-sink.</span>
+<span class="sd">    The total discharge for the string is specified and divided over the</span>
+<span class="sd">    line-sinks such that the head at the center inside each line-sink is</span>
+<span class="sd">    equal. A width and resistance may optionally be specified.</span>
+<span class="sd">    Inflow per unit length of line-sink is computed as</span>
+<span class="sd">    </span>
+<span class="sd">    .. math::</span>
+<span class="sd">        \sigma = w(h_{aq} - h_{ls})/c</span>
+<span class="sd">    </span>
+<span class="sd">    where :math:`c` is the resistance of the bottom of the line-sink,</span>
+<span class="sd">    :math:`w` is the width over which water enters the line-sink,</span>
+<span class="sd">    :math:`h_{aq}` is the head in the aquifer at the center of the line-sink,</span>
+<span class="sd">    :math:`h_{ls}` is the specified head inside the line-sink</span>
+<span class="sd">    Note that all that matters is the conductance term :math:`w/c` but</span>
+<span class="sd">    both are specified separately</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    </span>
+<span class="sd">    model : Model object</span>
+<span class="sd">        Model to which the element is added</span>
+<span class="sd">    xy : array or list</span>
+<span class="sd">        list or array of (x,y) pairs of coordinates of end-points of</span>
+<span class="sd">        line-sinks in string</span>
+<span class="sd">    tsandQ : list or 2D array of (time, discharge) values</span>
+<span class="sd">        if list or 2D array: pairs of time and discharge after that time</span>
+<span class="sd">    res : scalar (default is 0)</span>
+<span class="sd">        resistance of line-sink</span>
+<span class="sd">    wh : scalar or str</span>
+<span class="sd">        distance over which water enters line-sink</span>
+<span class="sd">        if &#39;H&#39;: (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)</span>
+<span class="sd">        if &#39;2H&#39;: distance is twice the thickness of the aquifer layer (when flow comes from both sides)</span>
+<span class="sd">        if scalar: the width of the stream that partially penetrates the aquifer layer</span>
+<span class="sd">    layers : scalar, list or array</span>
+<span class="sd">        layer(s) in which element is placed</span>
+<span class="sd">        if scalar: element is placed in this layer</span>
+<span class="sd">        if list or array: element is placed in all these layers </span>
+<span class="sd">    label: str or None</span>
+<span class="sd">        label of element</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)],</span> <span class="n">tsandQ</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span> <span class="n">res</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> \
+                 <span class="n">wh</span><span class="o">=</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">Astorage</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storeinput</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">currentframe</span><span class="p">())</span>
+        <span class="n">LineSinkStringBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">tsandbc</span><span class="o">=</span><span class="n">tsandQ</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="n">layers</span><span class="p">,</span> \
+                                    <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;LineSinkDitchString&#39;</span><span class="p">,</span> \
+                                    <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+        <span class="n">xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nls</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nls</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lsList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MscreenLineSink</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">x1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">y1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> \
+                                               <span class="n">x2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">y2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> \
+                                               <span class="n">tsandQ</span><span class="o">=</span><span class="n">tsandQ</span><span class="p">,</span> <span class="n">res</span><span class="o">=</span><span class="n">res</span><span class="p">,</span> <span class="n">wh</span><span class="o">=</span><span class="n">wh</span><span class="p">,</span>
+                                               <span class="n">layers</span><span class="o">=</span><span class="n">layers</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">addtomodel</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Astorage</span> <span class="o">=</span> <span class="n">Astorage</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">addElement</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">LineSinkStringBase</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vresfac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resfach</span><span class="p">)</span>  <span class="c1"># set to zero, as I don&#39;t quite know what it would mean if it is not zero</span></div>
 
 <span class="k">class</span> <span class="nc">LineSinkHoBase</span><span class="p">(</span><span class="n">Element</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Higher Order LineSink Base Class. All Higher Order Line Sink elements are derived from this class&#39;&#39;&#39;</span>
@@ -486,6 +608,15 @@
         <span class="k">return</span> <span class="n">rvx</span><span class="p">,</span> <span class="n">rvy</span>
 
     <span class="k">def</span> <span class="nf">headinside</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The head inside the line-sink</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array (length number of screens)</span>
+<span class="sd">            Head inside the well for each screen</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">yc</span><span class="p">,</span> <span class="n">t</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">pylayers</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">resfach</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">discharge</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

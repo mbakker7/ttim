@@ -525,8 +525,58 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;ModelMaq&#39;</span></div>
         
 <div class="viewcode-block" id="Model3D"><a class="viewcode-back" href="../../models/model3d.html#ttim.model.Model3D">[docs]</a><span class="k">class</span> <span class="nc">Model3D</span><span class="p">(</span><span class="n">TimModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a multi-layer model object consisting of</span>
+<span class="sd">    many aquifer layers. The resistance between the layers is computed</span>
+<span class="sd">    from the vertical hydraulic conductivity of the layers.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    kaq : float, array or list</span>
+<span class="sd">        hydraulic conductivity of each layer from the top down</span>
+<span class="sd">        if float, hydraulic conductivity is the same in all aquifers</span>
+<span class="sd">    z : array or list</span>
+<span class="sd">        elevation of top of system followed by bottoms of all layers</span>
+<span class="sd">        from the top down</span>
+<span class="sd">        bottom of layer is automatically equal to top of layer below it</span>
+<span class="sd">        if topboundary=&#39;conf&#39;: length is number of layers + 1</span>
+<span class="sd">        if topboundary=&#39;semi&#39;: length is number of layers + 2 as top</span>
+<span class="sd">        of leaky layer on top of systems needs to be specified</span>
+<span class="sd">    Saq : float, array or list</span>
+<span class="sd">        specific storage of all aquifers layers</span>
+<span class="sd">        if float, sepcific storage is same in all aquifers layers</span>
+<span class="sd">        if phreatictop is True and topboundary is &#39;conf&#39;, Saq of top</span>
+<span class="sd">        aquifer is phreatic storage coefficient (and not multiplied</span>
+<span class="sd">        with the layer thickness)</span>
+<span class="sd">    kzoverkh : float</span>
+<span class="sd">        vertical anisotropy ratio vertical k divided by horizontal k</span>
+<span class="sd">        if float, value is the same for all layers</span>
+<span class="sd">        length is number of layers</span>
+<span class="sd">    topboundary : string, &#39;conf&#39; or &#39;semi&#39; (default is &#39;conf&#39;)</span>
+<span class="sd">        indicating whether the top is confined (&#39;conf&#39;) or</span>
+<span class="sd">        semi-confined (&#39;semi&#39;).</span>
+<span class="sd">        currently only implemented for &#39;conf&#39;</span>
+<span class="sd">    topres : float - not yet implemented</span>
+<span class="sd">        resistance of top semi-confining layer, only read if topboundary=&#39;semi&#39;</span>
+<span class="sd">    topthick: float - not yet implemented</span>
+<span class="sd">        thickness of top semi-confining layer, only read if topboundary=&#39;semi&#39;</span>
+<span class="sd">    phreatictop : boolean</span>
+<span class="sd">        the storage coefficient of the top aquifer layer is treated as</span>
+<span class="sd">        phreatic storage (and not multiplied with the aquifer thickness)</span>
+<span class="sd">    tmin : scalar</span>
+<span class="sd">        the minimum time for which heads can be computed after any change</span>
+<span class="sd">        in boundary condition.</span>
+<span class="sd">    tmax : scalar</span>
+<span class="sd">        the maximum time for which heads can be computed.</span>
+<span class="sd">    M : integer</span>
+<span class="sd">        the number of terms to be used in the numerical inversion algorithm.</span>
+<span class="sd">        20 is usually sufficient. If drawdown curves appear to oscillate,</span>
+<span class="sd">        more terms may be needed, but this seldom happens. </span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kaq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">Saq</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">kzoverkh</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> \
-                 <span class="n">topboundar</span><span class="o">=</span><span class="s1">&#39;conf&#39;</span><span class="p">,</span> <span class="n">phreatictop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+                 <span class="n">topboundary</span><span class="o">=</span><span class="s1">&#39;conf&#39;</span><span class="p">,</span> <span class="n">phreatictop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;z must have the length of the number of layers + 1&#39;&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">storeinput</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">currentframe</span><span class="p">())</span>
         <span class="n">kaq</span><span class="p">,</span> <span class="n">Haq</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">Saq</span><span class="p">,</span> <span class="n">Sll</span> <span class="o">=</span> <span class="n">param_3d</span><span class="p">(</span><span class="n">kaq</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">Saq</span><span class="p">,</span> <span class="n">kzoverkh</span><span class="p">,</span> <span class="n">phreatictop</span><span class="p">,</span> <span class="n">topboundary</span><span class="p">)</span>

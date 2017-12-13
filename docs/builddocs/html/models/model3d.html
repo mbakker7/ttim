@@ -48,8 +48,50 @@
 <h1>Model3D<a class="headerlink" href="#model3d" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="ttim.model.Model3D">
-<em class="property">class </em><code class="descclassname">ttim.model.</code><code class="descname">Model3D</code><span class="sig-paren">(</span><em>kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, topboundar=’conf’, phreatictop=True, tmin=1, tmax=10, M=20</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/model.html#Model3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.model.Model3D" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<em class="property">class </em><code class="descclassname">ttim.model.</code><code class="descname">Model3D</code><span class="sig-paren">(</span><em>kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, topboundary=’conf’, phreatictop=True, tmin=1, tmax=10, M=20</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/model.html#Model3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.model.Model3D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a multi-layer model object consisting of
+many aquifer layers. The resistance between the layers is computed
+from the vertical hydraulic conductivity of the layers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>kaq</strong> (<em>float</em><em>, </em><em>array</em><em> or </em><em>list</em>) – hydraulic conductivity of each layer from the top down
+if float, hydraulic conductivity is the same in all aquifers</li>
+<li><strong>z</strong> (<em>array</em><em> or </em><em>list</em>) – elevation of top of system followed by bottoms of all layers
+from the top down
+bottom of layer is automatically equal to top of layer below it
+if topboundary=’conf’: length is number of layers + 1
+if topboundary=’semi’: length is number of layers + 2 as top
+of leaky layer on top of systems needs to be specified</li>
+<li><strong>Saq</strong> (<em>float</em><em>, </em><em>array</em><em> or </em><em>list</em>) – specific storage of all aquifers layers
+if float, sepcific storage is same in all aquifers layers
+if phreatictop is True and topboundary is ‘conf’, Saq of top
+aquifer is phreatic storage coefficient (and not multiplied
+with the layer thickness)</li>
+<li><strong>kzoverkh</strong> (<em>float</em>) – vertical anisotropy ratio vertical k divided by horizontal k
+if float, value is the same for all layers
+length is number of layers</li>
+<li><strong>topboundary</strong> (<em>string</em><em>, </em><em>'conf'</em><em> or </em><em>'semi'</em><em> (</em><em>default is 'conf'</em><em>)</em>) – indicating whether the top is confined (‘conf’) or
+semi-confined (‘semi’).
+currently only implemented for ‘conf’</li>
+<li><strong>topres</strong> (<em>float - not yet implemented</em>) – resistance of top semi-confining layer, only read if topboundary=’semi’</li>
+<li><strong>topthick</strong> (<em>float - not yet implemented</em>) – thickness of top semi-confining layer, only read if topboundary=’semi’</li>
+<li><strong>phreatictop</strong> (<em>boolean</em>) – the storage coefficient of the top aquifer layer is treated as
+phreatic storage (and not multiplied with the aquifer thickness)</li>
+<li><strong>tmin</strong> (<em>scalar</em>) – the minimum time for which heads can be computed after any change
+in boundary condition.</li>
+<li><strong>tmax</strong> (<em>scalar</em>) – the maximum time for which heads can be computed.</li>
+<li><strong>M</strong> (<em>integer</em>) – the number of terms to be used in the numerical inversion algorithm.
+20 is usually sufficient. If drawdown curves appear to oscillate,
+more terms may be needed, but this seldom happens.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
 <dt id="ttim.model.Model3D.contour">
 <code class="descname">contour</code><span class="sig-paren">(</span><em>win</em>, <em>ngr=20</em>, <em>t=1</em>, <em>layers=0</em>, <em>levels=20</em>, <em>layout=True</em>, <em>labels=False</em>, <em>decimals=0</em>, <em>color=None</em>, <em>newfig=True</em>, <em>figsize=None</em>, <em>legend=True</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.contour" title="Permalink to this definition">¶</a></dt>
 <dd><p>Contour plot</p>

@@ -480,10 +480,61 @@ class ModelMaq(TimModel):
         self.name = 'ModelMaq'
         
 class Model3D(TimModel):
+    """
+    Create a multi-layer model object consisting of
+    many aquifer layers. The resistance between the layers is computed
+    from the vertical hydraulic conductivity of the layers.
+    
+    Parameters
+    ----------
+    kaq : float, array or list
+        hydraulic conductivity of each layer from the top down
+        if float, hydraulic conductivity is the same in all aquifers
+    z : array or list
+        elevation of top of system followed by bottoms of all layers
+        from the top down
+        bottom of layer is automatically equal to top of layer below it
+        if topboundary='conf': length is number of layers + 1
+        if topboundary='semi': length is number of layers + 2 as top
+        of leaky layer on top of systems needs to be specified
+    Saq : float, array or list
+        specific storage of all aquifers layers
+        if float, sepcific storage is same in all aquifers layers
+        if phreatictop is True and topboundary is 'conf', Saq of top
+        aquifer is phreatic storage coefficient (and not multiplied
+        with the layer thickness)
+    kzoverkh : float
+        vertical anisotropy ratio vertical k divided by horizontal k
+        if float, value is the same for all layers
+        length is number of layers
+    topboundary : string, 'conf' or 'semi' (default is 'conf')
+        indicating whether the top is confined ('conf') or
+        semi-confined ('semi').
+        currently only implemented for 'conf'
+    topres : float
+        resistance of top semi-confining layer, only read if topboundary='semi'
+    topthick: float
+        thickness of top semi-confining layer, only read if topboundary='semi'
+    phreatictop : boolean
+        the storage coefficient of the top aquifer layer is treated as
+        phreatic storage (and not multiplied with the aquifer thickness)
+    tmin : scalar
+        the minimum time for which heads can be computed after any change
+        in boundary condition.
+    tmax : scalar
+        the maximum time for which heads can be computed.
+    M : integer
+        the number of terms to be used in the numerical inversion algorithm.
+        20 is usually sufficient. If drawdown curves appear to oscillate,
+        more terms may be needed, but this seldom happens. 
+    
+    """
+    
     def __init__(self, kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, \
-                 topboundar='conf', phreatictop=True, tmin=1, tmax=10, M=20):
+                 topboundary='conf', phreatictop=True, topres=0, \
+                 tmin=1, tmax=10, M=20):
         '''z must have the length of the number of layers + 1'''
         self.storeinput(inspect.currentframe())
-        kaq, Haq, c, Saq, Sll = param_3d(kaq, z, Saq, kzoverkh, phreatictop, topboundary)
+        kaq, Haq, c, Saq, Sll = param_3d(kaq, z, Saq, kzoverkh, phreatictop, topboundary, topres)
         TimModel.__init__(self, kaq, Haq, c, Saq, Sll, topboundary, phreatictop, tmin, tmax, M)
         self.name = 'Model3D'

@@ -63,7 +63,10 @@ is uniform but unknown.</p>
 <li><strong>y2</strong> (<em>scalar</em>) – y-coordinate of second point of line-sink</li>
 <li><strong>Qls</strong> (<em>scalar</em>) – total discharge of the line-sink</li>
 <li><strong>res</strong> (<em>scalar</em><em> (</em><em>default is 0</em><em>)</em>) – resistance of line-sink</li>
-<li><strong>wh</strong> (<em>scalar</em><em> or </em><em>str</em>) – distance over which water enters line-sink</li>
+<li><strong>wh</strong> (<em>scalar</em><em> or </em><em>str</em>) – distance over which water enters line-sink
+if ‘H’: (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)
+if ‘2H’: distance is twice the thickness of the aquifer layer (when flow comes from both sides)
+if scalar: the width of the stream that partially penetrates the aquifer layer</li>
 <li><strong>order</strong> (<em>int</em><em> (</em><em>default is 0</em><em>)</em>) – polynomial order or inflow along line-sink</li>
 <li><strong>layers</strong> (<em>scalar</em><em>, </em><em>list</em><em> or </em><em>array</em>) – layer(s) in which element is placed
 if scalar: element is placed in this layer
@@ -76,7 +79,7 @@ if list or array: element is placed in all these layers</li>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="linesinkditchstring.html#timml.linesink.LineSinkDitchString" title="timml.linesink.LineSinkDitchString"><code class="xref py py-class docutils literal"><span class="pre">LineSinkDitchString</span></code></a></p>
+<p class="last"><a class="reference internal" href="linesinkditchstring.html#ttim.linesink.LineSinkDitchString" title="ttim.linesink.LineSinkDitchString"><code class="xref py py-class docutils literal"><span class="pre">LineSinkDitchString</span></code></a></p>
 </div>
 </dd></dl>
 

@@ -27,6 +27,8 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Line-doublets" href="../linedoublets/linedoubletindex.html" />
+    <link rel="prev" title="String of head-specified line-sinks" href="headlinesinkstring.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -44,13 +46,23 @@
             
   <div class="section" id="line-sink-ditch-string">
 <h1>Line-sink ditch string<a class="headerlink" href="#line-sink-ditch-string" title="Permalink to this headline">¶</a></h1>
-<p>Specified total discharge with unknown but uniform head</p>
+<p>String of line-sinks with specified total discharge with unknown but uniform head</p>
 <dl class="class">
-<dt id="timml.linesink.LineSinkDitchString">
-<em class="property">class </em><code class="descclassname">timml.linesink.</code><code class="descname">LineSinkDitchString</code><span class="sig-paren">(</span><em>model, xy=[(-1, 0), (1, 0)], Qls=1, res=0, wh=1, order=0, layers=0, label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/timml/linesink.html#LineSinkDitchString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#timml.linesink.LineSinkDitchString" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to create a string of LineSinkDitch elements for which the
-total discharge of the string is specified, and for which the head
-along the entire string is uniform but unknown.</p>
+<dt id="ttim.linesink.LineSinkDitchString">
+<em class="property">class </em><code class="descclassname">ttim.linesink.</code><code class="descname">LineSinkDitchString</code><span class="sig-paren">(</span><em>model, xy=[(-1, 0), (1, 0)], tsandQ=[(0, 1)], res=0, wh=’H’, layers=0, Astorage=None, label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/linesink.html#LineSinkDitchString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.linesink.LineSinkDitchString" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create ditch consisting of a string of line-sink.
+The total discharge for the string is specified and divided over the
+line-sinks such that the head at the center inside each line-sink is
+equal. A width and resistance may optionally be specified.
+Inflow per unit length of line-sink is computed as</p>
+<div class="math">
+\[\sigma = w(h_{aq} - h_{ls})/c\]</div>
+<p>where <span class="math">\(c\)</span> is the resistance of the bottom of the line-sink,
+<span class="math">\(w\)</span> is the width over which water enters the line-sink,
+<span class="math">\(h_{aq}\)</span> is the head in the aquifer at the center of the line-sink,
+<span class="math">\(h_{ls}\)</span> is the specified head inside the line-sink
+Note that all that matters is the conductance term <span class="math">\(w/c\)</span> but
+both are specified separately</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -59,10 +71,12 @@ along the entire string is uniform but unknown.</p>
 <li><strong>model</strong> (<em>Model object</em>) – Model to which the element is added</li>
 <li><strong>xy</strong> (<em>array</em><em> or </em><em>list</em>) – list or array of (x,y) pairs of coordinates of end-points of
 line-sinks in string</li>
-<li><strong>Qls</strong> (<em>scalar</em>) – total discharge of the string</li>
-<li><strong>res</strong> (<em>scalar</em><em> (</em><em>default is 0</em><em>)</em>) – resistance of line-sinks in string</li>
-<li><strong>wh</strong> (<em>scalar</em><em> or </em><em>str</em>) – distance over which water enters the string</li>
-<li><strong>order</strong> (<em>int</em><em> (</em><em>default is 0</em><em>)</em>) – polynomial order or inflow along each line-sink in string</li>
+<li><strong>tsandQ</strong> (<em>list</em><em> or </em><em>2D array of</em><em> (</em><em>time</em><em>, </em><a class="reference internal" href="headlinesink.html#ttim.linesink.HeadLineSink.discharge" title="ttim.linesink.HeadLineSink.discharge"><em>discharge</em></a><em>) </em><em>values</em>) – if list or 2D array: pairs of time and discharge after that time</li>
+<li><strong>res</strong> (<em>scalar</em><em> (</em><em>default is 0</em><em>)</em>) – resistance of line-sink</li>
+<li><strong>wh</strong> (<em>scalar</em><em> or </em><em>str</em>) – distance over which water enters line-sink
+if ‘H’: (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)
+if ‘2H’: distance is twice the thickness of the aquifer layer (when flow comes from both sides)
+if scalar: the width of the stream that partially penetrates the aquifer layer</li>
 <li><strong>layers</strong> (<em>scalar</em><em>, </em><em>list</em><em> or </em><em>array</em>) – layer(s) in which element is placed
 if scalar: element is placed in this layer
 if list or array: element is placed in all these layers</li>
@@ -72,10 +86,50 @@ if list or array: element is placed in all these layers</li>
 </tr>
 </tbody>
 </table>
-<div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="linesinkditch.html#timml.linesink.LineSinkDitch" title="timml.linesink.LineSinkDitch"><code class="xref py py-class docutils literal"><span class="pre">LineSinkDitch</span></code></a></p>
-</div>
+<dl class="method">
+<dt id="ttim.linesink.LineSinkDitchString.discharge">
+<code class="descname">discharge</code><span class="sig-paren">(</span><em>t</em>, <em>derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.linesink.LineSinkDitchString.discharge" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns array of discharges (Nlayers,len(t)) t must be ordered and tmin &lt;= t &lt;= tmax</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ttim.linesink.LineSinkDitchString.discharge_list">
+<code class="descname">discharge_list</code><span class="sig-paren">(</span><em>t</em>, <em>derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.linesink.LineSinkDitchString.discharge_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>The discharge of each line-sink in the string</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>t</strong> (<em>array</em><em> or </em><em>float</em>) – time(s) for whih discharge is computed</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Discharge for each line-sink, each layer that
+the line-sink is screened in, and each time</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array size nline-sinks, nlayers, ntimes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ttim.linesink.LineSinkDitchString.headinside">
+<code class="descname">headinside</code><span class="sig-paren">(</span><em>t</em>, <em>derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.linesink.LineSinkDitchString.headinside" title="Permalink to this definition">¶</a></dt>
+<dd><p>The head inside the line-sink string</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>t</strong> (<em>array</em><em> or </em><em>float</em>) – time(s) for whih head is computed</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Head inside the line-sink for each line-sink, each layer that
+the line-sink is screened in, and each time</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array size nline-sinks, nlayers, ntimes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -105,15 +159,31 @@ if list or array: element is placed in all these layers</li>
 
 
 <h3>Navigation</h3>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../models/modelindex.html">Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aems.html">Elements</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../aems.html">Elements</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../wells/wellindex.html">Wells</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="linesinkindex.html">Line-sinks</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="headlinesink.html">HeadLineSink</a></li>
+<li class="toctree-l3"><a class="reference internal" href="headlinesinkstring.html">HeadLineSinkString</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">LineSinkDitchString</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../linedoublets/linedoubletindex.html">Line-doublets</a></li>
+</ul>
+</li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../aems.html">Elements</a><ul>
+  <li><a href="linesinkindex.html">Line-sinks</a><ul>
+      <li>Previous: <a href="headlinesinkstring.html" title="previous chapter">String of head-specified line-sinks</a></li>
+      <li>Next: <a href="../linedoublets/linedoubletindex.html" title="next chapter">Line-doublets</a></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

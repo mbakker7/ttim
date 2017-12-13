@@ -1,0 +1,321 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ttim.element &#8212; ttim 0.4.a1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.4.a1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ttim.element</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">inspect</span> <span class="c1"># Used for storing the input</span>
+
+<span class="k">class</span> <span class="nc">Element</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">Nparam</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nunknowns</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> \
+                 <span class="n">tsandbc</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)],</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Types of elements</span>
+<span class="sd">        &#39;g&#39;: strength is given through time</span>
+<span class="sd">        &#39;v&#39;: boundary condition is variable through time</span>
+<span class="sd">        &#39;z&#39;: boundary condition is zero through time</span>
+<span class="sd">        Definition of Nlayers, Ncp, Npar, Nunknowns:</span>
+<span class="sd">        Nlayers: Number of layers that the element is screened in, set in Element</span>
+<span class="sd">        Ncp: Number of control points along the element</span>
+<span class="sd">        Nparam: Number of parameters, commonly Nlayers * Ncp</span>
+<span class="sd">        Nunknowns: Number of unknown parameters, commonly zero or Npar</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aq</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># Set in the initialization function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nparam</span> <span class="o">=</span> <span class="n">Nparam</span>  <span class="c1"># Number of parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nunknowns</span> <span class="o">=</span> <span class="n">Nunknowns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">layers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pylayers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span>  <span class="c1"># corrected for base zero</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">)</span>
+        <span class="c1">#</span>
+        <span class="n">tsandbc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">tsandbc</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">tsandbc</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;TTim input error: tsandQ or tsandh need to be 2D lists or arrays like [(0,1),(2,5),(8,0)] &quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">bcin</span> <span class="o">=</span> <span class="n">tsandbc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">tsandbc</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tstart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bcin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">bcin</span><span class="p">))</span>
+        <span class="c1">#</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>  <span class="c1"># &#39;z&#39; boundary condition through time or &#39;v&#39; boundary condition through time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">label</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">elementDict</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> \
+                   <span class="s2">&quot;TTim error: label &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">+</span> <span class="s2">&quot; already exists&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Rzero</span> <span class="o">=</span> <span class="mi">30</span>
+        
+    <span class="k">def</span> <span class="nf">setbc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bcin</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bcin</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bcin</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bcin</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bcin</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ntstart</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Initialization of terms that cannot be initialized before other elements or the aquifer is defined.</span>
+<span class="sd">        As we don&#39;t want to require a certain order of entering elements, these terms are initialized when Model.solve is called </span>
+<span class="sd">        The initialization class needs to be overloaded by all derived classes&#39;&#39;&#39;</span>
+        <span class="k">pass</span>
+    
+    <span class="k">def</span> <span class="nf">potinf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns complex array of size (Nparam, Naq, Np)&#39;&#39;&#39;</span>
+        <span class="k">raise</span> <span class="s1">&#39;Must overload Element.potinf()&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns complex array of size (Ngvbc, Naq, Np)&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">aq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">aq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> \
+                      <span class="bp">self</span><span class="o">.</span><span class="n">potinf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">unitpotential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns complex array of size (Naq, Np)</span>
+<span class="sd">        Can be more efficient for given elements&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">aq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">aq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potinf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">disinf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns 2 complex arrays of size (Nparam, Naq, Np)&#39;&#39;&#39;</span>
+        <span class="k">raise</span> <span class="s1">&#39;Must overload Element.disinf()&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">discharge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns 2 complex arrays of size (Ngvbc, Naq, Np)&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">aq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">aq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">disinf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">qx</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> \
+               <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">elf</span><span class="o">.</span><span class="n">parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">qy</span><span class="p">,</span> <span class="mi">1</span> <span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">unitdischarge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns 2 complex arrays of size (Naq, Np)</span>
+<span class="sd">        Can be more efficient for given elements&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">aq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">aq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">disinf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">qx</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">qy</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    
+    <span class="c1"># Functions used to build equations</span>
+    <span class="k">def</span> <span class="nf">potinflayers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">pylayers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;pylayers can be scalar, list, or array. returns array of size (len(pylayers),Nparam,Np)</span>
+<span class="sd">        only used in building equations&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">aq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">aq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potinf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="p">)</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pot</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">aq</span><span class="o">.</span><span class="n">eigvec</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># As the first axes needs to be the number of layers</span>
+        <span class="k">return</span> <span class="n">rv</span><span class="p">[</span><span class="n">pylayers</span><span class="p">,</span> <span class="p">:]</span>
+    
+    <span class="k">def</span> <span class="nf">potentiallayers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pylayers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns complex array of size (Ngvbc, len(pylayers),Np)</span>
+<span class="sd">        only used in building equations&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">aq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">aq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="p">)</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pot</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">aq</span><span class="o">.</span><span class="n">eigvec</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">phi</span><span class="p">[:,</span> <span class="n">pylayers</span><span class="p">,</span> <span class="p">:]</span>
+    
+    <span class="k">def</span> <span class="nf">unitpotentiallayers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pylayers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns complex array of size (len(pylayers), Np)</span>
+<span class="sd">        only used in building equations&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">aq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">aq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unitpotential</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="p">)</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pot</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">aq</span><span class="o">.</span><span class="n">eigvec</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">phi</span><span class="p">[</span><span class="n">pylayers</span><span class="p">,</span> <span class="p">:]</span>
+    
+    <span class="k">def</span> <span class="nf">disinflayers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pylayers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;pylayers can be scalar, list, or array. returns 2 arrays of size (len(pylayers),Nparam,Np)</span>
+<span class="sd">        only used in building equations&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">aq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">aq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">disinf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="p">)</span>
+        <span class="n">rvx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">qx</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">aq</span><span class="o">.</span><span class="n">eigvec</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">rvy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">qy</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">aq</span><span class="o">.</span><span class="n">eigvec</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">rvx</span> <span class="o">=</span> <span class="n">rvx</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">rvy</span> <span class="o">=</span> <span class="n">rvy</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># As the first axes needs to be the number of layers</span>
+        <span class="k">return</span> <span class="n">rvx</span><span class="p">[</span><span class="n">pylayers</span><span class="p">,</span> <span class="p">:],</span> <span class="n">rvy</span><span class="p">[</span><span class="n">pylayers</span><span class="p">,</span> <span class="p">:]</span>
+    
+    <span class="k">def</span> <span class="nf">dischargelayers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pylayers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns 2 complex array of size (Ngvbc, len(pylayers), Np)</span>
+<span class="sd">        only used in building equations&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">aq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">aq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discharge</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="p">)</span>
+        <span class="n">rvx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">qx</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">aq</span><span class="o">.</span><span class="n">eigvec</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">rvy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">qy</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">aq</span><span class="o">.</span><span class="n">eigvec</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rvx</span><span class="p">[:,</span> <span class="n">pylayers</span><span class="p">,</span> <span class="p">:],</span> <span class="n">rvy</span><span class="p">[:,</span> <span class="n">pylayers</span><span class="p">,</span> <span class="p">:]</span>
+    
+    <span class="k">def</span> <span class="nf">unitdischargelayers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pylayers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">aq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns complex array of size (len(pylayers), Np)</span>
+<span class="sd">        only used in building equations&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">aq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">aq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">findAquiferData</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unitdischarge</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">aq</span><span class="p">)</span>
+        <span class="n">rvx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">qx</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">aq</span><span class="o">.</span><span class="n">eigvec</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">rvy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">qy</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">aq</span><span class="o">.</span><span class="n">eigvec</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rvx</span><span class="p">[</span><span class="n">pylayers</span><span class="p">,</span> <span class="p">:],</span> <span class="n">rvy</span><span class="p">[</span><span class="n">pylayers</span><span class="p">,</span> <span class="p">:]</span>
+    
+    <span class="c1"># Other functions</span>
+    <span class="k">def</span> <span class="nf">discharge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">derivative</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;returns array of discharges (Nlayers,len(t)) t must be ordered and tmin &lt;= t &lt;= tmax&#39;&#39;&#39;</span>
+        <span class="c1"># Could potentially be more efficient if s is pre-computed for all elements, but I don&#39;t know if that is worthwhile to store as it is quick now</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">tmin</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">tmax</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted&#39;</span><span class="p">)</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">time</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;g&#39;</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dischargeinflayers</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">p</span> <span class="o">**</span> <span class="n">derivative</span>
+            <span class="k">for</span> <span class="n">itime</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ntstart</span><span class="p">):</span>
+                <span class="n">time</span> <span class="o">-=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">[</span><span class="n">itime</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">):</span>
+                    <span class="n">rv</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="n">itime</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">inverseLapTran</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">time</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dischargeinf</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">s</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">aq</span><span class="o">.</span><span class="n">eigvec</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pylayers</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">p</span> <span class="o">**</span> <span class="n">derivative</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Ngvbc</span><span class="p">):</span>
+                <span class="n">e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">gvbcList</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">itime</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Ntstart</span><span class="p">):</span>
+                    <span class="n">t</span> <span class="o">=</span> <span class="n">time</span> <span class="o">-</span> <span class="n">e</span><span class="o">.</span><span class="n">tstart</span><span class="p">[</span><span class="n">itime</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">tmin</span><span class="p">:</span>  <span class="c1"># Otherwise all zero</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nlayers</span><span class="p">):</span>
+                            <span class="n">rv</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">e</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="n">itime</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">inverseLapTran</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="n">t</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rv</span>
+        
+    <span class="k">def</span> <span class="nf">headinside</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This function not implemented for this element&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+    
+    <span class="k">def</span> <span class="nf">storeinput</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inputargs</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputvalues</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargvalues</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;(&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">modelname</span> <span class="o">+</span> <span class="s1">&#39;,</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputargs</span><span class="p">[</span><span class="mi">2</span><span class="p">:]:</span>  <span class="c1"># The first two are ignored</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputvalues</span><span class="p">[</span><span class="n">key</span><span class="p">],</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="n">rv</span> <span class="o">+=</span> <span class="n">key</span> <span class="o">+</span> <span class="s1">&#39; = &#39;</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array2string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputvalues</span><span class="p">[</span><span class="n">key</span><span class="p">],</span><span class="n">separator</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;,</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputvalues</span><span class="p">[</span><span class="n">key</span><span class="p">],</span><span class="nb">str</span><span class="p">):</span>                
+                <span class="n">rv</span> <span class="o">+=</span> <span class="n">key</span> <span class="o">+</span> <span class="s2">&quot; = &#39;&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputvalues</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;&#39;,</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rv</span> <span class="o">+=</span> <span class="n">key</span> <span class="o">+</span> <span class="s1">&#39; = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputvalues</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;,</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">rv</span> <span class="o">+=</span> <span class="s1">&#39;)</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="k">return</span> <span class="n">rv</span>
+    
+    <span class="k">def</span> <span class="nf">run_after_solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;function to run after a solution is completed.</span>
+<span class="sd">        for most elements nothing needs to be done,</span>
+<span class="sd">        but for strings of elements some arrays may need to be filled&#39;&#39;&#39;</span>
+        <span class="k">pass</span>
+    
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+        
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">ttim</a></h1>
+
+
+
+<p class="blurb">TTim is a transient multi-layer analytic element model</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=mbakker7&repo=ttim&type=watch&count=True&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../models/modelindex.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../aems.html">Elements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Mark Bakker.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

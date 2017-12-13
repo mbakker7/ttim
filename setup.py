@@ -9,7 +9,7 @@ from setuptools import setup
 #with open(path.join(here, 'README'), encoding='utf-8') as f:
 #    long_description = f.read()
 
-#from ttim import __version__
+from ttim import __version__
 
 l_d = ''
 try:
@@ -25,7 +25,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # http://packaging.python.org/en/latest/tutorial.html#version
-    version = '0.4.a1',
+    version = __version__,
 
     description = 'Transient multi-layer analytic element model',
     long_description = l_d,
@@ -42,7 +42,7 @@ setup(
 
     # See https://PyPI.python.org/PyPI?%3Aaction=list_classifiers
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 3 - Alpha',
         # Indicate who your project is intended for
         #'Intended Audience :: Groundwater Modelers',
         # Pick yor license as you wish (should match "license" above)
@@ -52,8 +52,8 @@ setup(
         'Programming Language :: Python :: 3.6'
         ],
     platforms='Windows, Mac OS-X',
-    install_requires=['numpy>=1.12', 'matplotlib>=2.0'],
+    install_requires=['numpy>=1.12', 'matplotlib>=2.0', 'lmfit>=0.9'],
     packages=['ttim'],
     include_package_data = True,
-    package_data = {'ttim': ['bessel.f95', 'invlap.cpython-36m-darwin.so']}
+    package_data = {'ttim': ['bessel.f95', 'invlap.f90', 'invlap.cpython-36m-darwin.so', 'bessel.cpython-36m-darwin.so', 'invlap.cp36-win_amd64.pyd', 'bessel.cp36-win_amd64.pyd']}
     )
