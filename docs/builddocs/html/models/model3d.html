@@ -48,7 +48,7 @@
 <h1>Model3D<a class="headerlink" href="#model3d" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="ttim.model.Model3D">
-<em class="property">class </em><code class="descclassname">ttim.model.</code><code class="descname">Model3D</code><span class="sig-paren">(</span><em>kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, topboundary=’conf’, phreatictop=True, tmin=1, tmax=10, M=20</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/model.html#Model3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.model.Model3D" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">ttim.model.</code><code class="descname">Model3D</code><span class="sig-paren">(</span><em>kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, topboundary=’conf’, phreatictop=True, topres=0, tmin=1, tmax=10, M=20</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/model.html#Model3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.model.Model3D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a multi-layer model object consisting of
 many aquifer layers. The resistance between the layers is computed
 from the vertical hydraulic conductivity of the layers.</p>
@@ -76,8 +76,8 @@ length is number of layers</li>
 <li><strong>topboundary</strong> (<em>string</em><em>, </em><em>'conf'</em><em> or </em><em>'semi'</em><em> (</em><em>default is 'conf'</em><em>)</em>) – indicating whether the top is confined (‘conf’) or
 semi-confined (‘semi’).
 currently only implemented for ‘conf’</li>
-<li><strong>topres</strong> (<em>float - not yet implemented</em>) – resistance of top semi-confining layer, only read if topboundary=’semi’</li>
-<li><strong>topthick</strong> (<em>float - not yet implemented</em>) – thickness of top semi-confining layer, only read if topboundary=’semi’</li>
+<li><strong>topres</strong> (<em>float</em>) – resistance of top semi-confining layer, only read if topboundary=’semi’</li>
+<li><strong>topthick</strong> (<em>float</em>) – thickness of top semi-confining layer, only read if topboundary=’semi’</li>
 <li><strong>phreatictop</strong> (<em>boolean</em>) – the storage coefficient of the top aquifer layer is treated as
 phreatic storage (and not multiplied with the aquifer thickness)</li>
 <li><strong>tmin</strong> (<em>scalar</em>) – the minimum time for which heads can be computed after any change
