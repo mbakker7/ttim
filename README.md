@@ -14,22 +14,22 @@ TTim is coded in Python; use is made of FORTRAN extensions to improve performanc
 
 ## TTim Changes
 
-### Version 0.3
-In version 0.3, the numbering of the layers in TTim has changed. Layers are numbered from the top down starting at number 0.
-(in TTim versions prior to 0.3, layer numbers started at 1).
+### Version 0.4
+Version 0.4 is the new port of TTim to Python 3. The API has changed significantly and some of the API will undergo more changes
+in future versions. Not all elements that were available in version 0.3 have been ported to version 0.4.
 
 ## Installation
 
 **Python versions:**
 
-TTim requires **Python** 2.7 and can be installed from PyPI.
+TTim requires **Python** 3.6 and can be installed from PyPI.
 The PyPI installation includes compiled versions of the FORTRAN extension
 for both Windows and MaxOS.
 
 
 **Dependencies:**
 
-TTim requires **NumPy** 1.9 (or higher) and **matplotlib** 1.4 (or higher). T
+TimML requires **NumPy** 1.12 (or higher) and **matplotlib** 2.0 (or higher). 
 
 **For base Python distributions:**
 
@@ -56,6 +56,13 @@ model is created and solved but the figure is probably not shown (depending on y
 
 ## Documentation
 
-* The manual is available from the docs directory or can be viewed [here](https://github.com/mbakker7/ttim/blob/master/docs/timml.pdf).
-Once you click on this link, you can click on the [Raw] button to download the pdf file. 
-* Example Notebooks are available from the git repository.
+* The manual is available from the docs directory or can be viewed [here](http://mbakker7.github.io/ttim/docs/builddocs/html/index.html).
+* Example Notebooks are available from the notebooks directory on github, of from [here](https://github.com/mbakker7/ttim/tree/master/notebooks).
+
+## Citation
+
+Some of the papers that you may want to cite when using TTim are
+
+* M. Bakker. 2013. Semi-analytic modeling of transient multi-layer flow with TTim. Hydrogeology Journal, 21: 935Ð943.
+* M .Bakker. 2013. Analytic modeling of transient multi-layer flow. In: Advances in Hydrogeology, edited by P Mishra and K Kuhlman, Springer, Heidelberg, 95-114.
+
