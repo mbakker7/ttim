@@ -32,7 +32,7 @@ class PlotTtim:
                  legend=True):
         layers = np.atleast_1d(layers)
         if newfig:
-            plt.figure()
+            plt.figure(figsize=figsize)
         x = np.linspace(x1, x2, npoints)
         y = np.linspace(y1, y2, npoints)
         s = np.sqrt((x - x[0]) ** 2 + (y - y[0]) ** 2 ) + sstart

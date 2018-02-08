@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Line-doublets &#8212; ttim 0.4.a1 documentation</title>
+    <title>Area-sinks &#8212; ttim 0.4.a1 documentation</title>
     
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -27,8 +27,8 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Leaky wall" href="leakylinedoublet.html" />
-    <link rel="prev" title="Line-sink ditch string" href="../linesinks/linesinkditchstring.html" />
+    <link rel="next" title="Circular Area-sink" href="circareasink.html" />
+    <link rel="prev" title="String of leaky wall segments" href="../linedoublets/leakylinedoubletstring.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -44,19 +44,12 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="line-doublets">
-<h1>Line-doublets<a class="headerlink" href="#line-doublets" title="Permalink to this headline">¶</a></h1>
-<p>Line-doublets are used to simulate leaky and impermeable walls.
-The flux normal to an impermeable wall is zero. The flux through a leaky wall (the normal component <span class="math">\(q_{n}\)</span>) is defined as</p>
-<blockquote>
-<div><div class="math">
-\[q_n = (h^- - h^+)/c\]</div>
-</div></blockquote>
-<p>where <span class="math">\(h^-\)</span> and <span class="math">\(h^-\)</span> are the heads on the minus and plus sides of the wall, and <span class="math">\(c\)</span> is the resistance against flow
-through the walll. An impermeable wall is equivalent to a leaky wall with a resistance that is equal to infinity.</p>
+  <div class="section" id="area-sinks">
+<h1>Area-sinks<a class="headerlink" href="#area-sinks" title="Permalink to this headline">¶</a></h1>
+<p>Area-sinks are used to simulate areal infiltration or exfiltration.
+The flux is given as length per time and is positive for water entering the aquifer (infiltration. )</p>
 <ol class="arabic simple">
-<li><a class="reference internal" href="leakylinedoublet.html#ttim.linedoublet.LeakyLineDoublet" title="ttim.linedoublet.LeakyLineDoublet"><code class="xref py py-class docutils literal"><span class="pre">LeakyLineDoublet</span></code></a> is used to simulate one straight leaky wall</li>
-<li><a class="reference internal" href="leakylinedoubletstring.html#ttim.linedoublet.LeakyLineDoubletString" title="ttim.linedoublet.LeakyLineDoubletString"><code class="xref py py-class docutils literal"><span class="pre">LeakyLineDoubletString</span></code></a> is a leaky wall represented by a poly line of straight segments</li>
+<li><a class="reference internal" href="circareasink.html#ttim.circareasink.CircAreaSink" title="ttim.circareasink.CircAreaSink"><code class="xref py py-class docutils literal"><span class="pre">CircAreaSink</span></code></a> is used to simulate a circular area-sink</li>
 </ol>
 <div class="toctree-wrapper compound">
 </div>
@@ -92,12 +85,11 @@ through the walll. An impermeable wall is equivalent to a leaky wall with a resi
 <li class="toctree-l1 current"><a class="reference internal" href="../aems.html">Elements</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../wells/wellindex.html">Wells</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../linesinks/linesinkindex.html">Line-sinks</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Line-doublets</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="leakylinedoublet.html">LeakyLineDoublet</a></li>
-<li class="toctree-l3"><a class="reference internal" href="leakylinedoubletstring.html">LeakyLineDoubletString</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../linedoublets/linedoubletindex.html">Line-doublets</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Area-sinks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="circareasink.html">CircAreaSink</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../areasinks/areasinkindex.html">Area-sinks</a></li>
 </ul>
 </li>
 </ul>
@@ -107,8 +99,8 @@ through the walll. An impermeable wall is equivalent to a leaky wall with a resi
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../aems.html">Elements</a><ul>
-      <li>Previous: <a href="../linesinks/linesinkditchstring.html" title="previous chapter">Line-sink ditch string</a></li>
-      <li>Next: <a href="leakylinedoublet.html" title="next chapter">Leaky wall</a></li>
+      <li>Previous: <a href="../linedoublets/leakylinedoubletstring.html" title="previous chapter">String of leaky wall segments</a></li>
+      <li>Next: <a href="circareasink.html" title="next chapter">Circular Area-sink</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -135,7 +127,7 @@ through the walll. An impermeable wall is equivalent to a leaky wall with a resi
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="../_sources/linedoublets/linedoubletindex.rst.txt"
+      <a href="../_sources/areasinks/areasinkindex.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

@@ -18,4 +18,5 @@ from .model import ModelMaq, Model3D
 from .well import DischargeWell, HeadWell, Well, TestWell
 from .linesink import HeadLineSink, HeadLineSinkString, LineSinkDitchString
 from .linedoublet import LeakyLineDoublet, LeakyLineDoubletString
+from .circareasink import CircAreaSink
 from .fit import Calibrate

@@ -64,7 +64,7 @@ class WellBase(Element):
         '''Can be called with only one x,y value'''
         if aq is None: aq = self.model.aq.findAquiferData(x, y)
         qx = np.zeros((self.Nparam, aq.Naq, self.model.Np), 'D')
-        qy = np.zeros((self.Nparam, aq.Naq, self.model.Np),'D')
+        qy = np.zeros((self.Nparam, aq.Naq, self.model.Np), 'D')
         if aq == self.aq:
             qr = np.zeros((self.Nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D')
             r = np.sqrt((x - self.xw) ** 2 + (y - self.yw) ** 2)
