@@ -74,7 +74,7 @@ class LineSinkBase(Element):
         '''Can be called with only one x,y value'''
         if aq is None:
             aq = self.model.aq.findAquiferData(x, y)
-        rvx = np.zeros((self.Nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D'),
+        rvx = np.zeros((self.Nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D')
         rvy = np.zeros((self.Nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D')
         if aq == self.aq:
             qxqy = np.zeros((2,self.model.Npin),'D')
