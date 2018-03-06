@@ -30,7 +30,7 @@ class CircAreaSink(Element):
     def __init__(self, model, xc=0, yc=0, R=0.1, tsandN=[(0, 1)], \
                  name='CircAreaSink', label=None):
         self.storeinput(inspect.currentframe())
-        Element.__init__(self, model, Nparam=1, Nunknowns=0, layers=0, \
+        Element.__init__(self, model, nparam=1, nunknowns=0, layers=0, \
                          tsandbc=tsandN, type='g', name=name, label=label)
         self.xc = float(xc); self.yc = float(yc); self.R = float(R)
         self.model.addelement(self)
@@ -42,8 +42,8 @@ class CircAreaSink(Element):
         self.aq = self.model.aq.find_aquifer_data(self.xc, self.yc)
         self.setbc()
         self.setflowcoef()
-        self.an = self.aq.coef[0, :] * self.flowcoef  # Since recharge is in layer 1 (pylayer=0), and RHS is -N
-        self.an.shape = (self.aq.Naq, self.model.Nin, self.model.Npin)
+        self.an = self.aq.coef[0, :] * self.flowcoef  # Since recharge is in layer 0, and RHS is -N
+        self.an.shape = (self.aq.naq, self.model.nint, self.model.npint)
         self.termin  = self.aq.lab2 * self.R * self.an * kv(1, self.R/self.aq.lab2)
         self.termin2 = self.aq.lab2 ** 2 * self.an
         self.terminq = self.R * self.an * kv(1, self.R / self.aq.lab2)
@@ -60,43 +60,43 @@ class CircAreaSink(Element):
         '''Can be called with only one x,y value'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D')
+        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
         if aq == self.aq:
             r = np.sqrt((x - self.xc) ** 2 + (y - self.yc) ** 2)
-            pot = np.zeros(self.model.Npin, 'D')
+            pot = np.zeros(self.model.npint, 'D')
             if r < self.R:
-                for i in range(self.aq.Naq):
-                    for j in range(self.model.Nin):
+                for i in range(self.aq.naq):
+                    for j in range(self.model.nint):
                         #if r / abs(self.aq.lab2[i,j,0]) < self.rzero:
                         rv[0, i, j, :] = -self.termin[i, j, :] * iv(0, r / self.aq.lab2[i, j, :]) + self.termin2[i, j, :]
             else:
-                for i in range(self.aq.Naq):
-                    for j in range(self.model.Nin):
+                for i in range(self.aq.naq):
+                    for j in range(self.model.nint):
                         if (r - self.R) / abs(self.aq.lab2[i, j, 0]) < self.rzero:
                             rv[0, i, j, :] = self.termout[i, j, :] * kv(0, r / self.aq.lab2[i, j, :])
-        rv.shape = (self.nparam, aq.Naq, self.model.Np)
+        rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
     
     def disinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        qx = np.zeros((self.nparam, aq.Naq, self.model.Np), 'D')
-        qy = np.zeros((self.nparam, aq.Naq, self.model.Np), 'D')
+        qx = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
+        qy = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
         if aq == self.aq:
-            qr = np.zeros((self.nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D')
+            qr = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
             r = np.sqrt((x - self.xc) ** 2 + (y - self.yc) ** 2)
             if r < self.R:
-                for i in range(self.aq.Naq):
-                    for j in range(self.model.Nin):
+                for i in range(self.aq.naq):
+                    for j in range(self.model.nint):
                         #if r / abs(self.aq.lab2[i,j,0]) < self.rzero:
                         qr[0, i, j, :] = self.terminq[i, j, :] * iv(1, r / self.aq.lab2[i, j, :])
             else:
-                for i in range(self.aq.Naq):
-                    for j in range(self.model.Nin):
+                for i in range(self.aq.naq):
+                    for j in range(self.model.nint):
                         if (r - self.R) / abs(self.aq.lab2[i, j, 0]) < self.rzero:
                             qr[0, i, j, :] = self.termoutq[i, j, :] * kv(1, r / self.aq.lab2[i, j, :])                
-            qr.shape = (self.nparam, aq.Naq, self.model.Np)
+            qr.shape = (self.nparam, aq.naq, self.model.npval)
             qx[:] = qr * (x - self.xc) / r
             qy[:] = qr * (y - self.yc) / r
         return qx, qy
