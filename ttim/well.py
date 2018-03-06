@@ -9,14 +9,14 @@ class WellBase(Element):
     '''Well Base Class. All Well elements are derived from this class'''
     def __init__(self, model, xw=0, yw=0, rw=0.1, tsandbc=[(0, 1)], res=0, \
                  layers=0, type='', name='WellBase', label=None):
-        Element.__init__(self, model, Nparam=1, Nunknowns=0, layers=layers, \
+        Element.__init__(self, model, nparam=1, nunknowns=0, layers=layers, \
                          tsandbc=tsandbc, type=type, name=name, label=label)
-        self.Nparam = len(self.pylayers)  # Defined here and not in Element as other elements can have multiple parameters per layers
+        self.nparam = len(self.layers)  # Defined here and not in Element as other elements can have multiple parameters per layers
         self.xw = float(xw)
         self.yw = float(yw)
         self.rw = float(rw)
         self.res = res
-        self.model.addElement(self)
+        self.model.addelement(self)
         
     def __repr__(self):
         return self.name + ' at ' + str((self.xw, self.yw))
@@ -25,17 +25,17 @@ class WellBase(Element):
         self.xc = np.array([self.xw + self.rw])
         self.yc = np.array([self.yw]) # Control point to make sure the point is always the same for all elements
         self.Ncp = 1
-        self.aq = self.model.aq.findAquiferData(self.xw, self.yw)
+        self.aq = self.model.aq.find_aquifer_data(self.xw, self.yw)
         self.setbc()
-        coef = self.aq.coef[self.pylayers, :]
+        coef = self.aq.coef[self.layers, :]
         laboverrwk1 = self.aq.lab / (self.rw * kv(1, self.rw/self.aq.lab))
         self.setflowcoef()
-        self.term = -1.0 / (2 * np.pi) * laboverrwk1 * self.flowcoef * coef  # shape (self.Nparam,self.aq.Naq,self.model.Np)
-        self.term2 = self.term.reshape(self.Nparam, self.aq.Naq, self.model.Nin, self.model.Npin)
+        self.term = -1.0 / (2 * np.pi) * laboverrwk1 * self.flowcoef * coef  # shape (self.nparam,self.aq.naq,self.model.npval)
+        self.term2 = self.term.reshape(self.nparam, self.aq.naq, self.model.nint, self.model.npint)
         self.dischargeinf = self.flowcoef * coef
-        self.dischargeinflayers = np.sum(self.dischargeinf * self.aq.eigvec[self.pylayers, :, :], 1) 
-        self.resfach = self.res / (2 * np.pi * self.rw * self.aq.Haq[self.pylayers])  # Q = (h - hw) / resfach
-        self.resfacp = self.resfach * self.aq.T[self.pylayers]  # Q = (Phi - Phiw) / resfacp
+        self.dischargeinflayers = np.sum(self.dischargeinf * self.aq.eigvec[self.layers, :, :], 1)
+        self.resfach = self.res / (2 * np.pi * self.rw * self.aq.Haq[self.layers])  # Q = (h - hw) / resfach
+        self.resfacp = self.resfach * self.aq.T[self.layers]  # Q = (Phi - Phiw) / resfacp
         
     def setflowcoef(self):
         '''Separate function so that this can be overloaded for other types'''
@@ -43,46 +43,46 @@ class WellBase(Element):
         
     def potinf(self, x, y, aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData(x, y)
-        rv = np.zeros((self.Nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D')
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
+        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
         if aq == self.aq:
             r = np.sqrt((x - self.xw) ** 2 + (y - self.yw) ** 2)
-            pot = np.zeros(self.model.Npin, 'D')
+            pot = np.zeros(self.model.npint, 'D')
             if r < self.rw:
                 r = self.rw  # If at well, set to at radius
-            for i in range(self.aq.Naq):
-                for j in range(self.model.Nin):
-                    if r / abs(self.aq.lab2[i, j, 0]) < self.Rzero:
+            for i in range(self.aq.naq):
+                for j in range(self.model.nint):
+                    if r / abs(self.aq.lab2[i, j, 0]) < self.rzero:
                         pot[:] = kv(0, r / self.aq.lab2[i, j, :])
                         #quicker?
                         #bessel.k0besselv( r / self.aq.lab2[i,j,:], pot )
                         rv[:, i, j, :] = self.term2[:, i, j, :] * pot
-        rv.shape = (self.Nparam, aq.Naq, self.model.Np)
+        rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
     
     def disinf(self, x, y, aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData(x, y)
-        qx = np.zeros((self.Nparam, aq.Naq, self.model.Np), 'D')
-        qy = np.zeros((self.Nparam, aq.Naq, self.model.Np), 'D')
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
+        qx = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
+        qy = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
         if aq == self.aq:
-            qr = np.zeros((self.Nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D')
+            qr = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
             r = np.sqrt((x - self.xw) ** 2 + (y - self.yw) ** 2)
-            pot = np.zeros(self.model.Npin, 'D')
+            pot = np.zeros(self.model.npint, 'D')
             if r < self.rw:
                 r = self.rw  # If at well, set to at radius
-            for i in range(self.aq.Naq):
-                for j in range(self.model.Nin):
-                    if r / abs(self.aq.lab2[i, j, 0]) < self.Rzero:
+            for i in range(self.aq.naq):
+                for j in range(self.model.nint):
+                    if r / abs(self.aq.lab2[i, j, 0]) < self.rzero:
                         qr[:, i, j, :] = self.term2[:, i, j, :] * kv(1, r / self.aq.lab2[i, j, :]) / self.aq.lab2[i, j, :]
-            qr.shape = (self.Nparam,aq.Naq, self.model.Np)
+            qr.shape = (self.nparam, aq.naq, self.model.npval)
             qx[:] = qr * (x - self.xw) / r
             qy[:] = qr * (y - self.yw) / r
         return qx,qy
     
     def headinside(self, t, derivative=0):
         '''Returns head inside the well for the layers that the well is screened in'''
-        return self.model.head(self.xc, self.yc, t, derivative=derivative)[self.pylayers] - \
+        return self.model.head(self.xc, self.yc, t, derivative=derivative)[self.layers] - \
                self.resfach[:, np.newaxis] * self.discharge(t, derivative=derivative)
             
     def plot(self):
@@ -193,15 +193,15 @@ class Well(WellBase, WellBoreStorageEquation):
         self.hdiff = None
         #if hdiff is not None:
         #    self.hdiff = np.atleast_1d(hdiff)
-        #    assert len(self.hdiff) == self.Nlayers - 1, 'hdiff needs to have length len(layers) -1'
+        #    assert len(self.hdiff) == self.nlayers - 1, 'hdiff needs to have length len(layers) -1'
         #else:
         #    self.hdiff = hdiff
-        self.Nunknowns = self.Nparam
+        self.nunknowns = self.nparam
         self.wbstype = wbstype
         
     def initialize(self):
         WellBase.initialize(self)
-        self.parameters = np.zeros((self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
+        self.parameters = np.zeros((self.model.ngvbc, self.nparam, self.model.npval), 'D')
         
     def setflowcoef(self):
         '''Separate function so that this can be overloaded for other types'''
@@ -248,11 +248,11 @@ class HeadWell(WellBase,HeadEquation):
         self.storeinput(inspect.currentframe())
         WellBase.__init__(self, model, xw, yw, rw, tsandbc=tsandh, res=res,
                           layers=layers, type='v', name='HeadWell', label=label)
-        self.Nunknowns = self.Nparam
+        self.nunknowns = self.nparam
     def initialize(self):
         WellBase.initialize(self)
-        self.parameters = np.zeros((self.model.Ngvbc, self.Nparam, self.model.Np), 'D')
-        self.pc = self.aq.T[self.pylayers] # Needed in solving; We solve for a unit head
+        self.parameters = np.zeros((self.model.ngvbc, self.nparam, self.model.npval), 'D')
+        self.pc = self.aq.T[self.layers] # Needed in solving; We solve for a unit head
         
 class TestWell(WellBase):
     def __init__(self, model, xw=0, yw=0, tsandQ=[(0, 1)], rw=0.1, res=0, layers=0, label=None, fp=None):

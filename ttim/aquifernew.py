@@ -51,11 +51,11 @@ class AquiferData:
     
     def initialize(self):
         '''
-        eigval[Naq,Np]: Array with eigenvalues
-        lab[Naq,Np]: Array with lambda values
-        lab2[Naq,Nin,Npin]: Array with lambda values reorganized per interval
-        eigvec[Naq,Naq,Np]: Array with eigenvector matrices
-        coef[Naq,Naq,Np]: Array with coefficients;
+        eigval[Naq,npval]: Array with eigenvalues
+        lab[Naq,npval]: Array with lambda values
+        lab2[Naq,Nin,npint]: Array with lambda values reorganized per interval
+        eigvec[Naq,Naq,npval]: Array with eigenvector matrices
+        coef[Naq,Naq,npval]: Array with coefficients;
         coef[ilayers,:,np] are the coefficients if the element is in ilayers belonging to Laplace parameter number np
         '''
         # Recompute T for when kaq is changed manually

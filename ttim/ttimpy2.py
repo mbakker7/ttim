@@ -62,9 +62,9 @@ class TimModel:
     def compute_laplace_parameters(self):
         '''
         Nin: Number of time intervals
-        Npin: Number of p values per interval
-        Np: Total number of p values (Nin*Np)
-        p[Np]: Array with p values
+        npint: Number of p values per interval
+        npval: Total number of p values (Nin*npval)
+        p[npval]: Array with p values
         '''
         itmin = np.floor(np.log10(self.tmin))
         itmax = np.ceil(np.log10(self.tmax))
@@ -92,7 +92,7 @@ class TimModel:
         self.Npin = 2 * self.M + 1
         self.aq.initialize()
     def potential(self,x,y,t,pylayers=None,aq=None,derivative=0,returnphi=0):
-        '''Returns pot[Naq,Ntimes] if layers=None, otherwise pot[len(pylayers,Ntimes)]
+        '''Returns pot[Naq,Ntimes] if layers=None, otherwise pot[len(layers,Ntimes)]
         t must be ordered '''
         if aq is None: aq = self.aq.findAquiferData(x,y)
         if pylayers is None: pylayers = range(aq.Naq)
@@ -130,7 +130,7 @@ class TimModel:
                         if Nt > 0:  # if all values zero, don't do the inverse transform
                             for i in range(Nlayers):
                                 # I used to check the first value only, but it seems that checking that nothing is zero is needed and should be sufficient
-                                #if np.abs( pot[k,i,n*self.Npin] ) > 1e-20:  # First value very small
+                                #if np.abs( pot[k,i,n*self.npint] ) > 1e-20:  # First value very small
                                 if not np.any( pot[k,i,n*self.Npin:(n+1)*self.Npin] == 0.0) : # If there is a zero item, zero should be returned; funky enough this can be done with a straight equal comparison
                                     rv[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap( tp, self.tintervals[n], self.tintervals[n+1], pot[k,i,n*self.Npin:(n+1)*self.Npin], self.gamma[n], self.M, Nt )
                             it = it + Nt
@@ -194,7 +194,7 @@ class TimModel:
     def strength(self,elabel,t):
         return self.elementDict[elabel].strength(t)
     def headalongline(self,x,y,t,layers=None):
-        '''Returns head[Nlayers,len(t),len(x)]
+        '''Returns head[nlayers,len(t),len(x)]
         Assumes same number of layers for each x and y
         layers may be None or list of layers for which head is computed'''
         xg,yg = np.atleast_1d(x),np.atleast_1d(y)
@@ -211,7 +211,7 @@ class TimModel:
             h[:,:,i] = self.head(xg[i],yg[i],t,layers)
         return h
     def headgrid(self,x1,x2,nx,y1,y2,ny,t,layers=None,printrow=False):
-        '''Returns h[Nlayers,Ntimes,Ny,Nx]. If layers is None, all layers are returned'''
+        '''Returns h[nlayers,Ntimes,Ny,Nx]. If layers is None, all layers are returned'''
         xg,yg = np.linspace(x1,x2,nx), np.linspace(y1,y2,ny)
         if layers is None:
             Nlayers = self.aq.findAquiferData(xg[0],yg[0]).Naq
@@ -225,7 +225,7 @@ class TimModel:
                 h[:,:,j,i] = self.head(xg[i],yg[j],t,layers)
         return h
     def headgrid2(self,xg,yg,t,layers=None,printrow=False):
-        '''Returns h[Nlayers,Ntimes,Ny,Nx]. If layers is None, all layers are returned'''
+        '''Returns h[nlayers,Ntimes,Ny,Nx]. If layers is None, all layers are returned'''
         nx,ny = len(xg), len(yg)
         if layers is None:
             Nlayers = self.aq.findAquiferData(xg[0],yg[0]).Naq
@@ -242,9 +242,9 @@ class TimModel:
     #    # implemented for Model3D
     #    if aq is None: aq = self.aq.findAquiferData(x,y)
     #    if layers is None:
-    #        pylayers = range(aq.Naq)
+    #        layers = range(aq.Naq)
     #    else:
-    #        pylayers = np.atleast_1d(layers)  # corrected for base zero
+    #        layers = np.atleast_1d(layers)  # corrected for base zero
     #    h = self.head(x, y, t, aq=aq)
     #    qx, qy = self.discharge(x, y, t, aq=aq)
     #
@@ -290,7 +290,7 @@ class TimModel:
                     tp = t[ (t >= self.tintervals[n]) & (t < self.tintervals[n+1]) ]
                 Nt = len(tp)
                 if Nt > 0:  # if all values zero, don't do the inverse transform
-                    # Not needed anymore: if np.abs( pot[n*self.Npin] ) > 1e-20:
+                    # Not needed anymore: if np.abs( pot[n*self.npint] ) > 1e-20:
                     if not np.any( pot[n*self.Npin:(n+1)*self.Npin] == 0.0) : # If there is a zero item, zero should be returned; funky enough this can be done with a straight equal comparison
                         rv[it:it+Nt] = invlaptrans.invlap( tp, self.tintervals[n], self.tintervals[n+1], pot[n*self.Npin:(n+1)*self.Npin], self.gamma[n], self.M, Nt )
                     it = it + Nt
@@ -302,7 +302,7 @@ class TimModel:
         # Compute number of equations
         self.Neq = np.sum( [e.Nunknowns for e in self.elementList] )
         if silent is False:
-            print 'self.Neq ',self.Neq
+            print 'self.neq ',self.Neq
         if self.Neq == 0:
             if silent is False: print 'No unknowns. Solution complete'
             return
@@ -454,11 +454,11 @@ class AquiferData:
         return 'Inhom T: ' + str(self.T)
     def initialize(self):
         '''
-        eigval[Naq,Np]: Array with eigenvalues
-        lab[Naq,Np]: Array with lambda values
-        lab2[Naq,Nin,Npin]: Array with lambda values reorganized per interval
-        eigvec[Naq,Naq,Np]: Array with eigenvector matrices
-        coef[Naq,Naq,Np]: Array with coefficients;
+        eigval[Naq,npval]: Array with eigenvalues
+        lab[Naq,npval]: Array with lambda values
+        lab2[Naq,Nin,npint]: Array with lambda values reorganized per interval
+        eigvec[Naq,Naq,npval]: Array with eigenvector matrices
+        coef[Naq,Naq,npval]: Array with coefficients;
         coef[ipylayers,:,np] are the coefficients if the element is in ipylayers belonging to Laplace parameter number np
         '''
         # Recompute T for when kaq is changed manually
@@ -557,7 +557,7 @@ class XsecAquiferData(AquiferData):
     def __init__(self, model, x1=0, x2=0, kaq=[1], Haq=[1], c=[1], Saq=[.1], Sll=[.1], topboundary='imp'):
         AquiferData.__init__(self, model, kaq, Haq, c, Saq, Sll, topboundary)
         self.x1, self.x2 = float(x1), float(x2)
-        self.model.addInhom(self)
+        self.model.addinhom(self)
     def isInside(self,x,y):
         rv = False
         if (x > self.x1) & (x <= self.x2): rv = True
@@ -581,7 +581,7 @@ class CircInhomData(AquiferData):
         self.x0, self.y0, self.R = float(x0), float(y0), float(R)
         self.Rsq = self.R**2
         self.area = np.pi * self.Rsq
-        self.model.addInhom(self)
+        self.model.addinhom(self)
     def isInside(self,x,y):
         rv = False
         if (x-self.x0)**2 + (y-self.y0)**2 < self.Rsq: rv = True
@@ -610,7 +610,7 @@ class EllipseInhomDataMaq(AquiferData):
         self.etastar = np.arccosh( self.along / self.afoc )
         self.z0 = self.x0 + self.y0*1j
         self.area = 1.0 # Needs to be implemented; Used in finding an inhomogeneity
-        self.model.addInhom(self)
+        self.model.addinhom(self)
     def initialize(self):
         AquiferData.initialize(self)
         # q = -L^2 / (4^2 * lab^2) where L is focal length
@@ -643,11 +643,11 @@ class Element:
         'g': strength is given through time
         'v': boundary condition is variable through time
         'z': boundary condition is zero through time
-        Definition of Nlayers, Ncp, Npar, Nunknowns:
-        Nlayers: Number of layers that the element is screened in, set in Element
+        Definition of nlayers, Ncp, Npar, nunknowns:
+        nlayers: Number of layers that the element is screened in, set in Element
         Ncp: Number of control points along the element
-        Nparam: Number of parameters, commonly Nlayers * Ncp
-        Nunknowns: Number of unknown parameters, commonly zero or Npar
+        nparam: Number of parameters, commonly nlayers * Ncp
+        nunknowns: Number of unknown parameters, commonly zero or Npar
         '''
         self.model = model
         self.aq = None # Set in the initialization function
@@ -683,79 +683,79 @@ class Element:
         The initialization class needs to be overloaded by all derived classes'''
         pass
     def potinf(self,x,y,aq=None):
-        '''Returns complex array of size (Nparam,Naq,Np)'''
+        '''Returns complex array of size (nparam,Naq,npval)'''
         raise 'Must overload Element.potinf()'
     def potential(self,x,y,aq=None):
-        '''Returns complex array of size (Ngvbc,Naq,Np)'''
-        if aq is None: aq = self.model.aq.findAquiferData(x,y)
+        '''Returns complex array of size (ngvbc,Naq,npval)'''
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum( self.parameters[:,:,np.newaxis,:] * self.potinf(x,y,aq), 1 )
     def unitpotential(self,x,y,aq=None):
-        '''Returns complex array of size (Naq,Np)
+        '''Returns complex array of size (Naq,npval)
         Can be more efficient for given elements'''
-        if aq is None: aq = self.model.aq.findAquiferData(x,y)
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum( self.potinf(x,y,aq), 0 )
     def disinf(self,x,y,aq=None):
-        '''Returns 2 complex arrays of size (Nparam,Naq,Np)'''
+        '''Returns 2 complex arrays of size (nparam,Naq,npval)'''
         raise 'Must overload Element.disinf()'
     def discharge(self,x,y,aq=None):
-        '''Returns 2 complex arrays of size (Ngvbc,Naq,Np)'''
-        if aq is None: aq = self.model.aq.findAquiferData(x,y)
+        '''Returns 2 complex arrays of size (ngvbc,Naq,npval)'''
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         qx,qy = self.disinf(x,y,aq)
         return np.sum( self.parameters[:,:,np.newaxis,:] * qx, 1 ), np.sum( self.parameters[:,:,np.newaxis,:] * qy, 1 )
     def unitdischarge(self,x,y,aq=None):
-        '''Returns 2 complex arrays of size (Naq,Np)
+        '''Returns 2 complex arrays of size (Naq,npval)
         Can be more efficient for given elements'''
-        if aq is None: aq = self.model.aq.findAquiferData(x,y)
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         qx,qy = self.disinf(x,y,aq)
         return np.sum( qx, 0 ), np.sum( qy, 0 )
     # Functions used to build equations
     def potinflayers(self,x,y,pylayers=0,aq=None):
-        '''pylayers can be scalar, list, or array. returns array of size (len(pylayers),Nparam,Np)
+        '''layers can be scalar, list, or array. returns array of size (len(layers),nparam,npval)
         only used in building equations'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         pot = self.potinf(x,y,aq)
         rv = np.sum( pot[:,np.newaxis,:,:] * aq.eigvec, 2 )
         rv = rv.swapaxes(0,1) # As the first axes needs to be the number of layers
         return rv[pylayers,:]
     def potentiallayers(self,x,y,pylayers=0,aq=None):
-        '''Returns complex array of size (Ngvbc,len(pylayers),Np)
+        '''Returns complex array of size (ngvbc,len(layers),npval)
         only used in building equations'''
-        if aq is None: aq = self.model.aq.findAquiferData(x,y)
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         pot = self.potential(x,y,aq)
         phi = np.sum( pot[:,np.newaxis,:,:] * aq.eigvec, 2 )
         return phi[:,pylayers,:]
     def unitpotentiallayers(self,x,y,pylayers=0,aq=None):
-        '''Returns complex array of size (len(pylayers),Np)
+        '''Returns complex array of size (len(layers),npval)
         only used in building equations'''
-        if aq is None: aq = self.model.aq.findAquiferData(x,y)
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         pot = self.unitpotential(x,y,aq)
         phi = np.sum( pot[np.newaxis,:,:] * aq.eigvec, 1 )
         return phi[pylayers,:]
     def disinflayers(self,x,y,pylayers=0,aq=None):
-        '''pylayers can be scalar, list, or array. returns 2 arrays of size (len(pylayers),Nparam,Np)
+        '''layers can be scalar, list, or array. returns 2 arrays of size (len(layers),nparam,npval)
         only used in building equations'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         qx,qy = self.disinf(x,y,aq)
         rvx = np.sum( qx[:,np.newaxis,:,:] * aq.eigvec, 2 ); rvy = np.sum( qy[:,np.newaxis,:,:] * aq.eigvec, 2 )
         rvx = rvx.swapaxes(0,1); rvy = rvy.swapaxes(0,1) # As the first axes needs to be the number of layers
         return rvx[pylayers,:], rvy[pylayers,:]
     def dischargelayers(self,x,y,pylayers=0,aq=None):
-        '''Returns 2 complex array of size (Ngvbc,len(pylayers),Np)
+        '''Returns 2 complex array of size (ngvbc,len(layers),npval)
         only used in building equations'''
-        if aq is None: aq = self.model.aq.findAquiferData(x,y)
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         qx,qy = self.discharge(x,y,aq)
         rvx = np.sum( qx[:,np.newaxis,:,:] * aq.eigvec, 2 ); rvy = np.sum( qy[:,np.newaxis,:,:] * aq.eigvec, 2 )
         return rvx[:,pylayers,:], rvy[:,pylayers,:]
     def unitdischargelayers(self,x,y,pylayers=0,aq=None):
-        '''Returns complex array of size (len(pylayers),Np)
+        '''Returns complex array of size (len(layers),npval)
         only used in building equations'''
-        if aq is None: aq = self.model.aq.findAquiferData(x,y)
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         qx,qy = self.unitdischarge(x,y,aq)
         rvx = np.sum( qx[np.newaxis,:,:] * aq.eigvec, 1 ); rvy = np.sum( qy[np.newaxis,:,:] * aq.eigvec, 1 )
         return rvx[pylayers,:], rvy[pylayers,:]
     # Other functions
     def strength(self,t,derivative=0):
-        '''returns array of strengths (Nlayers,len(t)) t must be ordered and tmin <= t <= tmax'''
+        '''returns array of strengths (nlayers,len(t)) t must be ordered and tmin <= t <= tmax'''
         # Could potentially be more efficient if s is pre-computed for all elements, but I don't know if that is worthwhile to store as it is quick now
         time = np.atleast_1d(t).copy()
         if (time[0] < self.model.tmin) or (time[-1] > self.model.tmax): print 'Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted'
@@ -780,28 +780,28 @@ class Element:
                             rv[i] += e.bc[itime] * self.model.inverseLapTran(s[k,i],t)
         return rv
         
-    #def potential(self,x,y,t,pylayers=None,aq=None,derivative=0,returnphi=0):
-    #    '''Returns pot[Naq,Ntimes] if layers=None, otherwise pot[len(pylayers,Ntimes)]
+    #def potential(self,x,y,t,layers=None,aq=None,derivative=0,returnphi=0):
+    #    '''Returns pot[Naq,Ntimes] if layers=None, otherwise pot[len(layers,Ntimes)]
     #    t must be ordered '''
     #    if aq is None: aq = self.aq.findAquiferData(x,y)
-    #    if pylayers is None: pylayers = range(aq.Naq)
-    #    Nlayers = len(pylayers)
+    #    if layers is None: layers = range(aq.Naq)
+    #    nlayers = len(layers)
     #    time = np.atleast_1d(t).copy()
-    #    pot = np.zeros((self.Ngvbc, aq.Naq, self.Np),'D')
-    #    for i in range(self.Ngbc):
-    #        pot[i,:] += self.gbcList[i].unitpotential(x,y,aq)
+    #    pot = np.zeros((self.ngvbc, aq.Naq, self.npval),'D')
+    #    for i in range(self.ngbc):
+    #        pot[i,:] += self.gbclist[i].unitpotential(x,y,aq)
     #    for e in self.vzbcList:
     #        pot += e.potential(x,y,aq)
-    #    if pylayers is None:
+    #    if layers is None:
     #        pot = np.sum( pot[:,np.newaxis,:,:] * aq.eigvec, 2 )
     #    else:
-    #        pot = np.sum( pot[:,np.newaxis,:,:] * aq.eigvec[pylayers,:], 2 )
+    #        pot = np.sum( pot[:,np.newaxis,:,:] * aq.eigvec[layers,:], 2 )
     #    if derivative > 0: pot *= self.p**derivative
     #    if returnphi: return pot
-    #    rv = np.zeros((Nlayers,len(time)))
+    #    rv = np.zeros((nlayers,len(time)))
     #    if (time[0] < self.tmin) or (time[-1] > self.tmax): print 'Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted'
     #    #
-    #    for k in range(self.Ngvbc):
+    #    for k in range(self.ngvbc):
     #        e = self.gvbcList[k]
     #        for itime in range(e.Ntstart):
     #            t = time - e.tstart[itime]
@@ -817,11 +817,11 @@ class Element:
     #                    #    tp = t[ (t >= self.tintervals[n]) & (t < self.tintervals[n+1]) ]
     #                    Nt = len(tp)
     #                    if Nt > 0:  # if all values zero, don't do the inverse transform
-    #                        for i in range(Nlayers):
+    #                        for i in range(nlayers):
     #                            # I used to check the first value only, but it seems that checking that nothing is zero is needed and should be sufficient
-    #                            #if np.abs( pot[k,i,n*self.Npin] ) > 1e-20:  # First value very small
-    #                            if not np.any( pot[k,i,n*self.Npin:(n+1)*self.Npin] == 0.0) : # If there is a zero item, zero should be returned; funky enough this can be done with a straight equal comparison
-    #                                rv[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap( tp, self.tintervals[n], self.tintervals[n+1], pot[k,i,n*self.Npin:(n+1)*self.Npin], self.gamma[n], self.M, Nt )
+    #                            #if np.abs( pot[k,i,n*self.npint] ) > 1e-20:  # First value very small
+    #                            if not np.any( pot[k,i,n*self.npint:(n+1)*self.npint] == 0.0) : # If there is a zero item, zero should be returned; funky enough this can be done with a straight equal comparison
+    #                                rv[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap( tp, self.tintervals[n], self.tintervals[n+1], pot[k,i,n*self.npint:(n+1)*self.npint], self.gamma[n], self.M, Nt )
     #                        it = it + Nt
     #    return rv        
         
@@ -854,9 +854,9 @@ class Element:
 class HeadEquation:
     def equation(self):
         '''Mix-in class that returns matrix rows for head-specified conditions. (really written as constant potential element)
-        Works for Nunknowns = 1
-        Returns matrix part Nunknowns,Neq,Np, complex
-        Returns rhs part Nunknowns,Nvbc,Np, complex
+        Works for nunknowns = 1
+        Returns matrix part nunknowns,neq,npval, complex
+        Returns rhs part nunknowns,nvbc,npval, complex
         Phi_out - c*T*q_s = Phi_in
         Well: q_s = Q / (2*pi*r_w*H)
         LineSink: q_s = sigma / H = Q / (L*H)
@@ -883,8 +883,8 @@ class HeadEquation:
 class HeadEquationNores:
     def equation(self):
         '''Mix-in class that returns matrix rows for head-specified conditions. (really written as constant potential element)
-        Returns matrix part Nunknowns,Neq,Np, complex
-        Returns rhs part Nunknowns,Nvbc,Np, complex
+        Returns matrix part nunknowns,neq,npval, complex
+        Returns rhs part nunknowns,nvbc,npval, complex
         '''
         mat = np.empty( (self.Nunknowns,self.model.Neq,self.model.Np), 'D' )
         rhs = np.zeros( (self.Nunknowns,self.model.Ngvbc,self.model.Np), 'D' )  # Needs to be initialized to zero
@@ -906,8 +906,8 @@ class HeadEquationNores:
 class LeakyWallEquation:
     def equation(self):
         '''Mix-in class that returns matrix rows for leaky-wall condition
-        Returns matrix part Nunknowns,Neq,Np, complex
-        Returns rhs part Nunknowns,Nvbc,Np, complex
+        Returns matrix part nunknowns,neq,npval, complex
+        Returns rhs part nunknowns,nvbc,npval, complex
         '''
         mat = np.empty( (self.Nunknowns,self.model.Neq,self.model.Np), 'D' )
         rhs = np.zeros( (self.Nunknowns,self.model.Ngvbc,self.model.Np), 'D' )  # Needs to be initialized to zero
@@ -927,16 +927,16 @@ class LeakyWallEquation:
                 qx,qy = self.model.gbcList[i].unitdischargelayers(self.xc[icp],self.yc[icp],self.pylayers)
                 rhs[istart:istart+self.Nlayers,i,:] -=  qx * self.cosout[icp] + qy * self.sinout[icp]
             #if self.type == 'v':
-            #    iself = self.model.vbcList.index(self)
-            #    for i in range(self.Nlayers):
-            #        rhs[istart+i,self.model.Ngbc+iself,:] = self.pc[istart+i] / self.model.p
+            #    iself = self.model.vbclist.index(self)
+            #    for i in range(self.nlayers):
+            #        rhs[istart+i,self.model.ngbc+iself,:] = self.pc[istart+i] / self.model.p
         return mat, rhs
     
 class NoflowEquation:
     def equation(self):
         '''Mix-in class that returns matrix rows for no-flow condition
-        Returns matrix part Nunknowns,Neq,Np, complex
-        Returns rhs part Nunknowns,Nvbc,Np, complex
+        Returns matrix part nunknowns,neq,npval, complex
+        Returns rhs part nunknowns,nvbc,npval, complex
         '''
         mat = np.empty( (self.Nunknowns,self.model.Neq,self.model.Np), 'D' )
         rhs = np.zeros( (self.Nunknowns,self.model.Ngvbc,self.model.Np), 'D' )  # Needs to be initialized to zero
@@ -952,18 +952,18 @@ class NoflowEquation:
                 qx,qy = self.model.gbcList[i].unitdischargelayers(self.xc[icp],self.yc[icp],self.pylayers)
                 rhs[istart:istart+self.Nlayers,i,:] -=  qx * self.cosout + qy * self.sinout
             #if self.type == 'v':
-            #    iself = self.model.vbcList.index(self)
-            #    for i in range(self.Nlayers):
-            #        rhs[istart+i,self.model.Ngbc+iself,:] = self.pc[istart+i] / self.model.p
+            #    iself = self.model.vbclist.index(self)
+            #    for i in range(self.nlayers):
+            #        rhs[istart+i,self.model.ngbc+iself,:] = self.pc[istart+i] / self.model.p
         return mat, rhs
     
 class HeadEquationNew:
     '''Variable Head BC'''
     def equation(self):
         '''Mix-in class that returns matrix rows for head-specified conditions. (really written as constant potential element)
-        Works for Nunknowns = 1
-        Returns matrix part Nunknowns,Neq,Np, complex
-        Returns rhs part Nunknowns,Nvbc,Np, complex
+        Works for nunknowns = 1
+        Returns matrix part nunknowns,neq,npval, complex
+        Returns rhs part nunknowns,nvbc,npval, complex
         Phi_out - c*T*q_s = Phi_in
         Well: q_s = Q / (2*pi*r_w*H)
         LineSink: q_s = sigma / H = Q / (L*H)
@@ -1023,9 +1023,9 @@ class WellBoreStorageEquation:
 class MscreenEquation:
     def equation(self):
         '''Mix-in class that returns matrix rows for multi-screen conditions where total discharge is specified.
-        Works for Nunknowns = 1
-        Returns matrix part Nunknowns,Neq,Np, complex
-        Returns rhs part Nunknowns,Nvbc,Np, complex
+        Works for nunknowns = 1
+        Returns matrix part nunknowns,neq,npval, complex
+        Returns rhs part nunknowns,nvbc,npval, complex
         head_out - c*q_s = h_in
         Set h_i - h_(i+1) = 0 and Sum Q_i = Q'''
         mat = np.zeros( (self.Nunknowns,self.model.Neq,self.model.Np), 'D' )  # Needs to be zero for last equation, but I think setting the whole array is quicker
@@ -1036,7 +1036,7 @@ class MscreenEquation:
             ieq = 0 
             for e in self.model.elementList:
                 if e.Nunknowns > 0:
-                    head = e.potinflayers(self.xc[icp],self.yc[icp],self.pylayers) / self.aq.T[self.pylayers][:,np.newaxis,np.newaxis]  # T[self.pylayers,np.newaxis,np.newaxis] is not allowed
+                    head = e.potinflayers(self.xc[icp],self.yc[icp],self.pylayers) / self.aq.T[self.pylayers][:,np.newaxis,np.newaxis]  # T[self.layers,np.newaxis,np.newaxis] is not allowed
                     mat[istart:istart+self.Nlayers-1,ieq:ieq+e.Nunknowns,:] = head[:-1,:] - head[1:,:]
                     if e == self:
                         for i in range(self.Nlayers-1):
@@ -1056,8 +1056,8 @@ class MscreenEquation:
 class MscreenDitchEquation:
     def equation(self):
         '''Mix-in class that returns matrix rows for multi-scren conditions where total discharge is specified.
-        Returns matrix part Nunknowns,Neq,Np, complex
-        Returns rhs part Nunknowns,Nvbc,Np, complex
+        Returns matrix part nunknowns,neq,npval, complex
+        Returns rhs part nunknowns,nvbc,npval, complex
         head_out - c*q_s = h_in
         Set h_i - h_(i+1) = 0 and Sum Q_i = Q
         I would say
@@ -1074,7 +1074,7 @@ class MscreenDitchEquation:
             ieq = 0 
             for e in self.model.elementList:
                 if e.Nunknowns > 0:
-                    head = e.potinflayers(self.xc[icp],self.yc[icp],self.pylayers) / self.aq.T[self.pylayers][:,np.newaxis,np.newaxis]  # T[self.pylayers,np.newaxis,np.newaxis] is not allowed
+                    head = e.potinflayers(self.xc[icp],self.yc[icp],self.pylayers) / self.aq.T[self.pylayers][:,np.newaxis,np.newaxis]  # T[self.layers,np.newaxis,np.newaxis] is not allowed
                     if self.Nlayers > 1: mat[istart:istart+self.Nlayers-1,ieq:ieq+e.Nunknowns,:] = head[:-1,:] - head[1:,:]
                     mat[istart+self.Nlayers-1,ieq:ieq+e.Nunknowns,:] = head[0,:] # Store head in top layer in 2nd to last equation of this control point
                     if e == self:
@@ -1106,7 +1106,7 @@ class MscreenDitchEquation:
             rhslast = np.zeros( (self.model.Np), 'D' )  # Used to store last equation in case of ditch storage 
             ieq = 0
             for e in self.model.elementList:
-                head = e.potinflayers(self.xc[0],self.yc[0],self.pylayers) / self.aq.T[self.pylayers][:,np.newaxis,np.newaxis]  # T[self.pylayers,np.newaxis,np.newaxis] is not allowed
+                head = e.potinflayers(self.xc[0],self.yc[0],self.pylayers) / self.aq.T[self.pylayers][:,np.newaxis,np.newaxis]  # T[self.layers,np.newaxis,np.newaxis] is not allowed
                 matlast[ieq:ieq+e.Nunknowns] -= self.Astorage * self.model.p**2 * head[0,:]
                 if e == self:
                     # only need to correct first unknown 
@@ -1209,7 +1209,7 @@ class CircInhomRadial(Element,InhomEquation):
     def __init__(self,model,x0=0,y0=0,R=1.0,label=None):
         Element.__init__(self, model, Nparam=2*model.aq.Naq, Nunknowns=2*model.aq.Naq, layers=range(1,model.aq.Naq+1), type='z', name='CircInhom', label=label)
         self.x0 = float(x0); self.y0 = float(y0); self.R = float(R)
-        self.model.addElement(self)
+        self.model.addelement(self)
         self.approx = BesselRatioApprox(0,2)
     def __repr__(self):
         return self.name + ' at ' + str((self.x0,self.y0))
@@ -1217,9 +1217,9 @@ class CircInhomRadial(Element,InhomEquation):
         self.xc = np.array([self.x0 + self.R]); self.yc = np.array([self.y0])
         self.thetacp = np.zeros(1)
         self.Ncp = 1
-        self.aqin = self.model.aq.findAquiferData(self.x0+(1.0-1e-8)*self.R,self.y0)
+        self.aqin = self.model.aq.find_aquifer_data(self.x0 + (1.0 - 1e-8) * self.R, self.y0)
         assert self.aqin.R == self.R, 'TTim Input Error: Radius of CircInhom and CircInhomData must be equal'
-        self.aqout = self.model.aq.findAquiferData(self.x0+(1.0+1e-8)*self.R,self.y0)
+        self.aqout = self.model.aq.find_aquifer_data(self.x0 + (1.0 + 1e-8) * self.R, self.y0)
         self.setbc()
         self.facin = np.ones_like(self.aqin.lab2)
         self.facout = np.ones_like(self.aqout.lab2)
@@ -1245,7 +1245,7 @@ class CircInhomRadial(Element,InhomEquation):
         self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
     def potinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
         if aq == self.aqin:
             r = np.sqrt( (x-self.x0)**2 + (y-self.y0)**2 )
@@ -1271,7 +1271,7 @@ class CircInhomRadial(Element,InhomEquation):
         return rv
     def disinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         qx,qy = np.zeros((self.Nparam,aq.Naq,self.model.Np),'D'), np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
         if aq == self.aqin:
             qr = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
@@ -1309,7 +1309,7 @@ class CircInhom(Element,InhomEquation):
         self.order = order
         self.approx = BesselRatioApprox(0,3)
         self.test=test
-        self.model.addElement(self)
+        self.model.addelement(self)
     def __repr__(self):
         return self.name + ' at ' + str((self.x0,self.y0))
     def initialize(self):
@@ -1317,8 +1317,8 @@ class CircInhom(Element,InhomEquation):
         self.thetacp = np.arange(0,2*np.pi,(2*np.pi)/self.Ncp)
         self.xc = self.x0 + self.R * np.cos( self.thetacp )
         self.yc = self.y0 + self.R * np.sin( self.thetacp )
-        self.aqin = self.model.aq.findAquiferData(self.x0 + (1-1e-10)*self.R,self.y0)
-        self.aqout = self.model.aq.findAquiferData(self.x0+(1.0+1e-8)*self.R,self.y0)
+        self.aqin = self.model.aq.find_aquifer_data(self.x0 + (1 - 1e-10) * self.R, self.y0)
+        self.aqout = self.model.aq.find_aquifer_data(self.x0 + (1.0 + 1e-8) * self.R, self.y0)
         assert self.aqin.Naq == self.aqout.Naq, 'TTim input error: Number of layers needs to be the same inside and outside circular inhomogeneity'
         # Now that aqin is known, check that radii of circles are the same
         assert self.aqin.R == self.R, 'TTim Input Error: Radius of CircInhom and CircInhomData must be equal'
@@ -1349,7 +1349,7 @@ class CircInhom(Element,InhomEquation):
         self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
     def potinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((2*aq.Naq,1+2*self.order,aq.Naq,self.model.Nin,self.model.Npin),'D')
         if aq == self.aqin:
             r = np.sqrt( (x-self.x0)**2 + (y-self.y0)**2 )
@@ -1393,7 +1393,7 @@ class CircInhom(Element,InhomEquation):
         return rv
     def disinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         qx = np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
         qy = np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
         if aq == self.aqin:
@@ -1486,12 +1486,12 @@ class EllipseInhom(Element,InhomEquation):
                          type='z', name='EllipseInhom', label=label)
         self.x0, self.y0, self.along, self.bshort, self.angle = float(x0), float(y0), float(along), float(bshort), float(angle)
         self.order = order
-        self.model.addElement(self)
+        self.model.addelement(self)
     def __repr__(self):
         return self.name + ' at ' + str((self.x0,self.y0))
     def initialize(self):
-        self.aqin = self.model.aq.findAquiferData(self.x0,self.y0)
-        self.aqout = self.model.aq.findAquiferData(self.x0+(1.0+1e-8)*self.along,self.y0)
+        self.aqin = self.model.aq.find_aquifer_data(self.x0, self.y0)
+        self.aqout = self.model.aq.find_aquifer_data(self.x0 + (1.0 + 1e-8) * self.along, self.y0)
         self.qin =   self.aqin.dfoc**2 / (16.0 * self.aqin.lab**2)
         self.qout =  self.aqin.dfoc**2 / (16.0 * self.aqout.lab**2)
         self.xytoetapsi = self.aqin.xytoetapsi
@@ -1519,7 +1519,7 @@ class EllipseInhom(Element,InhomEquation):
         self.norder = range(self.order+1)
     def potinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((2*aq.Naq,1+2*self.order,aq.Naq,self.model.Np),'D')
         if aq == self.aqin:
             eta,psi = self.xytoetapsi(x,y)
@@ -1544,7 +1544,7 @@ class EllipseInhom(Element,InhomEquation):
         return rv
     def disinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         qx = np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
         qy = np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
         if aq == self.aqin:
@@ -1605,18 +1605,18 @@ class WellBase(Element):
         Element.__init__(self, model, Nparam=1, Nunknowns=0, layers=layers, tsandbc=tsandbc, type=type, name=name, label=label)
         self.Nparam = len(self.pylayers)  # Defined here and not in Element as other elements can have multiple parameters per layers
         self.xw = float(xw); self.yw = float(yw); self.rw = float(rw); self.res = res
-        self.model.addElement(self)
+        self.model.addelement(self)
     def __repr__(self):
         return self.name + ' at ' + str((self.xw,self.yw))
     def initialize(self):
         self.xc = np.array([self.xw + self.rw]); self.yc = np.array([self.yw]) # Control point to make sure the point is always the same for all elements
         self.Ncp = 1
-        self.aq = self.model.aq.findAquiferData(self.xw,self.yw)
+        self.aq = self.model.aq.find_aquifer_data(self.xw, self.yw)
         self.setbc()
         coef = self.aq.coef[self.pylayers,:]
         laboverrwk1 = self.aq.lab / (self.rw * kv(1,self.rw/self.aq.lab))
         self.setflowcoef()
-        self.term = -1.0 / (2*np.pi) * laboverrwk1 * self.flowcoef * coef  # shape (self.Nparam,self.aq.Naq,self.model.Np)
+        self.term = -1.0 / (2*np.pi) * laboverrwk1 * self.flowcoef * coef  # shape (self.nparam,self.aq.Naq,self.model.npval)
         self.term2 = self.term.reshape(self.Nparam,self.aq.Naq,self.model.Nin,self.model.Npin)
         self.strengthinf = self.flowcoef * coef
         self.strengthinflayers = np.sum(self.strengthinf * self.aq.eigvec[self.pylayers,:,:], 1) 
@@ -1627,7 +1627,7 @@ class WellBase(Element):
         self.flowcoef = 1.0 / self.model.p  # Step function
     def potinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
         if aq == self.aq:
             r = np.sqrt( (x-self.xw)**2 + (y-self.yw)**2 )
@@ -1642,7 +1642,7 @@ class WellBase(Element):
         return rv
     def disinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         qx,qy = np.zeros((self.Nparam,aq.Naq,self.model.Np),'D'), np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
         if aq == self.aq:
             qr = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
@@ -1668,7 +1668,7 @@ class LineSinkBase(Element):
         Element.__init__(self, model, Nparam=1, Nunknowns=0, layers=layers, tsandbc=tsandbc, type=type, name=name, label=label)
         self.Nparam = len(self.pylayers)
         self.x1 = float(x1); self.y1 = float(y1); self.x2 = float(x2); self.y2 = float(y2); self.res = res; self.wh = wh
-        if addtomodel: self.model.addElement(self)
+        if addtomodel: self.model.addelement(self)
         self.xa,self.ya,self.xb,self.yb,self.np = np.zeros(1),np.zeros(1),np.zeros(1),np.zeros(1),np.zeros(1,'i')  # needed to call bessel.circle_line_intersection
     def __repr__(self):
         return self.name + ' from ' + str((self.x1,self.y1)) +' to '+str((self.x2,self.y2))
@@ -1678,11 +1678,11 @@ class LineSinkBase(Element):
         self.z1 = self.x1 + 1j*self.y1; self.z2 = self.x2 + 1j*self.y2
         self.L = np.abs(self.z1-self.z2)
         self.order = 0 # This is for univform strength only
-        self.aq = self.model.aq.findAquiferData(self.xc,self.yc)
+        self.aq = self.model.aq.find_aquifer_data(self.xc, self.yc)
         self.setbc()
         coef = self.aq.coef[self.pylayers,:]
         self.setflowcoef()
-        self.term = self.flowcoef * coef  # shape (self.Nparam,self.aq.Naq,self.model.Np)
+        self.term = self.flowcoef * coef  # shape (self.nparam,self.aq.Naq,self.model.npval)
         self.term2 = self.term.reshape(self.Nparam,self.aq.Naq,self.model.Nin,self.model.Npin)
         self.strengthinf = self.flowcoef * coef
         self.strengthinflayers = np.sum(self.strengthinf * self.aq.eigvec[self.pylayers,:,:], 1)
@@ -1699,7 +1699,7 @@ class LineSinkBase(Element):
         self.flowcoef = 1.0 / self.model.p  # Step function
     def potinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
         if aq == self.aq:
             pot = np.zeros(self.model.Npin,'D')
@@ -1714,7 +1714,7 @@ class LineSinkBase(Element):
         return rv
     def disinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rvx,rvy = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D'), np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
         if aq == self.aq:
             qxqy = np.zeros((2,self.model.Npin),'D')
@@ -1738,11 +1738,11 @@ class CircAreaSink(Element):
     def __init__(self,model,xc=0,yc=0,R=0.1,tsandbc=[(0.0,1.0)],name='CircAreaSink',label=None):
         Element.__init__(self, model, Nparam=1, Nunknowns=0, layers=0, tsandbc=tsandbc, type='g', name=name, label=label)
         self.xc = float(xc); self.yc = float(yc); self.R = float(R)
-        self.model.addElement(self)
+        self.model.addelement(self)
     def __repr__(self):
         return self.name + ' at ' + str((self.xc,self.yc))
     def initialize(self):
-        self.aq = self.model.aq.findAquiferData(self.xc,self.yc)
+        self.aq = self.model.aq.find_aquifer_data(self.xc, self.yc)
         self.setbc()
         self.setflowcoef()
         self.an = self.aq.coef[0,:] * self.flowcoef  # Since recharge is in layer 1 (pylayer=0), and RHS is -N
@@ -1761,7 +1761,7 @@ class CircAreaSink(Element):
         self.flowcoef = 1.0 / self.model.p  # Step function
     def potinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
         if aq == self.aq:
             r = np.sqrt( (x-self.xc)**2 + (y-self.yc)**2 )
@@ -1769,7 +1769,7 @@ class CircAreaSink(Element):
             if r < self.R:
                 for i in range(self.aq.Naq):
                     for j in range(self.model.Nin):
-                        #if r / abs(self.aq.lab2[i,j,0]) < self.Rzero:
+                        #if r / abs(self.aq.lab2[i,j,0]) < self.rzero:
                         rv[0,i,j,:] = -self.termin[i,j,:] * iv(0,r/self.aq.lab2[i,j,:]) + self.termin2[i,j,:]
             else:
                 for i in range(self.aq.Naq):
@@ -1780,7 +1780,7 @@ class CircAreaSink(Element):
         return rv
     def disinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         qx,qy = np.zeros((self.Nparam,aq.Naq,self.model.Np),'D'), np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
         if aq == self.aq:
             qr = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
@@ -1788,7 +1788,7 @@ class CircAreaSink(Element):
             if r < self.R:
                 for i in range(self.aq.Naq):
                     for j in range(self.model.Nin):
-                        #if r / abs(self.aq.lab2[i,j,0]) < self.Rzero:
+                        #if r / abs(self.aq.lab2[i,j,0]) < self.rzero:
                         qr[0,i,j,:] = self.terminq[i,j,:] * iv(1,r/self.aq.lab2[i,j,:])
             else:
                 for i in range(self.aq.Naq):
@@ -1808,7 +1808,7 @@ class LineSinkHoBase(Element):
         self.order = order
         self.Nparam = (self.order+1) * len(self.pylayers)
         self.x1 = float(x1); self.y1 = float(y1); self.x2 = float(x2); self.y2 = float(y2); self.res = res; self.wh = wh
-        if addtomodel: self.model.addElement(self)
+        if addtomodel: self.model.addelement(self)
         #self.xa,self.ya,self.xb,self.yb,self.np = np.zeros(1),np.zeros(1),np.zeros(1),np.zeros(1),np.zeros(1,'i')  # needed to call bessel.circle_line_intersection
     def __repr__(self):
         return self.name + ' from ' + str((self.x1,self.y1)) +' to '+str((self.x2,self.y2))
@@ -1824,15 +1824,15 @@ class LineSinkHoBase(Element):
         zcp = Zcp * (self.z2 - self.z1) / 2.0 + 0.5 * (self.z1 + self.z2)
         self.xc = zcp.real; self.yc = zcp.imag
         #
-        self.aq = self.model.aq.findAquiferData(self.xc[0],self.yc[0])
+        self.aq = self.model.aq.find_aquifer_data(self.xc[0], self.yc[0])
         self.setbc()
         coef = self.aq.coef[self.pylayers,:]
         self.setflowcoef()
-        self.term = self.flowcoef * coef  # shape (self.Nlayers,self.aq.Naq,self.model.Np)
+        self.term = self.flowcoef * coef  # shape (self.nlayers,self.aq.Naq,self.model.npval)
         self.term2 = self.term.reshape(self.Nlayers,self.aq.Naq,self.model.Nin,self.model.Npin)
-        #self.term2 = np.empty((self.Nparam,self.aq.Naq,self.model.Nin,self.model.Npin),'D')
-        #for i in range(self.Nlayers):
-        #    self.term2[i*(self.order+1):(i+1)*(self.order+1),:,:,:] = self.term[i,:,:].reshape((1,self.aq.Naq,self.model.Nin,self.model.Npin))
+        #self.term2 = np.empty((self.nparam,self.aq.Naq,self.model.Nin,self.model.npint),'D')
+        #for i in range(self.nlayers):
+        #    self.term2[i*(self.order+1):(i+1)*(self.order+1),:,:,:] = self.term[i,:,:].reshape((1,self.aq.Naq,self.model.Nin,self.model.npint))
         self.strengthinf = self.flowcoef * coef
         self.strengthinflayers = np.sum(self.strengthinf * self.aq.eigvec[self.pylayers,:,:], 1)
         if self.wh == 'H':
@@ -1848,7 +1848,7 @@ class LineSinkHoBase(Element):
         self.flowcoef = 1.0 / self.model.p  # Step function
     def potinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
         if aq == self.aq:
             pot = np.zeros((self.order+1,self.model.Npin),'D')
@@ -1862,7 +1862,7 @@ class LineSinkHoBase(Element):
         return rv
     def disinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rvx,rvy = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D'), np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
         if aq == self.aq:
             qxqy = np.zeros((2*(self.order+1),self.model.Npin),'D')
@@ -1892,7 +1892,7 @@ class LineDoubletHoBase(Element):
             self.res = np.inf
         else:
             self.res = float(res)
-        if addtomodel: self.model.addElement(self)
+        if addtomodel: self.model.addelement(self)
         #self.xa,self.ya,self.xb,self.yb,self.np = np.zeros(1),np.zeros(1),np.zeros(1),np.zeros(1),np.zeros(1,'i')  # needed to call bessel.circle_line_intersection
     def __repr__(self):
         return self.name + ' from ' + str((self.x1,self.y1)) +' to '+str((self.x2,self.y2))
@@ -1913,11 +1913,11 @@ class LineDoubletHoBase(Element):
         zcp = Zcp * (self.z2 - self.z1) / 2.0 + 0.5 * (self.z1 + self.z2)
         self.xcneg = zcp.real; self.ycneg = zcp.imag  # control points just on negative side     
         #
-        self.aq = self.model.aq.findAquiferData(self.xc[0],self.yc[0])
+        self.aq = self.model.aq.find_aquifer_data(self.xc[0], self.yc[0])
         self.setbc()
         coef = self.aq.coef[self.pylayers,:]
         self.setflowcoef()
-        self.term = self.flowcoef * coef  # shape (self.Nlayers,self.aq.Naq,self.model.Np)
+        self.term = self.flowcoef * coef  # shape (self.nlayers,self.aq.Naq,self.model.npval)
         self.term2 = self.term.reshape(self.Nlayers,self.aq.Naq,self.model.Nin,self.model.Npin)
         self.resfac = self.aq.Haq[self.pylayers] / self.res
         # Still gotta change strengthinf
@@ -1928,7 +1928,7 @@ class LineDoubletHoBase(Element):
         self.flowcoef = 1.0 / self.model.p  # Step function
     def potinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
         if aq == self.aq:
             pot = np.zeros((self.order+1,self.model.Npin),'D')
@@ -1942,7 +1942,7 @@ class LineDoubletHoBase(Element):
         return rv
     def disinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rvx,rvy = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D'), np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
         if aq == self.aq:
             qxqy = np.zeros((2*(self.order+1),self.model.Npin),'D')
@@ -1978,7 +1978,7 @@ class Well(WellBase,WellBoreStorageEquation):
         self.hdiff = None
         #if hdiff is not None:
         #    self.hdiff = np.atleast_1d(hdiff)
-        #    assert len(self.hdiff) == self.Nlayers - 1, 'hdiff needs to have length len(layers) -1'
+        #    assert len(self.hdiff) == self.nlayers - 1, 'hdiff needs to have length len(layers) -1'
         #else:
         #    self.hdiff = hdiff
         self.Nunknowns = self.Nparam
@@ -2154,7 +2154,7 @@ class LineSinkStringBase(Element):
             self.yls[i,:] = [ls.y1,ls.y2]
         self.xlslayout = np.hstack((self.xls[:,0],self.xls[-1,1])) # Only used for layout when it is a continuous string
         self.ylslayout = np.hstack((self.yls[:,0],self.yls[-1,1]))
-        self.aq = self.model.aq.findAquiferData(self.lsList[0].xc,self.lsList[0].yc)
+        self.aq = self.model.aq.find_aquifer_data(self.lsList[0].xc, self.lsList[0].yc)
         self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
         self.setbc()
         # As parameters are only stored for the element not the list, we need to combine the following
@@ -2172,15 +2172,15 @@ class LineSinkStringBase(Element):
             self.strengthinflayers[i*self.Nlayers:(i+1)*self.Nlayers,:] = self.lsList[i].strengthinflayers
             self.xc[i], self.yc[i] = self.lsList[i].xc, self.lsList[i].yc
     def potinf(self,x,y,aq=None):
-        '''Returns array (Nunknowns,Nperiods)'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        '''Returns array (nunknowns,Nperiods)'''
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
         for i in range(self.Nls):
             rv[i*self.Nlayers:(i+1)*self.Nlayers,:] = self.lsList[i].potinf(x,y,aq)
         return rv
     def disinf(self,x,y,aq=None):
-        '''Returns array (Nunknowns,Nperiods)'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        '''Returns array (nunknowns,Nperiods)'''
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rvx,rvy = np.zeros((self.Nparam,aq.Naq,self.model.Np),'D'),np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
         for i in range(self.Nls):
             qx,qy = self.lsList[i].disinf(x,y,aq)
@@ -2220,7 +2220,7 @@ class ZeroMscreenLineSinkString(LineSinkStringBase,MscreenEquation):
         self.Nls = len(self.x) - 1
         for i in range(self.Nls):
             self.lsList.append( ZeroMscreenLineSink(model,x1=self.x[i],y1=self.y[i],x2=self.x[i+1],y2=self.y[i+1],res=res,wh=wh,layers=layers,vres=vres,wv=wv,label=None,addtomodel=False) )
-        self.model.addElement(self)
+        self.model.addelement(self)
     def initialize(self):
         LineSinkStringBase.initialize(self)
         self.vresfac = np.zeros_like( self.resfach )
@@ -2235,7 +2235,7 @@ class MscreenLineSinkString(LineSinkStringBase,MscreenEquation):
         self.Nls = len(self.x) - 1
         for i in range(self.Nls):
             self.lsList.append( MscreenLineSink(model,x1=self.x[i],y1=self.y[i],x2=self.x[i+1],y2=self.y[i+1],tsandQ=tsandQ,res=res,wh=wh,layers=layers,label=None,addtomodel=False) )
-        self.model.addElement(self)
+        self.model.addelement(self)
         
 class MscreenLineSinkDitchString(LineSinkStringBase,MscreenDitchEquation):
     def __init__(self,model,xy=[(-1,0),(1,0)],tsandQ=[(0.0,1.0)],res=0.0,wh='H',layers=[0,1],Astorage=None,label=None):
@@ -2247,7 +2247,7 @@ class MscreenLineSinkDitchString(LineSinkStringBase,MscreenDitchEquation):
         for i in range(self.Nls):
             self.lsList.append( MscreenLineSink(model,x1=self.x[i],y1=self.y[i],x2=self.x[i+1],y2=self.y[i+1],tsandQ=tsandQ,res=res,wh=wh,layers=layers,label=None,addtomodel=False) )
         self.Astorage = Astorage
-        self.model.addElement(self)
+        self.model.addelement(self)
     def initialize(self):
         LineSinkStringBase.initialize(self)
         self.vresfac = np.zeros_like( self.resfach )  # set to zero, as I don't quite know what it would mean if it is not zero
@@ -2261,7 +2261,7 @@ class MscreenLineSinkDitchString2(LineSinkStringBase,MscreenDitchEquation):
             for i in range(len(x) - 1):
                 self.lsList.append( MscreenLineSink(model,x1=x[i],y1=y[i],x2=x[i+1],y2=y[i+1],tsandQ=tsandQ,res=res,wh=wh,layers=layers,label=None,addtomodel=False) )
         self.Nls = len(self.lsList)
-        self.model.addElement(self)
+        self.model.addelement(self)
     def initialize(self):
         LineSinkStringBase.initialize(self)
         self.vresfac = np.zeros_like( self.resfach )  # set to zero, as I don't quite know what it would mean if it is not zero
@@ -2276,7 +2276,7 @@ class ZeroHeadLineSinkString(LineSinkStringBase,HeadEquation):
         self.Nls = len(self.x) - 1
         for i in range(self.Nls):
             self.lsList.append( ZeroHeadLineSink(model,x1=self.x[i],y1=self.y[i],x2=self.x[i+1],y2=self.y[i+1],res=res,wh=wh,layers=layers,label=None,addtomodel=False) )
-        self.model.addElement(self)
+        self.model.addelement(self)
 
 class HeadLineSinkString(LineSinkStringBase,HeadEquation):
     def __init__(self,model,xy=[(-1,0),(1,0)],tsandh=[(0.0,1.0)],res=0.0,wh='H',layers=0,label=None):
@@ -2286,7 +2286,7 @@ class HeadLineSinkString(LineSinkStringBase,HeadEquation):
         self.Nls = len(self.x) - 1
         for i in range(self.Nls):
             self.lsList.append( HeadLineSink(model,x1=self.x[i],y1=self.y[i],x2=self.x[i+1],y2=self.y[i+1],tsandh=tsandh,res=res,wh=wh,layers=layers,label=None,addtomodel=False) )
-        self.model.addElement(self)
+        self.model.addelement(self)
     def initialize(self):
         LineSinkStringBase.initialize(self)
         self.pc = np.zeros(self.Nls*self.Nlayers)
@@ -2304,7 +2304,7 @@ class LeakyLineDoubletString(Element,LeakyWallEquation):
         self.Nld = len(self.x) - 1
         for i in range(self.Nld):
             self.ldList.append( LeakyLineDoublet(model,x1=self.x[i],y1=self.y[i],x2=self.x[i+1],y2=self.y[i+1],res=self.res,order=self.order,layers=layers,label=label,addtomodel=False))
-        self.model.addElement(self)
+        self.model.addelement(self)
     def __repr__(self):
         return self.name + ' with nodes ' + str(zip(self.x,self.y))
     def initialize(self):
@@ -2319,7 +2319,7 @@ class LeakyLineDoubletString(Element,LeakyWallEquation):
             self.yld[i,:] = [ld.y1,ld.y2]
         self.xldlayout = np.hstack((self.xld[:,0],self.xld[-1,1])) # Only used for layout when it is a continuous string
         self.yldlayout = np.hstack((self.yld[:,0],self.yld[-1,1]))
-        self.aq = self.model.aq.findAquiferData(self.ldList[0].xc,self.ldList[0].yc)
+        self.aq = self.model.aq.find_aquifer_data(self.ldList[0].xc, self.ldList[0].yc)
         self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
         self.setbc()
         # As parameters are only stored for the element not the list, we need to combine the following
@@ -2332,15 +2332,15 @@ class LeakyLineDoubletString(Element,LeakyWallEquation):
             self.xcneg[i*ld.Ncp:(i+1)*ld.Ncp], self.ycneg[i*ld.Ncp:(i+1)*ld.Ncp] = ld.xcneg, ld.ycneg
             self.cosout[i*ld.Ncp:(i+1)*ld.Ncp], self.sinout[i*ld.Ncp:(i+1)*ld.Ncp] = ld.cosout, ld.sinout
     def potinf(self,x,y,aq=None):
-        '''Returns array (Nunknowns,Nperiods)'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        '''Returns array (nunknowns,Nperiods)'''
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
         for i,ld in enumerate(self.ldList):
             rv[i*ld.Nparam:(i+1)*ld.Nparam,:] = ld.potinf(x,y,aq)
         return rv
     def disinf(self,x,y,aq=None):
-        '''Returns array (Nunknowns,Nperiods)'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        '''Returns array (nunknowns,Nperiods)'''
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rvx,rvy = np.zeros((self.Nparam,aq.Naq,self.model.Np),'D'),np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
         for i,ld in enumerate(self.ldList):
             qx,qy = ld.disinf(x,y,aq)
@@ -2370,7 +2370,7 @@ def timcontour( ml, xmin, xmax, nx, ymin, ymax, ny, levels = 10, t=0.0, layers =
                labels = False, labelfmt = '%1.2f'):
     '''Contour heads with pylab'''
     print 'grid of '+str((nx,ny))+'. gridding in progress. hit ctrl-c to abort'
-    h = ml.headgrid(xmin,xmax,nx,ymin,ymax,ny,t,layers)  # h[Nlayers,Ntimes,Ny,Nx]
+    h = ml.headgrid(xmin,xmax,nx,ymin,ymax,ny,t,layers)  # h[nlayers,Ntimes,Ny,Nx]
     xg, yg = np.linspace(xmin,xmax,nx), np.linspace(ymin,ymax,ny)
     Nlayers, Ntimes = h.shape[0:2]
     # Contour
@@ -2491,16 +2491,16 @@ class OneDBase(Element):
         self.xleft = xleft
         self.xright = xright
         self.rightside = rightside
-        self.model.addElement(self)
+        self.model.addelement(self)
     def __repr__(self):
         return self.name + 'from xleft= ' + str(self.xleft) + ' to ' + str(self.xright)
     def initialize(self):
-        self.aq = self.model.aq.findAquiferData(0.5 * (self.xleft + self.xright),0)
+        self.aq = self.model.aq.find_aquifer_data(0.5 * (self.xleft + self.xright), 0)
         self.setbc()
         # Probably need to set control points xc here
         self.setflowcoef()
-        self.term = self.flowcoef * self.aq.coef[self.pylayers,:]  # shape (self.Nparam,self.aq.Naq,self.model.Np)
-        self.term2 = self.term.reshape(self.Nparam,self.aq.Naq,self.model.Nin,self.model.Npin) # shape (self.Nparam,self.aq.Naq,self.model.Nin, Npin)
+        self.term = self.flowcoef * self.aq.coef[self.pylayers,:]  # shape (self.nparam,self.aq.Naq,self.model.npval)
+        self.term2 = self.term.reshape(self.Nparam,self.aq.Naq,self.model.Nin,self.model.Npin) # shape (self.nparam,self.aq.Naq,self.model.Nin, npint)
         self.strengthinf = self.flowcoef * self.aq.coef[self.pylayers,:]
         self.strengthinflayers = np.sum(self.strengthinf * self.aq.eigvec[self.pylayers,:,:], 1)
         if (self.xleft != -np.inf) & (self.xright != np.inf):
@@ -2521,7 +2521,7 @@ class OneDBase(Element):
         self.flowcoef = 1.0 / self.model.p  # Step function
     def potinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
         if aq == self.aq:
             for i in range(self.aq.Naq):
@@ -2530,14 +2530,14 @@ class OneDBase(Element):
                         l = j*self.model.Npin
                         if self.rightside == 'inf':
                             rv[:,i,j,:] = self.aq.lab2[i,j,:] * self.term2[:,i,j,:] * np.exp( -x / self.aq.lab2[i,j,:] )
-                            #rv[:,i,j,:] = self.aq.lab2[i,j,:] / self.model.p[l:l+self.model.Npin] * self.coef[:,i,j,:] * np.exp( -x / self.aq.lab2[i,j,:] )
+                            #rv[:,i,j,:] = self.aq.lab2[i,j,:] / self.model.p[l:l+self.model.npint] * self.coef[:,i,j,:] * np.exp( -x / self.aq.lab2[i,j,:] )
                         elif self.rightside == 'imp':
                             rv[:,i,j,:] = self.model.p[l:l+self.model.Npin] * self.coef[:,i,j,:] * \
                                           ( self.A[i,j,:] * np.exp(-x/self.aq.lab2[i,j,:]) + self.B[i,j,:] * np.exp( (x-self.L)/self.aq.lab2[i,j,:] ) )
         rv.shape = (self.Nparam,aq.Naq,self.model.Np)
         return rv
     #def dischargeinf(self):
-    #    rv = np.zeros((self.Nparam,self.aq.Naq,self.model.Np),'D')
+    #    rv = np.zeros((self.nparam,self.aq.Naq,self.model.npval),'D')
     #    for i in range(self.aq.Naq):
     #        rv[:,i,:] = 1.0 / self.model.p * self.coef2[:,i,:]
     #    return rv
@@ -2551,17 +2551,17 @@ class OneD(Element):
         self.L = L
         self.res = res
         self.wh = 'H' # Outflow over full aquifer thickness
-        self.model.addElement(self)
+        self.model.addelement(self)
     def __repr__(self):
         return self.name
     def initialize(self):
-        self.aq = self.model.aq.findAquiferData(0,0)
+        self.aq = self.model.aq.find_aquifer_data(0, 0)
         self.setbc()
-        #self.coef = self.aq.coef[self.pylayers,:]
-        #self.coef = self.coef.reshape((self.Nparam, self.aq.Naq, self.model.Nin, self.model.Npin))
+        #self.coef = self.aq.coef[self.layers,:]
+        #self.coef = self.coef.reshape((self.nparam, self.aq.Naq, self.model.Nin, self.model.npint))
         coef = self.aq.coef[self.pylayers,:]
         self.setflowcoef()
-        self.term = self.flowcoef * coef  # shape (self.Nparam,self.aq.Naq,self.model.Np)
+        self.term = self.flowcoef * coef  # shape (self.nparam,self.aq.Naq,self.model.npval)
         self.term2 = self.term.reshape(self.Nparam,self.aq.Naq,self.model.Nin,self.model.Npin)
         self.strengthinf = self.flowcoef * coef
         self.strengthinflayers = np.sum(self.strengthinf * self.aq.eigvec[self.pylayers,:,:], 1)
@@ -2581,7 +2581,7 @@ class OneD(Element):
         self.flowcoef = 1.0 / self.model.p  # Step function
     def potinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
         if aq == self.aq:
             for i in range(self.aq.Naq):
@@ -2590,7 +2590,7 @@ class OneD(Element):
                         l = j*self.model.Npin
                         if self.rightside == 'inf':
                             rv[:,i,j,:] = self.aq.lab2[i,j,:] * self.term2[:,i,j,:] * np.exp( -x / self.aq.lab2[i,j,:] )
-                            #rv[:,i,j,:] = self.aq.lab2[i,j,:] / self.model.p[l:l+self.model.Npin] * self.coef[:,i,j,:] * np.exp( -x / self.aq.lab2[i,j,:] )
+                            #rv[:,i,j,:] = self.aq.lab2[i,j,:] / self.model.p[l:l+self.model.npint] * self.coef[:,i,j,:] * np.exp( -x / self.aq.lab2[i,j,:] )
                         elif self.rightside == 'imp':
                             rv[:,i,j,:] = self.model.p[l:l+self.model.Npin] * self.coef[:,i,j,:] * \
                                           ( self.A[i,j,:] * np.exp(-x/self.aq.lab2[i,j,:]) + self.B[i,j,:] * np.exp( (x-self.L)/self.aq.lab2[i,j,:] ) )
@@ -2598,7 +2598,7 @@ class OneD(Element):
         return rv
     def disinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         qx = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
         qy = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
         if aq == self.aq:
@@ -2608,12 +2608,12 @@ class OneD(Element):
                         l = j*self.model.Npin
                         if self.rightside == 'inf':
                             qx[:,i,j,:] = self.term2[:,i,j,:] * np.exp( -x / self.aq.lab2[i,j,:] )
-                            #rv[:,i,j,:] = self.aq.lab2[i,j,:] / self.model.p[l:l+self.model.Npin] * self.coef[:,i,j,:] * np.exp( -x / self.aq.lab2[i,j,:] )
+                            #rv[:,i,j,:] = self.aq.lab2[i,j,:] / self.model.p[l:l+self.model.npint] * self.coef[:,i,j,:] * np.exp( -x / self.aq.lab2[i,j,:] )
         qx.shape = (self.Nparam,aq.Naq,self.model.Np)
         qy.shape = (self.Nparam,aq.Naq,self.model.Np)
         return qx, qy
     #def dischargeinf(self):
-    #    rv = np.zeros((self.Nparam,self.aq.Naq,self.model.Np),'D')
+    #    rv = np.zeros((self.nparam,self.aq.Naq,self.model.npval),'D')
     #    for i in range(self.aq.Naq):
     #        rv[:,i,:] = 1.0 / self.model.p * self.coef2[:,i,:]
     #    return rv
@@ -2641,14 +2641,14 @@ class XsecLake(Element):
         self.x1 = x1
         self.x2 = x2
         self.B = B
-        self.model.addElement(self)
+        self.model.addelement(self)
     def __repr__(self):
         return self.name + ' from x1 = ' + str(self.x1) + ' to ' + str(self.x2)
     def initialize(self):
         self.xm = 0.5*(self.x1+self.x2)
         if (self.xm == np.inf) | (self.xm == -np.inf):  # to correct for infinity
             self.xm = np.sign(self.xm) * 1e100
-        self.aq = self.model.aq.findAquiferData(self.xm, 0)
+        self.aq = self.model.aq.find_aquifer_data(self.xm, 0)
         self.setbc()
         self.Phistar = self.aq.Tcol / self.model.p  # Step function
         self.Phibar = np.empty((self.aq.Naq, self.model.Np), 'D')
@@ -2659,7 +2659,7 @@ class XsecLake(Element):
             self.Phibar[:,i] = np.dot(np.linalg.inv(self.aq.eigvec[:,:,i]), self.Phibar[:,i])  # As Phi gets multiplied with V later on
     def potinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
         if aq == self.aq:
             rv[0] = self.Phibar
@@ -2672,7 +2672,7 @@ class XsecInhom(Element, InhomEquation):
     def __init__(self, model, xinhom = 0, label = None):
         Element.__init__(self, model, Nparam=2*model.aq.Naq, Nunknowns=2*model.aq.Naq, layers=range(model.aq.Naq), type='z', name='XsecInhom', label=label)
         self.xinhom = xinhom
-        self.model.addElement(self)
+        self.model.addelement(self)
     def __repr__(self):
         return self.name + 'xinhom= ' + str(self.xinhom)
     def initialize(self):
@@ -2680,14 +2680,14 @@ class XsecInhom(Element, InhomEquation):
         self.thetacp = np.zeros(1)
         self.xc = np.array([self.xinhom])
         self.yc = np.zeros(1)
-        self.aqin = self.model.aq.findAquiferData(self.xinhom * (1-1e-10) - 1-1e-10, self.yc)
-        self.aqout = self.model.aq.findAquiferData(self.xinhom * (1+1e-10) + 1-1e-10, self.yc)
+        self.aqin = self.model.aq.find_aquifer_data(self.xinhom * (1 - 1e-10) - 1 - 1e-10, self.yc)
+        self.aqout = self.model.aq.find_aquifer_data(self.xinhom * (1 + 1e-10) + 1 - 1e-10, self.yc)
         assert self.aqin.Naq == self.aqout.Naq, 'TTim input error: Number of layers needs to be the same inside and outside circular inhomogeneity'
         self.setbc()
         self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )        
     def potinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData(x, y)
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.Nparam, self.model.aq.Naq, self.model.Nin, self.model.Npin), 'D')
         if aq == self.aqin:
             for i in range(aq.Naq):
@@ -2703,7 +2703,7 @@ class XsecInhom(Element, InhomEquation):
         return rv
     def disinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
+        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         qx = np.zeros((self.Nparam, self.model.aq.Naq, self.model.Nin, self.model.Npin), 'D')
         qy = np.zeros((self.Nparam, self.model.aq.Naq, self.model.Nin, self.model.Npin), 'D')
         if aq == self.aqin:

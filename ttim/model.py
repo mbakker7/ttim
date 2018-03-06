@@ -11,11 +11,11 @@ from .util import PlotTtim
 class TimModel(PlotTtim):
     def __init__(self, kaq=[1, 1], Haq=[1, 1], c=[1e100, 100], Saq=[0.3, 0.003], \
                  Sll=[0], topboundary='conf', phreatictop=False, tmin=1, tmax=10, M=20):
-        self.elementList = []
-        self.elementDict = {}
-        self.vbcList = []  # List with variable boundary condition 'v' elements
-        self.zbcList = []  # List with zero and constant boundary condition 'z' elements
-        self.gbcList = []  # List with given boundary condition 'g' elements; given bc elements don't have any unknowns
+        self.elementlist = []
+        self.elementdict = {}
+        self.vbclist = []  # List with variable boundary condition 'v' elements
+        self.zbclist = []  # List with zero and constant boundary condition 'z' elements
+        self.gbclist = []  # List with given boundary condition 'g' elements; given bc elements don't have any unknowns
         self.tmin = float(tmin)
         self.tmax = float(tmax)
         self.M = M
@@ -29,44 +29,44 @@ class TimModel(PlotTtim):
         return 'Model'
     
     def initialize(self):
-        self.gvbcList = self.gbcList + self.vbcList
-        self.vzbcList = self.vbcList + self.zbcList
-        self.elementList = self.gbcList + self.vbcList + self.zbcList  # Given elements are first in list
-        self.Ngbc = len(self.gbcList)
-        self.Nvbc = len(self.vbcList)
-        self.Nzbc = len(self.zbcList)
-        self.Ngvbc = self.Ngbc + self.Nvbc
+        self.gvbcList = self.gbclist + self.vbclist
+        self.vzbcList = self.vbclist + self.zbclist
+        self.elementlist = self.gbclist + self.vbclist + self.zbclist  # Given elements are first in list
+        self.ngbc = len(self.gbclist)
+        self.nvbc = len(self.vbclist)
+        self.nzbc = len(self.zbclist)
+        self.ngvbc = self.ngbc + self.nvbc
         self.aq.initialize()
-        for e in self.elementList:
+        for e in self.elementlist:
             e.initialize()
             
-    def addElement(self,e):
-        if e.label is not None: self.elementDict[e.label] = e
+    def addelement(self, e):
+        if e.label is not None: self.elementdict[e.label] = e
         if e.type == 'g':
-            self.gbcList.append(e)
+            self.gbclist.append(e)
         elif e.type == 'v':
-            self.vbcList.append(e)
+            self.vbclist.append(e)
         elif e.type == 'z':
-            self.zbcList.append(e)
+            self.zbclist.append(e)
             
-    def removeElement(self,e):
-        if e.label is not None: self.elementDict.pop(e.label)
+    def removeelement(self, e):
+        if e.label is not None: self.elementdict.pop(e.label)
         if e.type == 'g':
-            self.gbcList.remove(e)
+            self.gbclist.remove(e)
         elif e.type == 'v':
-            self.vbcList.remove(e)
+            self.vbclist.remove(e)
         elif e.type == 'z':
-            self.zbcList.remove(e)
+            self.zbclist.remove(e)
             
-    def addInhom(self,inhom):
-        self.aq.inhomList.append(inhom)
+    def addinhom(self, inhom):
+        self.aq.inhomlist.append(inhom)
         
     def compute_laplace_parameters(self):
         '''
-        Nin: Number of time intervals
-        Npin: Number of p values per interval
-        Np: Total number of p values (Nin*Np)
-        p[Np]: Array with p values
+        nint: Number of time intervals
+        npint: Number of p values per interval
+        npval: Total number of p values (nint * npval)
+        p[npval]: Array with p values
         '''
         itmin = np.floor(np.log10(self.tmin))
         itmax = np.ceil(np.log10(self.tmax))
@@ -78,11 +78,11 @@ class TimModel(PlotTtim):
         #alpha = 1.0
         alpha = 0.0  # I don't see why it shouldn't be 0.0
         tol = 1e-9
-        self.Nin = len(self.tintervals)-1
+        self.nint = len(self.tintervals)-1
         run = np.arange(2*self.M+1)  # so there are 2M+1 terms in Fourier series expansion
         self.p = []
         self.gamma = []
-        for i in range(self.Nin):
+        for i in range(self.nint):
             T = self.tintervals[i+1] * 2.0
             gamma = alpha - np.log(tol) / (T/2.0)
             p = gamma + 1j * np.pi * run / T
@@ -90,35 +90,35 @@ class TimModel(PlotTtim):
             self.gamma.append(gamma)
         self.p = np.array(self.p)
         self.gamma = np.array(self.gamma)
-        self.Np = len(self.p)
-        self.Npin = 2 * self.M + 1
+        self.npval = len(self.p)
+        self.npint = 2 * self.M + 1
         self.aq.initialize()
         
-    def potential(self, x, y, t, pylayers=None, aq=None, derivative=0, returnphi=0):
-        '''Returns pot[Naq,Ntimes] if layers=None, otherwise pot[len(pylayers,Ntimes)]
+    def potential(self, x, y, t, layers=None, aq=None, derivative=0, returnphi=0):
+        '''Returns pot[naq, ntimes] if layers=None, otherwise pot[len(layers,Ntimes)]
         t must be ordered '''
-        if aq is None: aq = self.aq.findAquiferData(x, y)
-        if pylayers is None:
-            pylayers = range(aq.Naq)
-        Nlayers = len(pylayers)
+        if aq is None: aq = self.aq.find_aquifer_data(x, y)
+        if layers is None:
+            layers = range(aq.naq)
+        nlayers = len(layers)
         time = np.atleast_1d(t).copy()
-        pot = np.zeros((self.Ngvbc, aq.Naq, self.Np), 'D')
-        for i in range(self.Ngbc):
-            pot[i, :] += self.gbcList[i].unitpotential(x, y, aq)
+        pot = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
+        for i in range(self.ngbc):
+            pot[i, :] += self.gbclist[i].unitpotential(x, y, aq)
         for e in self.vzbcList:
             pot += e.potential(x, y, aq)
-        if pylayers is None:
+        if layers is None:
             pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec, 2)
         else:
-            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec[pylayers, :], 2 )
+            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec[layers, :], 2)
         if derivative > 0: pot *= self.p ** derivative
         if returnphi:
             return pot
-        rv = np.zeros((Nlayers, len(time)))
+        rv = np.zeros((nlayers, len(time)))
         if (time[0] < self.tmin) or (time[-1] > self.tmax):
             print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
         #
-        for k in range(self.Ngvbc):
+        for k in range(self.ngvbc):
             e = self.gvbcList[k]
             for itime in range(e.Ntstart):
                 t = time - e.tstart[itime]
@@ -126,72 +126,74 @@ class TimModel(PlotTtim):
                 if t[-1] >= self.tmin:  # Otherwise all zero
                     if (t[0] < self.tmin):
                         it = np.argmax(t >= self.tmin)  # clever call that should be replaced with find_first function when included in numpy
-                    for n in range(self.Nin):
+                    for n in range(self.nint):
                         tp = t[(t >= self.tintervals[n]) & (t < self.tintervals[n+1])]
                         ## I think these lines are not needed anymore as I modified tintervals[0] and tintervals[-1] by eps
-                        #if n == self.Nin-1:
+                        #if n == self.nint-1:
                         #    tp = t[ (t >= self.tintervals[n]) & (t <= self.tintervals[n+1]) ]
                         #else:
                         #    tp = t[ (t >= self.tintervals[n]) & (t < self.tintervals[n+1]) ]
-                        Nt = len(tp)
-                        if Nt > 0:  # if all values zero, don't do the inverse transform
-                            for i in range(Nlayers):
+                        nt = len(tp)
+                        if nt > 0:  # if all values zero, don't do the inverse transform
+                            for i in range(nlayers):
                                 # I used to check the first value only, but it seems that checking that nothing is zero is needed and should be sufficient
-                                #if np.abs( pot[k,i,n*self.Npin] ) > 1e-20:  # First value very small
-                                if not np.any(pot[k, i, n * self.Npin: (n + 1) * self.Npin] == 0) : # If there is a zero item, zero should be returned; funky enough this can be done with a straight equal comparison
-                                    rv[i, it:it + Nt] += e.bc[itime] * \
+                                #if np.abs( pot[k,i,n*self.npint] ) > 1e-20:  # First value very small
+                                if not np.any(pot[k, i, n * self.npint: (n + 1) * self.npint] == 0) : # If there is a zero item, zero should be returned; funky enough this can be done with a straight equal comparison
+                                    rv[i, it:it + nt] += e.bc[itime] * \
                                     invlaptrans.invlap(tp, self.tintervals[n],
                                                        self.tintervals[n + 1],
-                                                       pot[k, i , n * self.Npin:(n + 1) * self.Npin],
-                                                       self.gamma[n], self.M, Nt)
-                            it = it + Nt
+                                                       pot[k, i , n * self.npint:(n + 1) * self.npint],
+                                                       self.gamma[n], self.M, nt)
+                            it = it + nt
         return rv
     
-    def discharge(self,x,y,t,layers=None,aq=None,derivative=0):
-        '''Returns qx[Naq,Ntimes],qy[Naq,Ntimes] if layers=None, otherwise qx[len(layers,Ntimes)],qy[len(layers,Ntimes)]
+    def discharge(self, x, y, t, layers=None, aq=None, derivative=0):
+        '''Returns qx[naq, ntimes], qy[naq, ntimes] if layers=None, otherwise
+        qx[len(layers,Ntimes)],qy[len(layers,Ntimes)]
         t must be ordered '''
-        if aq is None: aq = self.aq.findAquiferData(x,y)
+        if aq is None: aq = self.aq.find_aquifer_data(x, y)
         if layers is None:
-            pylayers = range(aq.Naq)
+            layers = range(aq.naq)
         else:
-            pylayers = np.atleast_1d(layers)  # corrected for base zero
-        Nlayers = len(pylayers)
+            layers = np.atleast_1d(layers)  # corrected for base zero
+        Nlayers = len(layers)
         time = np.atleast_1d(t).copy()
-        disx,disy = np.zeros((self.Ngvbc, aq.Naq, self.Np),'D'), np.zeros((self.Ngvbc, aq.Naq, self.Np),'D')
-        for i in range(self.Ngbc):
-            qx,qy = self.gbcList[i].unitdischarge(x,y,aq)
+        disx = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
+        disy = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
+        for i in range(self.ngbc):
+            qx,qy = self.gbclist[i].unitdischarge(x, y, aq)
             disx[i,:] += qx; disy[i,:] += qy
         for e in self.vzbcList:
             qx,qy = e.discharge(x,y,aq)
             disx += qx; disy += qy
-        if pylayers is None:
-            disx = np.sum( disx[:,np.newaxis,:,:] * aq.eigvec, 2 )
-            disy = np.sum( disy[:,np.newaxis,:,:] * aq.eigvec, 2 )
+        if layers is None:
+            disx = np.sum(disx[:, np.newaxis, :, :] * aq.eigvec, 2)
+            disy = np.sum(disy[:, np.newaxis, :, :] * aq.eigvec, 2)
         else:
-            disx = np.sum( disx[:,np.newaxis,:,:] * aq.eigvec[pylayers,:], 2 )
-            disy = np.sum( disy[:,np.newaxis,:,:] * aq.eigvec[pylayers,:], 2 )
+            disx = np.sum( disx[:,np.newaxis,:,:] * aq.eigvec[layers, :], 2)
+            disy = np.sum( disy[:,np.newaxis,:,:] * aq.eigvec[layers, :], 2)
         if derivative > 0:
-            disx *= self.p**derivative
-            disy *= self.p**derivative
+            disx *= self.p ** derivative
+            disy *= self.p ** derivative
         rvx,rvy = np.zeros((Nlayers,len(time))), np.zeros((Nlayers,len(time)))
         if (time[0] < self.tmin) or (time[-1] > self.tmax):
             print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
         #
-        for k in range(self.Ngvbc):
+        for k in range(self.ngvbc):
             e = self.gvbcList[k]
             for itime in range(e.Ntstart):
                 t = time - e.tstart[itime]
                 it = 0
                 if t[-1] >= self.tmin:  # Otherwise all zero
                     if (t[0] < self.tmin): it = np.argmax( t >= self.tmin )  # clever call that should be replaced with find_first function when included in numpy
-                    for n in range(self.Nin):
+                    for n in range(self.nint):
                         tp = t[ (t >= self.tintervals[n]) & (t < self.tintervals[n+1]) ]
                         Nt = len(tp)
                         if Nt > 0:  # if all values zero, don't do the inverse transform
                             for i in range(Nlayers):
-                                if not np.any( disx[k,i,n*self.Npin:(n+1)*self.Npin] == 0.0) : # If there is a zero item, zero should be returned; funky enough this can be done with a straight equal comparison
-                                    rvx[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap( tp, self.tintervals[n], self.tintervals[n+1], disx[k,i,n*self.Npin:(n+1)*self.Npin], self.gamma[n], self.M, Nt )
-                                    rvy[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap( tp, self.tintervals[n], self.tintervals[n+1], disy[k,i,n*self.Npin:(n+1)*self.Npin], self.gamma[n], self.M, Nt )
+                                if not np.any(disx[k, i, n*self.npint:(n+1)*self.npint] == 0.0) : # If there is a zero item, zero should be returned; funky enough this can be done with a straight equal comparison
+                                    rvx[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap(tp, self.tintervals[n], self.tintervals[n+1], disx[k, i,n*self.npint:(n + 1) * self.npint], self.gamma[n], self.M, Nt)
+                                    rvy[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap(tp, self.tintervals[n], self.tintervals[n+1], disy[k, i,n*self.npint:(n + 1) * self.npint], self.gamma[n], self.M, Nt)
                             it = it + Nt
         return rvx,rvy
     
@@ -214,19 +216,19 @@ class TimModel(PlotTtim):
 
         """
         
-        if aq is None: aq = self.aq.findAquiferData(x,y)
+        if aq is None: aq = self.aq.find_aquifer_data(x, y)
         if layers is None:
-            pylayers = range(aq.Naq)
+            layers = range(aq.naq)
         else:
-            pylayers = np.atleast_1d(layers)  # corrected for base zero
-        pot = self.potential(x,y,t,pylayers,aq,derivative)
-        return aq.potentialToHead(pot,pylayers)
+            layers = np.atleast_1d(layers)  # corrected for base zero
+        pot = self.potential(x,y,t,layers,aq,derivative)
+        return aq.potential_to_head(pot,layers)
     
     def headinside(self,elabel,t):
-        return self.elementDict[elabel].headinside(t)
+        return self.elementdict[elabel].headinside(t)
     
     def strength(self,elabel,t):
-        return self.elementDict[elabel].strength(t)
+        return self.elementdict[elabel].strength(t)
     
     def headalongline(self, x, y, t, layers=None):
         """Head along line or curve
@@ -250,7 +252,7 @@ class TimModel(PlotTtim):
         
         xg, yg = np.atleast_1d(x),np.atleast_1d(y)
         if layers is None:
-            Nlayers = self.aq.findAquiferData(xg[0],yg[0]).Naq
+            Nlayers = self.aq.find_aquifer_data(xg[0], yg[0]).naq
         else:
             Nlayers = len(np.atleast_1d(layers))
         nx = len(xg)
@@ -292,7 +294,7 @@ class TimModel(PlotTtim):
         nx = len(xg)
         ny = len(yg)
         if layers is None:
-            nlayers = self.aq.findAquiferData(xg[0],yg[0]).Naq
+            nlayers = self.aq.find_aquifer_data(xg[0], yg[0]).naq
         else:
             nlayers = len(np.atleast_1d(layers))
         t = np.atleast_1d(t)
@@ -343,17 +345,17 @@ class TimModel(PlotTtim):
         it = 0
         if t[-1] >= self.tmin:  # Otherwise all zero
             if (t[0] < self.tmin): it = np.argmax( t >= self.tmin )  # clever call that should be replaced with find_first function when included in numpy
-            for n in range(self.Nin):
-                if n == self.Nin-1:
+            for n in range(self.nint):
+                if n == self.nint-1:
                     tp = t[ (t >= self.tintervals[n]) & (t <= self.tintervals[n+1]) ]
                 else:
                     tp = t[ (t >= self.tintervals[n]) & (t < self.tintervals[n+1]) ]
-                Nt = len(tp)
-                if Nt > 0:  # if all values zero, don't do the inverse transform
-                    # Not needed anymore: if np.abs( pot[n*self.Npin] ) > 1e-20:
-                    if not np.any( pot[n*self.Npin:(n+1)*self.Npin] == 0.0) : # If there is a zero item, zero should be returned; funky enough this can be done with a straight equal comparison
-                        rv[it:it+Nt] = invlaptrans.invlap( tp, self.tintervals[n], self.tintervals[n+1], pot[n*self.Npin:(n+1)*self.Npin], self.gamma[n], self.M, Nt )
-                    it = it + Nt
+                nt = len(tp)
+                if nt > 0:  # if all values zero, don't do the inverse transform
+                    # Not needed anymore: if np.abs( pot[n*self.npint] ) > 1e-20:
+                    if not np.any( pot[n*self.npint:(n+1)*self.npint] == 0.0) : # If there is a zero item, zero should be returned; funky enough this can be done with a straight equal comparison
+                        rv[it:it+nt] = invlaptrans.invlap( tp, self.tintervals[n], self.tintervals[n+1], pot[n*self.npint:(n+1)*self.npint], self.gamma[n], self.M, nt)
+                    it = it + nt
         return rv
     
     def solve(self,printmat=0, sendback=0, silent=False):
@@ -364,27 +366,27 @@ class TimModel(PlotTtim):
         # Initialize elements
         self.initialize()
         # Compute number of equations
-        self.Neq = np.sum([e.Nunknowns for e in self.elementList])
+        self.neq = np.sum([e.nunknowns for e in self.elementlist])
         if silent is False:
-            print('self.Neq ', self.Neq)
-        if self.Neq == 0:
+            print('self.neq ', self.neq)
+        if self.neq == 0:
             if silent is False:
                 print('No unknowns. Solution complete')
             return
-        mat = np.empty((self.Neq, self.Neq, self.Np), 'D')
-        rhs = np.empty((self.Neq, self.Ngvbc, self.Np), 'D')
+        mat = np.empty((self.neq, self.neq, self.npval), 'D')
+        rhs = np.empty((self.neq, self.ngvbc, self.npval), 'D')
         ieq = 0
-        for e in self.elementList:
-            if e.Nunknowns > 0:
-                mat[ieq:ieq+e.Nunknowns, :, :], rhs[ieq:ieq+e.Nunknowns, :, :] = e.equation()
-                ieq += e.Nunknowns
+        for e in self.elementlist:
+            if e.nunknowns > 0:
+                mat[ieq:ieq+e.nunknowns, :, :], rhs[ieq:ieq+e.nunknowns, :, :] = e.equation()
+                ieq += e.nunknowns
         if printmat:
             return mat, rhs
-        for i in range(self.Np):
+        for i in range(self.npval):
             sol = np.linalg.solve(mat[:, :, i], rhs[:, :, i])
             icount = 0
-            for e in self.elementList:
-                for j in range(e.Nunknowns):
+            for e in self.elementlist:
+                for j in range(e.nunknowns):
                     e.parameters[:, j, i] = sol[icount, :]
                     icount += 1
                 e.run_after_solve()
@@ -416,7 +418,7 @@ class TimModel(PlotTtim):
         f = open(fname,'w')
         f.write('from ttim import *\n')
         f.write( self.write() )
-        for e in self.elementList:
+        for e in self.elementlist:
             f.write( e.write() )
         f.close()
         

@@ -2,25 +2,24 @@ import numpy as np
 import inspect # Used for storing the input
 
 class Element:
-    def __init__(self, model, Nparam=1, Nunknowns=0, layers=0, \
+    def __init__(self, model, nparam=1, nunknowns=0, layers=0, \
                  tsandbc=[(0, 0)], type='z', name='', label=None):
         '''Types of elements
         'g': strength is given through time
         'v': boundary condition is variable through time
         'z': boundary condition is zero through time
-        Definition of Nlayers, Ncp, Npar, Nunknowns:
-        Nlayers: Number of layers that the element is screened in, set in Element
+        Definition of nlayers, Ncp, Npar, nunknowns:
+        nlayers: Number of layers that the element is screened in, set in Element
         Ncp: Number of control points along the element
-        Nparam: Number of parameters, commonly Nlayers * Ncp
-        Nunknowns: Number of unknown parameters, commonly zero or Npar
+        nparam: Number of parameters, commonly nlayers * Ncp
+        nunknowns: Number of unknown parameters, commonly zero or Npar
         '''
         self.model = model
         self.aq = None # Set in the initialization function
-        self.Nparam = Nparam  # Number of parameters
-        self.Nunknowns = Nunknowns
+        self.nparam = nparam  # Number of parameters
+        self.nunknowns = nunknowns
         self.layers = np.atleast_1d(layers)
-        self.pylayers = self.layers  # corrected for base zero
-        self.Nlayers = len(self.layers)
+        self.nlayers = len(self.layers)
         #
         tsandbc = np.atleast_2d(tsandbc).astype('d')
         assert tsandbc.shape[1] == 2, "TTim input error: tsandQ or tsandh need to be 2D lists or arrays like [(0,1),(2,5),(8,0)] "
@@ -35,7 +34,7 @@ class Element:
         if self.label is not None:
             assert self.label not in self.model.elementDict.keys(), \
                    "TTim error: label " + self.label + " already exists"
-        self.Rzero = 30
+        self.rzero = 30
         
     def setbc(self):
         if len(self.tstart) > 1:
@@ -53,128 +52,128 @@ class Element:
         pass
     
     def potinf(self, x, y, aq=None):
-        '''Returns complex array of size (Nparam, Naq, Np)'''
+        '''Returns complex array of size (nparam, Naq, npval)'''
         raise 'Must overload Element.potinf()'
     
     def potential(self, x, y, aq=None):
-        '''Returns complex array of size (Ngvbc, Naq, Np)'''
+        '''Returns complex array of size (ngvbc, Naq, npval)'''
         if aq is None:
-            aq = self.model.aq.findAquiferData(x, y)
+            aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum(self.parameters[:, :, np.newaxis, :] * \
                       self.potinf(x, y, aq), 1)
     
     def unitpotential(self, x, y, aq=None):
-        '''Returns complex array of size (Naq, Np)
+        '''Returns complex array of size (Naq, npval)
         Can be more efficient for given elements'''
         if aq is None:
-            aq = self.model.aq.findAquiferData(x, y)
+            aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum(self.potinf(x, y, aq), 0)
     
     def disinf(self, x, y, aq=None):
-        '''Returns 2 complex arrays of size (Nparam, Naq, Np)'''
+        '''Returns 2 complex arrays of size (nparam, Naq, npval)'''
         raise 'Must overload Element.disinf()'
     
     def discharge(self, x, y, aq=None):
-        '''Returns 2 complex arrays of size (Ngvbc, Naq, Np)'''
+        '''Returns 2 complex arrays of size (ngvbc, Naq, npval)'''
         if aq is None:
-            aq = self.model.aq.findAquiferData(x, y)
+            aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.disinf(x, y, aq)
         return np.sum(self.parameters[:, :, np.newaxis, :] * qx, 1), \
                np.sum( elf.parameters[:, :, np.newaxis, :] * qy, 1 )
     
     def unitdischarge(self, x, y, aq=None):
-        '''Returns 2 complex arrays of size (Naq, Np)
+        '''Returns 2 complex arrays of size (Naq, npval)
         Can be more efficient for given elements'''
         if aq is None:
-            aq = self.model.aq.findAquiferData(x, y)
+            aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.disinf(x, y, aq)
         return np.sum(qx, 0), np.sum(qy, 0)
     
     # Functions used to build equations
-    def potinflayers(self,x,y,pylayers=0,aq=None):
-        '''pylayers can be scalar, list, or array. returns array of size (len(pylayers),Nparam,Np)
+    def potinflayers(self,x,y,layers=0,aq=None):
+        '''layers can be scalar, list, or array. returns array of size (len(layers),nparam,npval)
         only used in building equations'''
         if aq is None:
-            aq = self.model.aq.findAquiferData(x, y)
+            aq = self.model.aq.find_aquifer_data(x, y)
         pot = self.potinf(x, y, aq)
         rv = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec, 2)
         rv = rv.swapaxes(0, 1) # As the first axes needs to be the number of layers
-        return rv[pylayers, :]
+        return rv[layers, :]
     
-    def potentiallayers(self, x, y, pylayers=0, aq=None):
-        '''Returns complex array of size (Ngvbc, len(pylayers),Np)
+    def potentiallayers(self, x, y, layers=0, aq=None):
+        '''Returns complex array of size (ngvbc, len(layers),npval)
         only used in building equations'''
         if aq is None:
-            aq = self.model.aq.findAquiferData(x, y)
+            aq = self.model.aq.find_aquifer_data(x, y)
         pot = self.potential(x, y, aq)
         phi = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec, 2)
-        return phi[:, pylayers, :]
+        return phi[:, layers, :]
     
-    def unitpotentiallayers(self, x, y, pylayers=0, aq=None):
-        '''Returns complex array of size (len(pylayers), Np)
+    def unitpotentiallayers(self, x, y, layers=0, aq=None):
+        '''Returns complex array of size (len(layers), npval)
         only used in building equations'''
         if aq is None:
-            aq = self.model.aq.findAquiferData(x,y)
+            aq = self.model.aq.find_aquifer_data(x, y)
         pot = self.unitpotential(x, y, aq)
         phi = np.sum(pot[np.newaxis, :, :] * aq.eigvec, 1)
-        return phi[pylayers, :]
+        return phi[layers, :]
     
-    def disinflayers(self, x, y, pylayers=0, aq=None):
-        '''pylayers can be scalar, list, or array. returns 2 arrays of size (len(pylayers),Nparam,Np)
+    def disinflayers(self, x, y, layers=0, aq=None):
+        '''layers can be scalar, list, or array. returns 2 arrays of size (len(layers),nparam,npval)
         only used in building equations'''
         if aq is None:
-            aq = self.model.aq.findAquiferData(x, y)
+            aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.disinf(x, y, aq)
         rvx = np.sum(qx[:, np.newaxis, :, :] * aq.eigvec, 2)
         rvy = np.sum(qy[:, np.newaxis, :, :] * aq.eigvec, 2)
         rvx = rvx.swapaxes(0, 1)
         rvy = rvy.swapaxes(0, 1) # As the first axes needs to be the number of layers
-        return rvx[pylayers, :], rvy[pylayers, :]
+        return rvx[layers, :], rvy[layers, :]
     
-    def dischargelayers(self, x, y, pylayers=0, aq=None):
-        '''Returns 2 complex array of size (Ngvbc, len(pylayers), Np)
+    def dischargelayers(self, x, y, layers=0, aq=None):
+        '''Returns 2 complex array of size (ngvbc, len(layers), npval)
         only used in building equations'''
         if aq is None:
-            aq = self.model.aq.findAquiferData(x, y)
+            aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.discharge(x, y, aq)
         rvx = np.sum(qx[:, np.newaxis, :, :] * aq.eigvec, 2)
         rvy = np.sum(qy[:, np.newaxis, :, :] * aq.eigvec, 2)
-        return rvx[:, pylayers, :], rvy[:, pylayers, :]
+        return rvx[:, layers, :], rvy[:, layers, :]
     
-    def unitdischargelayers(self, x, y, pylayers=0, aq=None):
-        '''Returns complex array of size (len(pylayers), Np)
+    def unitdischargelayers(self, x, y, layers=0, aq=None):
+        '''Returns complex array of size (len(layers), npval)
         only used in building equations'''
         if aq is None:
-            aq = self.model.aq.findAquiferData(x, y)
+            aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.unitdischarge(x, y, aq)
         rvx = np.sum(qx[np.newaxis, :, :] * aq.eigvec, 1)
         rvy = np.sum(qy[np.newaxis, :, :] * aq.eigvec, 1)
-        return rvx[pylayers, :], rvy[pylayers, :]
+        return rvx[layers, :], rvy[layers, :]
     
     # Other functions
     def discharge(self, t, derivative=0):
-        '''returns array of discharges (Nlayers,len(t)) t must be ordered and tmin <= t <= tmax'''
+        '''returns array of discharges (nlayers,len(t)) t must be ordered and tmin <= t <= tmax'''
         # Could potentially be more efficient if s is pre-computed for all elements, but I don't know if that is worthwhile to store as it is quick now
         time = np.atleast_1d(t).astype('d')
         if (time[0] < self.model.tmin) or (time[-1] > self.model.tmax):
             print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
-        rv = np.zeros((self.Nlayers, np.size(time)))
+        rv = np.zeros((self.nlayers, np.size(time)))
         if self.type == 'g':
             s = self.dischargeinflayers * self.model.p ** derivative
             for itime in range(self.Ntstart):
                 time -=  self.tstart[itime]
-                for i in range(self.Nlayers):
+                for i in range(self.nlayers):
                     rv[i] += self.bc[itime] * self.model.inverseLapTran(s[i], time)
         else:
             s = np.sum(self.parameters[:, :, np.newaxis, :] * self.dischargeinf, 1)
             s = np.sum(s[:, np.newaxis, :, :] * self.aq.eigvec, 2)
-            s = s[:, self.pylayers, :] * self.model.p ** derivative
-            for k in range(self.model.Ngvbc):
+            s = s[:, self.layers, :] * self.model.p ** derivative
+            for k in range(self.model.ngvbc):
                 e = self.model.gvbcList[k]
                 for itime in range(e.Ntstart):
                     t = time - e.tstart[itime]
                     if t[-1] >= self.model.tmin:  # Otherwise all zero
-                        for i in range(self.Nlayers):
+                        for i in range(self.nlayers):
                             rv[i] += e.bc[itime] * self.model.inverseLapTran(s[k, i], t)
         return rv
         
