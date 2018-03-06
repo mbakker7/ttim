@@ -32,7 +32,7 @@ class Element:
         self.name = name
         self.label = label
         if self.label is not None:
-            assert self.label not in self.model.elementDict.keys(), \
+            assert self.label not in self.model.elementdict.keys(), \
                    "TTim error: label " + self.label + " already exists"
         self.rzero = 30
         
@@ -169,7 +169,7 @@ class Element:
             s = np.sum(s[:, np.newaxis, :, :] * self.aq.eigvec, 2)
             s = s[:, self.layers, :] * self.model.p ** derivative
             for k in range(self.model.ngvbc):
-                e = self.model.gvbcList[k]
+                e = self.model.gvbclist[k]
                 for itime in range(e.Ntstart):
                     t = time - e.tstart[itime]
                     if t[-1] >= self.model.tmin:  # Otherwise all zero

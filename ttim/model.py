@@ -13,9 +13,9 @@ class TimModel(PlotTtim):
                  Sll=[0], topboundary='conf', phreatictop=False, tmin=1, tmax=10, M=20):
         self.elementlist = []
         self.elementdict = {}
-        self.vbclist = []  # List with variable boundary condition 'v' elements
-        self.zbclist = []  # List with zero and constant boundary condition 'z' elements
-        self.gbclist = []  # List with given boundary condition 'g' elements; given bc elements don't have any unknowns
+        self.vbclist = []  # list with variable boundary condition 'v' elements
+        self.zbclist = []  # list with zero and constant boundary condition 'z' elements
+        self.gbclist = []  # list with given boundary condition 'g' elements; given bc elements don't have any unknowns
         self.tmin = float(tmin)
         self.tmax = float(tmax)
         self.M = M
@@ -29,8 +29,8 @@ class TimModel(PlotTtim):
         return 'Model'
     
     def initialize(self):
-        self.gvbcList = self.gbclist + self.vbclist
-        self.vzbcList = self.vbclist + self.zbclist
+        self.gvbclist = self.gbclist + self.vbclist
+        self.vzbclist = self.vbclist + self.zbclist
         self.elementlist = self.gbclist + self.vbclist + self.zbclist  # Given elements are first in list
         self.ngbc = len(self.gbclist)
         self.nvbc = len(self.vbclist)
@@ -105,7 +105,7 @@ class TimModel(PlotTtim):
         pot = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
         for i in range(self.ngbc):
             pot[i, :] += self.gbclist[i].unitpotential(x, y, aq)
-        for e in self.vzbcList:
+        for e in self.vzbclist:
             pot += e.potential(x, y, aq)
         if layers is None:
             pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec, 2)
@@ -119,7 +119,7 @@ class TimModel(PlotTtim):
             print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
         #
         for k in range(self.ngvbc):
-            e = self.gvbcList[k]
+            e = self.gvbclist[k]
             for itime in range(e.Ntstart):
                 t = time - e.tstart[itime]
                 it = 0
@@ -163,7 +163,7 @@ class TimModel(PlotTtim):
         for i in range(self.ngbc):
             qx,qy = self.gbclist[i].unitdischarge(x, y, aq)
             disx[i,:] += qx; disy[i,:] += qy
-        for e in self.vzbcList:
+        for e in self.vzbclist:
             qx,qy = e.discharge(x,y,aq)
             disx += qx; disy += qy
         if layers is None:
@@ -180,7 +180,7 @@ class TimModel(PlotTtim):
             print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
         #
         for k in range(self.ngvbc):
-            e = self.gvbcList[k]
+            e = self.gvbclist[k]
             for itime in range(e.Ntstart):
                 t = time - e.tstart[itime]
                 it = 0

@@ -27,7 +27,7 @@ class LineSinkBase(Element):
 
     def initialize(self):
         self.xc = np.array([0.5*(self.x1+self.x2)]); self.yc = np.array([0.5*(self.y1+self.y2)])
-        self.Ncp = 1
+        self.ncp = 1
         self.z1 = self.x1 + 1j*self.y1; self.z2 = self.x2 + 1j*self.y2
         self.L = np.abs(self.z1-self.z2)
         self.order = 0 # This is for univform discharge only
@@ -203,7 +203,7 @@ class HeadLineSink(LineSinkBase, HeadEquation):
 
     def initialize(self):
         LineSinkBase.initialize(self)
-        self.parameters = np.zeros((self.model.Ngvbc, self.nparam, self.model.npval), 'D')
+        self.parameters = np.zeros((self.model.ngvbc, self.nparam, self.model.npval), 'D')
         self.pc = self.aq.T[self.layers] # Needed in solving; We solve for a unit head
         
 class LineSinkStringBase(Element):
@@ -217,10 +217,10 @@ class LineSinkStringBase(Element):
         return self.name + ' with nodes ' + str(zip(self.x,self.y))
 
     def initialize(self):
-        self.Ncp = self.Nls
-        self.nparam = self.nlayers * self.Nls
+        self.ncp = self.nls
+        self.nparam = self.nlayers * self.nls
         self.nunknowns = self.nparam
-        self.xls,self.yls = np.empty((self.Nls,2)), np.empty((self.Nls,2))
+        self.xls,self.yls = np.empty((self.nls,2)), np.empty((self.nls,2))
         for i,ls in enumerate(self.lsList):
             ls.initialize()
             self.xls[i,:] = [ls.x1,ls.x2]
@@ -228,7 +228,7 @@ class LineSinkStringBase(Element):
         self.xlslayout = np.hstack((self.xls[:,0],self.xls[-1,1])) # Only used for layout when it is a continuous string
         self.ylslayout = np.hstack((self.yls[:,0],self.yls[-1,1]))
         self.aq = self.model.aq.find_aquifer_data(self.lsList[0].xc, self.lsList[0].yc)
-        self.parameters = np.zeros((self.model.Ngvbc, self.nparam, self.model.npval), 'D')
+        self.parameters = np.zeros((self.model.ngvbc, self.nparam, self.model.npval), 'D')
         self.setbc()
         # As parameters are only stored for the element not the list, we need to combine the following
         self.resfach = []; self.resfacp = []
@@ -239,8 +239,8 @@ class LineSinkStringBase(Element):
         self.resfach = np.array(self.resfach); self.resfacp = np.array(self.resfacp)
         self.dischargeinf = np.zeros((self.nparam, self.aq.naq, self.model.npval), 'D')
         self.dischargeinflayers = np.zeros((self.nparam, self.model.npval), 'D')
-        self.xc, self.yc = np.zeros(self.Nls), np.zeros(self.Nls)
-        for i in range(self.Nls):
+        self.xc, self.yc = np.zeros(self.nls), np.zeros(self.nls)
+        for i in range(self.nls):
             self.dischargeinf[i*self.nlayers:(i + 1) * self.nlayers, :] = self.lsList[i].dischargeinf[:]
             self.dischargeinflayers[i*self.nlayers:(i + 1) * self.nlayers, :] = self.lsList[i].dischargeinflayers
             self.xc[i], self.yc[i] = self.lsList[i].xc, self.lsList[i].yc
@@ -249,7 +249,7 @@ class LineSinkStringBase(Element):
         '''Returns array (nunknowns,Nperiods)'''
         if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
-        for i in range(self.Nls):
+        for i in range(self.nls):
             rv[i*self.nlayers:(i + 1) * self.nlayers, :] = self.lsList[i].potinf(x, y, aq)
         return rv
 
@@ -258,7 +258,7 @@ class LineSinkStringBase(Element):
         if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rvx = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
         rvy = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
-        for i in range(self.Nls):
+        for i in range(self.nls):
             qx,qy = self.lsList[i].disinf(x,y,aq)
             rvx[i*self.nlayers:(i + 1) * self.nlayers, :] = qx
             rvy[i*self.nlayers:(i + 1) * self.nlayers, :] = qy
@@ -280,9 +280,9 @@ class LineSinkStringBase(Element):
             
         """
         
-        rv = np.zeros((self.Nls, self.nlayers, np.size(t)))
+        rv = np.zeros((self.nls, self.nlayers, np.size(t)))
         Q = self.discharge_list(t,derivative=derivative)
-        for i in range(self.Nls):
+        for i in range(self.nls):
             rv[i,:,:] = self.model.head(self.xc[i],self.yc[i],t,derivative=derivative)[self.layers] - self.resfach[i * self.nlayers:(i + 1) * self.nlayers, np.newaxis] * Q[i]
         return rv
     
@@ -290,7 +290,7 @@ class LineSinkStringBase(Element):
         plt.plot(self.xlslayout, self.ylslayout, 'k')
 
     def run_after_solve(self):
-        for i in range(self.Nls):
+        for i in range(self.nls):
             self.lsList[i].parameters[:] = self.parameters[:,i*self.nlayers:(i + 1) * self.nlayers, :]
 
     def discharge_list(self,t,derivative=0):
@@ -308,8 +308,8 @@ class LineSinkStringBase(Element):
             the line-sink is screened in, and each time
             
         """
-        rv = np.zeros((self.Nls, self.nlayers, np.size(t)))
-        for i in range(self.Nls):
+        rv = np.zeros((self.nls, self.nlayers, np.size(t)))
+        for i in range(self.nls):
             rv[i,:,:] = self.lsList[i].discharge(t,derivative=derivative)
         return rv
             
@@ -373,8 +373,8 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
         xy = np.atleast_2d(xy).astype('d')
         self.x = xy[:, 0]
         self.y = xy[:, 1]
-        self.Nls = len(self.x) - 1
-        for i in range(self.Nls):
+        self.nls = len(self.x) - 1
+        for i in range(self.nls):
             self.lsList.append(HeadLineSink(model, x1=self.x[i], y1=self.y[i], \
                                             x2=self.x[i + 1], y2=self.y[i + 1], \
                                             tsandh=tsandh, res=res, wh=wh, \
@@ -384,8 +384,8 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
 
     def initialize(self):
         LineSinkStringBase.initialize(self)
-        self.pc = np.zeros(self.Nls * self.nlayers)
-        for i in range(self.Nls):
+        self.pc = np.zeros(self.nls * self.nlayers)
+        for i in range(self.nls):
             self.pc[i * self.nlayers:(i + 1) * self.nlayers] = self.lsList[i].pc
             
 class MscreenLineSink(LineSinkBase,MscreenEquation):
@@ -400,7 +400,7 @@ class MscreenLineSink(LineSinkBase,MscreenEquation):
         if len(self.vres) == 1: self.vres = self.vres[0] * np.ones(self.nlayers - 1)
     def initialize(self):
         LineSinkBase.initialize(self)
-        self.parameters = np.zeros((self.model.Ngvbc, self.nparam, self.model.npval), 'D')
+        self.parameters = np.zeros((self.model.ngvbc, self.nparam, self.model.npval), 'D')
         self.vresfac = self.vres / (self.wv * self.L)  # Qv = (hn - hn-1) / vresfac[n-1]
             
 class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
@@ -455,8 +455,8 @@ class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
                                     label=label)
         xy = np.atleast_2d(xy).astype('d')
         self.x,self.y = xy[:, 0], xy[:, 1]
-        self.Nls = len(self.x) - 1
-        for i in range(self.Nls):
+        self.nls = len(self.x) - 1
+        for i in range(self.nls):
             self.lsList.append(MscreenLineSink(model, x1=self.x[i], y1=self.y[i], \
                                                x2=self.x[i + 1], y2=self.y[i + 1], \
                                                tsandQ=tsandQ, res=res, wh=wh,
@@ -490,13 +490,13 @@ class LineSinkHoBase(Element):
                ' to ' + str((self.x2, self.y2))
 
     def initialize(self):
-        self.Ncp = self.order + 1
+        self.ncp = self.order + 1
         self.z1 = self.x1 + 1j * self.y1
         self.z2 = self.x2 + 1j * self.y2
         self.L = np.abs(self.z1 - self.z2)
         #
-        thetacp = np.arange(np.pi, 0, -np.pi / self.Ncp) - 0.5 * np.pi / self.Ncp
-        Zcp = np.zeros(self.Ncp, 'D')
+        thetacp = np.arange(np.pi, 0, -np.pi / self.ncp) - 0.5 * np.pi / self.ncp
+        Zcp = np.zeros(self.ncp, 'D')
         Zcp.real = np.cos(thetacp)
         Zcp.imag = 1e-6  # control point just on positive site (this is handy later on)
         zcp = Zcp * (self.z2 - self.z1) / 2 + 0.5 * (self.z1 + self.z2)
@@ -590,7 +590,7 @@ class HeadLineSinkHo(LineSinkHoBase, HeadEquationNores):
 
     def initialize(self):
         LineSinkHoBase.initialize(self)
-        self.parameters = np.zeros((self.model.Ngvbc, self.nparam, self.model.npval), 'D')
+        self.parameters = np.zeros((self.model.ngvbc, self.nparam, self.model.npval), 'D')
         self.pc = np.empty(self.nparam)
         for i, T in enumerate(self.aq.T[self.layers]):
             self.pc[i::self.nlayers] =  T # Needed in solving; we solve for a unit head
