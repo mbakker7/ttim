@@ -10,7 +10,7 @@ class LineSinkBase(Element):
     def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandbc=[(0, 1)], \
                  res=0, wh='H', layers=0, type='', name='LineSinkBase', \
                  label=None, addtomodel=True):
-        Element.__init__(self, model, Nparam=1, Nunknowns=0, layers=layers,
+        Element.__init__(self, model, nparam=1, nunknowns=0, layers=layers,
                          tsandbc=tsandbc, type=type, name=name, label=label)
         self.nparam = len(self.layers)
         self.x1 = float(x1)
@@ -35,8 +35,8 @@ class LineSinkBase(Element):
         self.setbc()
         coef = self.aq.coef[self.layers, :]
         self.setflowcoef()
-        self.term = self.flowcoef * coef  # shape (self.nparam,self.aq.Naq,self.model.npval)
-        self.term2 = self.term.reshape(self.nparam, self.aq.Naq, self.model.Nin, self.model.Npin)
+        self.term = self.flowcoef * coef  # shape (self.nparam,self.aq.naq,self.model.npval)
+        self.term2 = self.term.reshape(self.nparam, self.aq.naq, self.model.nint, self.model.npint)
         self.dischargeinf = self.flowcoef * coef
         self.dischargeinflayers = np.sum(self.dischargeinf * self.aq.eigvec[self.layers, :, :], 1)
         if type(self.wh) is str:
@@ -57,35 +57,35 @@ class LineSinkBase(Element):
         '''Can be called with only one x,y value'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D')
+        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
         if aq == self.aq:
-            pot = np.zeros(self.model.Npin, 'D')
-            for i in range(self.aq.Naq):
-                for j in range(self.model.Nin):
+            pot = np.zeros(self.model.npint, 'D')
+            for i in range(self.aq.naq):
+                for j in range(self.model.nint):
                     bessel.circle_line_intersection(self.z1, self.z2, x + y * 1j, self.rzero * abs(self.model.aq.lab2[i, j, 0]), self.xa, self.ya, self.xb, self.yb, self.np)
                     if self.np > 0:
                         za = complex(self.xa,self.ya); zb = complex(self.xb,self.yb) # f2py has problem returning complex arrays -> fixed in new numpy
                         bessel.bessellsuniv(x,y,za,zb,self.aq.lab2[i,j,:],pot)
                         rv[:,i,j,:] = self.term2[:,i,j,:] * pot / self.L  # Divide by L as the parameter is now total discharge
-        rv.shape = (self.nparam, aq.Naq, self.model.Np)
+        rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
 
     def disinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rvx = np.zeros((self.nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D')
-        rvy = np.zeros((self.nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D')
+        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
+        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
         if aq == self.aq:
-            qxqy = np.zeros((2,self.model.Npin),'D')
-            for i in range(self.aq.Naq):
-                for j in range(self.model.Nin):
+            qxqy = np.zeros((2,self.model.npint),'D')
+            for i in range(self.aq.naq):
+                for j in range(self.model.nint):
                     if bessel.isinside(self.z1, self.z2, x+y*1j, self.rzero*self.aq.lababs[i, j]):
                         qxqy[:,:] = bessel.bessellsqxqyv2(x, y, self.z1, self.z2,self.aq.lab2[i,j,:], self.order, self.rzero * self.aq.lababs[i, j]) / self.L  # Divide by L as the parameter is now total discharge
                         rvx[:,i,j,:] = self.term2[:,i,j,:] * qxqy[0]
                         rvy[:,i,j,:] = self.term2[:,i,j,:] * qxqy[1]
-        rvx.shape = (self.nparam, aq.Naq, self.model.Np)
-        rvy.shape = (self.nparam, aq.Naq, self.model.Np)
+        rvx.shape = (self.nparam, aq.naq, self.model.npval)
+        rvy.shape = (self.nparam, aq.naq, self.model.npval)
         return rvx, rvy
 
     def headinside(self,t):
@@ -203,13 +203,13 @@ class HeadLineSink(LineSinkBase, HeadEquation):
 
     def initialize(self):
         LineSinkBase.initialize(self)
-        self.parameters = np.zeros((self.model.Ngvbc, self.nparam, self.model.Np), 'D')
+        self.parameters = np.zeros((self.model.Ngvbc, self.nparam, self.model.npval), 'D')
         self.pc = self.aq.T[self.layers] # Needed in solving; We solve for a unit head
         
 class LineSinkStringBase(Element):
     def __init__(self, model, tsandbc=[(0, 1)], layers=0, type='',
                  name='LineSinkStringBase', label=None):
-        Element.__init__(self, model, Nparam=1, Nunknowns=0, layers=layers, \
+        Element.__init__(self, model, nparam=1, nunknowns=0, layers=layers, \
                          tsandbc=tsandbc, type=type, name=name, label=label)
         self.lsList = []
 
@@ -228,7 +228,7 @@ class LineSinkStringBase(Element):
         self.xlslayout = np.hstack((self.xls[:,0],self.xls[-1,1])) # Only used for layout when it is a continuous string
         self.ylslayout = np.hstack((self.yls[:,0],self.yls[-1,1]))
         self.aq = self.model.aq.find_aquifer_data(self.lsList[0].xc, self.lsList[0].yc)
-        self.parameters = np.zeros((self.model.Ngvbc, self.nparam, self.model.Np), 'D')
+        self.parameters = np.zeros((self.model.Ngvbc, self.nparam, self.model.npval), 'D')
         self.setbc()
         # As parameters are only stored for the element not the list, we need to combine the following
         self.resfach = []; self.resfacp = []
@@ -237,8 +237,8 @@ class LineSinkStringBase(Element):
             self.resfach.extend( ls.resfach.tolist() )  # Needed in solving
             self.resfacp.extend( ls.resfacp.tolist() )  # Needed in solving
         self.resfach = np.array(self.resfach); self.resfacp = np.array(self.resfacp)
-        self.dischargeinf = np.zeros((self.nparam, self.aq.Naq, self.model.Np), 'D')
-        self.dischargeinflayers = np.zeros((self.nparam, self.model.Np), 'D')
+        self.dischargeinf = np.zeros((self.nparam, self.aq.naq, self.model.npval), 'D')
+        self.dischargeinflayers = np.zeros((self.nparam, self.model.npval), 'D')
         self.xc, self.yc = np.zeros(self.Nls), np.zeros(self.Nls)
         for i in range(self.Nls):
             self.dischargeinf[i*self.nlayers:(i + 1) * self.nlayers, :] = self.lsList[i].dischargeinf[:]
@@ -248,7 +248,7 @@ class LineSinkStringBase(Element):
     def potinf(self,x,y,aq=None):
         '''Returns array (nunknowns,Nperiods)'''
         if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.Naq, self.model.Np), 'D')
+        rv = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
         for i in range(self.Nls):
             rv[i*self.nlayers:(i + 1) * self.nlayers, :] = self.lsList[i].potinf(x, y, aq)
         return rv
@@ -256,7 +256,8 @@ class LineSinkStringBase(Element):
     def disinf(self,x,y,aq=None):
         '''Returns array (nunknowns,Nperiods)'''
         if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
-        rvx,rvy = np.zeros((self.nparam, aq.Naq, self.model.Np), 'D'), np.zeros((self.nparam, aq.Naq, self.model.Np), 'D')
+        rvx = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
+        rvy = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
         for i in range(self.Nls):
             qx,qy = self.lsList[i].disinf(x,y,aq)
             rvx[i*self.nlayers:(i + 1) * self.nlayers, :] = qx
@@ -399,7 +400,7 @@ class MscreenLineSink(LineSinkBase,MscreenEquation):
         if len(self.vres) == 1: self.vres = self.vres[0] * np.ones(self.nlayers - 1)
     def initialize(self):
         LineSinkBase.initialize(self)
-        self.parameters = np.zeros((self.model.Ngvbc, self.nparam, self.model.Np), 'D')
+        self.parameters = np.zeros((self.model.Ngvbc, self.nparam, self.model.npval), 'D')
         self.vresfac = self.vres / (self.wv * self.L)  # Qv = (hn - hn-1) / vresfac[n-1]
             
 class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
@@ -471,7 +472,7 @@ class LineSinkHoBase(Element):
     def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandbc=[(0.0,1.0)],
                  res=0.0, wh='H', order=0, layers=0, type='',
                  name='LineSinkBase', label=None, addtomodel=True):
-        Element.__init__(self, model, Nparam=1, Nunknowns=0, layers=layers,
+        Element.__init__(self, model, nparam=1, nunknowns=0, layers=layers,
                          tsandbc=tsandbc, type=type, name=name, label=label)
         self.order = order
         self.nparam = (self.order + 1) * len(self.layers)
@@ -506,11 +507,11 @@ class LineSinkHoBase(Element):
         self.setbc()
         coef = self.aq.coef[self.layers, :]
         self.setflowcoef()
-        self.term = self.flowcoef * coef  # shape (self.nlayers,self.aq.Naq,self.model.npval)
-        self.term2 = self.term.reshape(self.nlayers, self.aq.Naq, self.model.Nin, self.model.Npin)
-        #self.term2 = np.empty((self.nparam,self.aq.Naq,self.model.Nin,self.model.npint),'D')
+        self.term = self.flowcoef * coef  # shape (self.nlayers,self.aq.naq,self.model.npval)
+        self.term2 = self.term.reshape(self.nlayers, self.aq.naq, self.model.nint, self.model.npint)
+        #self.term2 = np.empty((self.nparam,self.aq.naq,self.model.nint,self.model.npint),'D')
         #for i in range(self.nlayers):
-        #    self.term2[i*(self.order+1):(i+1)*(self.order+1),:,:,:] = self.term[i,:,:].reshape((1,self.aq.Naq,self.model.Nin,self.model.npint))
+        #    self.term2[i*(self.order+1):(i+1)*(self.order+1),:,:,:] = self.term[i,:,:].reshape((1,self.aq.naq,self.model.nint,self.model.npint))
         self.dischargeinf = self.flowcoef * coef
         self.dischargeinflayers = np.sum(self.dischargeinf * self.aq.eigvec[self.layers, :, :], 1)
         if self.wh == 'H':
@@ -529,37 +530,37 @@ class LineSinkHoBase(Element):
     def potinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
         if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D')
+        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
         if aq == self.aq:
-            pot = np.zeros((self.order + 1, self.model.Npin), 'D')
-            for i in range(self.aq.Naq):
-                for j in range(self.model.Nin):
+            pot = np.zeros((self.order + 1, self.model.npint), 'D')
+            for i in range(self.aq.naq):
+                for j in range(self.model.nint):
                     if bessel.isinside(self.z1, self.z2, x + y * 1j, self.rzero * self.aq.lababs[i, j]):
                         pot[:,:] = bessel.bessellsv2(x, y, self.z1, self.z2, self.aq.lab2[i, j, :], \
                                                      self.order, self.rzero * self.aq.lababs[i, j]) / self.L  # Divide by L as the parameter is now total discharge
                         for k in range(self.nlayers):
                             rv[k::self.nlayers, i, j, :] = self.term2[k, i, j, :] * pot
-        rv.shape = (self.nparam, aq.Naq, self.model.Np)
+        rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
 
     def disinf(self, x, y, aq=None):
         '''Can be called with only one x,y value'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rvx = np.zeros((self.nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D')
-        rvy = np.zeros((self.nparam, aq.Naq, self.model.Nin, self.model.Npin), 'D')
+        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
+        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
         if aq == self.aq:
-            qxqy = np.zeros((2 * (self.order + 1), self.model.Npin), 'D')
-            for i in range(self.aq.Naq):
-                for j in range(self.model.Nin):
+            qxqy = np.zeros((2 * (self.order + 1), self.model.npint), 'D')
+            for i in range(self.aq.naq):
+                for j in range(self.model.nint):
                     if bessel.isinside(self.z1, self.z2, x + y * 1j, self.rzero * self.aq.lababs[i, j]):
                         qxqy[:, :] = bessel.bessellsqxqyv2(x, y, self.z1, self.z2, self.aq.lab2[i, j, :], \
                                                            self.order, self.rzero * self.aq.lababs[i, j]) / self.L  # Divide by L as the parameter is now total discharge
                         for k in range(self.nlayers):
                             rvx[k::self.nlayers, i, j, :] = self.term2[k, i, j, :] * qxqy[:self.order + 1, :]
                             rvy[k::self.nlayers, i, j, :] = self.term2[k, i, j, :] * qxqy[self.order + 1:, :]
-        rvx.shape = (self.nparam, aq.Naq, self.model.Np)
-        rvy.shape = (self.nparam, aq.Naq, self.model.Np)
+        rvx.shape = (self.nparam, aq.naq, self.model.npval)
+        rvy.shape = (self.nparam, aq.naq, self.model.npval)
         return rvx, rvy
 
     def headinside(self, t):
@@ -589,7 +590,7 @@ class HeadLineSinkHo(LineSinkHoBase, HeadEquationNores):
 
     def initialize(self):
         LineSinkHoBase.initialize(self)
-        self.parameters = np.zeros((self.model.Ngvbc, self.nparam, self.model.Np), 'D')
+        self.parameters = np.zeros((self.model.Ngvbc, self.nparam, self.model.npval), 'D')
         self.pc = np.empty(self.nparam)
         for i, T in enumerate(self.aq.T[self.layers]):
             self.pc[i::self.nlayers] =  T # Needed in solving; we solve for a unit head
