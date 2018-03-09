@@ -1,0 +1,32 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module invlap ! in 
+    interface  ! in :invlap
+        module invlaptrans ! in :invlap:invlap.f90
+            function invlap2(t,tmin,tmax,fp,m,gamma,n) result (ft) ! in :invlap:invlap.f90:invlaptrans
+                real(kind=8) dimension(n),intent(in) :: t
+                real(kind=8) intent(in) :: tmin
+                real(kind=8) intent(in) :: tmax
+                complex(kind=8) dimension(2 * m + 1),intent(in) :: fp
+                integer, optional,intent(in),check((len(fp)-1)/(2)>=m),depend(fp) :: m=(len(fp)-1)/(2)
+                real(kind=8) intent(in) :: gamma
+                integer, optional,intent(in),check(len(t)>=n),depend(t) :: n=len(t)
+                real(kind=8) dimension(n) :: ft
+            end function invlap2
+            function invlap(t,tmin,tmax,fp,m,gamma,nt) result (ft) ! in :invlap:invlap.f90:invlaptrans
+                real(kind=8) dimension(nt),intent(in) :: t
+                real(kind=8) intent(in) :: tmin
+                real(kind=8) intent(in) :: tmax
+                complex(kind=8) dimension(2 * m + 1),intent(in) :: fp
+                integer, optional,intent(in),check((len(fp)-1)/(2)>=m),depend(fp) :: m=(len(fp)-1)/(2)
+                real(kind=8) intent(in) :: gamma
+                integer, optional,intent(in),check(len(t)>=nt),depend(t) :: nt=len(t)
+                real(kind=8) dimension(nt) :: ft
+            end function invlap
+        end module invlaptrans
+    end interface 
+end python module invlap
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/

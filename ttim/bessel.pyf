@@ -1,0 +1,500 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module bessel ! in 
+    interface  ! in :bessel
+        module bessel ! in :bessel:bessel.f95
+            real(kind=8) dimension(21) :: a
+            real(kind=8) dimension(8) :: wg
+            real(kind=8) dimension(21) :: b
+            real(kind=8) dimension(21) :: nrange
+            real(kind=8) dimension(8) :: xg
+            real(kind=8) :: tiny
+            real(kind=8) dimension(21) :: a1
+            real(kind=8) dimension(21,21) :: gam
+            real(kind=8) dimension(21) :: b1
+            real(kind=8) :: pi
+            real(kind=8) dimension(21) :: afar
+            subroutine initialize ! in :bessel:bessel.f95:bessel
+            end subroutine initialize
+            function besselk0far(z,nt) result (omega) ! in :bessel:bessel.f95:bessel
+                complex(kind=8) intent(in) :: z
+                integer intent(in) :: nt
+                complex(kind=8) :: omega
+            end function besselk0far
+            function besselk0near(z,nt) result (omega) ! in :bessel:bessel.f95:bessel
+                complex(kind=8) intent(in) :: z
+                integer intent(in) :: nt
+                complex(kind=8) :: omega
+            end function besselk0near
+            function besselk1near(z,nt) result (omega) ! in :bessel:bessel.f95:bessel
+                complex(kind=8) intent(in) :: z
+                integer intent(in) :: nt
+                complex(kind=8) :: omega
+            end function besselk1near
+            function besselk0cheb(z,nt) result (omega) ! in :bessel:bessel.f95:bessel
+                complex(kind=8) intent(in) :: z
+                integer intent(in) :: nt
+                complex(kind=8) :: omega
+            end function besselk0cheb
+            function besselk1cheb(z,nt) result (omega) ! in :bessel:bessel.f95:bessel
+                complex(kind=8) intent(in) :: z
+                integer intent(in) :: nt
+                complex(kind=8) :: omega
+            end function besselk1cheb
+            function besselk0(x,y,lab) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: lab
+                complex(kind=8) :: omega
+            end function besselk0
+            function besselk1(x,y,lab) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: lab
+                complex(kind=8) :: omega
+            end function besselk1
+            function k0bessel(z) result (omega) ! in :bessel:bessel.f95:bessel
+                complex(kind=8) intent(in) :: z
+                complex(kind=8) :: omega
+            end function k0bessel
+            subroutine besselk0v(x,y,lab,nlab,omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) dimension(nlab),intent(in) :: lab
+                integer, optional,intent(in),check(len(lab)>=nlab),depend(lab) :: nlab=len(lab)
+                complex(kind=8) dimension(nlab),intent(inout),depend(nlab) :: omega
+            end subroutine besselk0v
+            subroutine k0besselv(z,nlab,omega) ! in :bessel:bessel.f95:bessel
+                complex(kind=8) dimension(nlab),intent(in) :: z
+                integer, optional,intent(in),check(len(z)>=nlab),depend(z) :: nlab=len(z)
+                complex(kind=8) dimension(nlab),intent(inout),depend(nlab) :: omega
+            end subroutine k0besselv
+            function besselk0old(x,y,lab) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: lab
+                complex(kind=8) :: omega
+            end function besselk0old
+            function besselcheb(z,nt) result (omega) ! in :bessel:bessel.f95:bessel
+                complex(kind=8) intent(in) :: z
+                integer intent(in) :: nt
+                complex(kind=8) :: omega
+            end function besselcheb
+            function ucheb(a,c,z,n0) result (ufunc) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: a
+                integer intent(in) :: c
+                complex(kind=8) intent(in) :: z
+                integer intent(in) :: n0
+                complex(kind=8) :: ufunc
+            end function ucheb
+            function besselk0complex(x,y) result (phi) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                real(kind=8) :: phi
+            end function besselk0complex
+            function lapls_int_ho(x,y,z1,z2,order) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                integer intent(in) :: order
+                complex(kind=8) dimension(order + 1) :: omega
+            end function lapls_int_ho
+            function bessellsreal(x,y,x1,y1,x2,y2,lab) result (phi) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                real(kind=8) intent(in) :: x1
+                real(kind=8) intent(in) :: y1
+                real(kind=8) intent(in) :: x2
+                real(kind=8) intent(in) :: y2
+                real(kind=8) intent(in) :: lab
+                real(kind=8) :: phi
+            end function bessellsreal
+            function bessellsrealho(x,y,x1,y1,x2,y2,lab,order) result (phi) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                real(kind=8) intent(in) :: x1
+                real(kind=8) intent(in) :: y1
+                real(kind=8) intent(in) :: x2
+                real(kind=8) intent(in) :: y2
+                real(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) dimension(order + 1) :: phi
+            end function bessellsrealho
+            function bessells_int(x,y,z1,z2,lab) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                complex(kind=8) :: omega
+            end function bessells_int
+            function bessells_int_ho(x,y,z1,z2,lab,order,d1,d2) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: d1
+                real(kind=8) intent(in) :: d2
+                complex(kind=8) dimension(order + 1) :: omega
+            end function bessells_int_ho
+            function bessells_int_ho_qxqy(x,y,z1,z2,lab,order,d1,d2) result (qxqy) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: d1
+                real(kind=8) intent(in) :: d2
+                complex(kind=8) dimension(2 * order + 2) :: qxqy
+            end function bessells_int_ho_qxqy
+            function bessells_gauss(x,y,z1,z2,lab) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                complex(kind=8) :: omega
+            end function bessells_gauss
+            function bessells_gauss_ho(x,y,z1,z2,lab,order) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                complex(kind=8) dimension(order + 1) :: omega
+            end function bessells_gauss_ho
+            function bessells_gauss_ho_d1d2(x,y,z1,z2,lab,order,d1,d2) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: d1
+                real(kind=8) intent(in) :: d2
+                complex(kind=8) dimension(order + 1) :: omega
+            end function bessells_gauss_ho_d1d2
+            function bessells_gauss_ho_qxqy(x,y,z1,z2,lab,order) result (qxqy) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                complex(kind=8) dimension(2 * order + 2) :: qxqy
+            end function bessells_gauss_ho_qxqy
+            function bessells_gauss_ho_qxqy_d1d2(x,y,z1,z2,lab,order,d1,d2) result (qxqy) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: d1
+                real(kind=8) intent(in) :: d2
+                complex(kind=8) dimension(2 * order + 2) :: qxqy
+            end function bessells_gauss_ho_qxqy_d1d2
+            function bessells(x,y,z1,z2,lab,order,d1in,d2in) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: d1in
+                real(kind=8) intent(in) :: d2in
+                complex(kind=8) dimension(order + 1) :: omega
+            end function bessells
+            function bessellsv(x,y,z1,z2,lab,order,r,nlab) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) dimension(nlab),intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: r
+                integer, optional,intent(in),check(len(lab)>=nlab),depend(lab) :: nlab=len(lab)
+                complex(kind=8) dimension(nlab*(order+1)) :: omega
+            end function bessellsv
+            function bessellsv2(x,y,z1,z2,lab,order,r,nlab) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) dimension(nlab),intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: r
+                integer, optional,intent(in),check(len(lab)>=nlab),depend(lab) :: nlab=len(lab)
+                complex(kind=8) dimension(order + 1,nlab) :: omega
+            end function bessellsv2
+            function bessellsqxqy(x,y,z1,z2,lab,order,d1in,d2in) result (qxqy) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: d1in
+                real(kind=8) intent(in) :: d2in
+                complex(kind=8) dimension(2 * order + 2) :: qxqy
+            end function bessellsqxqy
+            function bessellsqxqyv(x,y,z1,z2,lab,order,r,nlab) result (qxqy) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) dimension(nlab),intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: r
+                integer, optional,intent(in),check(len(lab)>=nlab),depend(lab) :: nlab=len(lab)
+                complex(kind=8) dimension(2*nlab*(order+1)) :: qxqy
+            end function bessellsqxqyv
+            function bessellsqxqyv2(x,y,z1,z2,lab,order,r,nlab) result (qxqy) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) dimension(nlab),intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: r
+                integer, optional,intent(in),check(len(lab)>=nlab),depend(lab) :: nlab=len(lab)
+                complex(kind=8) dimension(2 * order + 2,nlab) :: qxqy
+            end function bessellsqxqyv2
+            function bessellsuni(x,y,z1,z2,lab) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                complex(kind=8) :: omega
+            end function bessellsuni
+            subroutine bessellsuniv(x,y,z1,z2,lab,nlab,omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) dimension(nlab),intent(in) :: lab
+                integer, optional,intent(in),check(len(lab)>=nlab),depend(lab) :: nlab=len(lab)
+                complex(kind=8) dimension(nlab),intent(inout),depend(nlab) :: omega
+            end subroutine bessellsuniv
+            function lapld_int_ho(x,y,z1,z2,order) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                integer intent(in) :: order
+                complex(kind=8) dimension(order + 1) :: omega
+            end function lapld_int_ho
+            function lapld_int_ho_d1d2(x,y,z1,z2,order,d1,d2) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: d1
+                real(kind=8) intent(in) :: d2
+                complex(kind=8) dimension(order + 1) :: omega
+            end function lapld_int_ho_d1d2
+            function lapld_int_ho_wdis(x,y,z1,z2,order) result (wdis) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                integer intent(in) :: order
+                complex(kind=8) dimension(order + 1) :: wdis
+            end function lapld_int_ho_wdis
+            function lapld_int_ho_wdis_d1d2(x,y,z1,z2,order,d1,d2) result (wdis) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: d1
+                real(kind=8) intent(in) :: d2
+                complex(kind=8) dimension(order + 1) :: wdis
+            end function lapld_int_ho_wdis_d1d2
+            function besselld_int_ho(x,y,z1,z2,lab,order,d1,d2) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: d1
+                real(kind=8) intent(in) :: d2
+                complex(kind=8) dimension(order + 1) :: omega
+            end function besselld_int_ho
+            function besselld_gauss_ho(x,y,z1,z2,lab,order) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                complex(kind=8) dimension(order + 1) :: omega
+            end function besselld_gauss_ho
+            function besselld_gauss_ho_d1d2(x,y,z1,z2,lab,order,d1,d2) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: d1
+                real(kind=8) intent(in) :: d2
+                complex(kind=8) dimension(order + 1) :: omega
+            end function besselld_gauss_ho_d1d2
+            function besselld(x,y,z1,z2,lab,order,d1in,d2in) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: d1in
+                real(kind=8) intent(in) :: d2in
+                complex(kind=8) dimension(order + 1) :: omega
+            end function besselld
+            function besselldv(x,y,z1,z2,lab,order,r,nlab) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) dimension(nlab),intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: r
+                integer, optional,intent(in),check(len(lab)>=nlab),depend(lab) :: nlab=len(lab)
+                complex(kind=8) dimension(nlab*(order+1)) :: omega
+            end function besselldv
+            function besselldv2(x,y,z1,z2,lab,order,r,nlab) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) dimension(nlab),intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: r
+                integer, optional,intent(in),check(len(lab)>=nlab),depend(lab) :: nlab=len(lab)
+                complex(kind=8) dimension(order + 1,nlab) :: omega
+            end function besselldv2
+            function besselldpart(x,y,z1,z2,lab,order,d1,d2) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: d1
+                real(kind=8) intent(in) :: d2
+                complex(kind=8) dimension(order + 1) :: omega
+            end function besselldpart
+            function besselld_int_ho_qxqy(x,y,z1,z2,lab,order,d1,d2) result (qxqy) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: d1
+                real(kind=8) intent(in) :: d2
+                complex(kind=8) dimension(2 * order + 2) :: qxqy
+            end function besselld_int_ho_qxqy
+            function besselld_gauss_ho_qxqy(x,y,z1,z2,lab,order) result (qxqy) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                complex(kind=8) dimension(2 * order + 2) :: qxqy
+            end function besselld_gauss_ho_qxqy
+            function besselld_gauss_ho_qxqy_d1d2(x,y,z1,z2,lab,order,d1,d2) result (qxqy) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: d1
+                real(kind=8) intent(in) :: d2
+                complex(kind=8) dimension(2 * order + 2) :: qxqy
+            end function besselld_gauss_ho_qxqy_d1d2
+            function besselldqxqy(x,y,z1,z2,lab,order,d1in,d2in) result (qxqy) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: d1in
+                real(kind=8) intent(in) :: d2in
+                complex(kind=8) dimension(2 * order + 2) :: qxqy
+            end function besselldqxqy
+            function besselldqxqyv(x,y,z1,z2,lab,order,r,nlab) result (qxqy) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) dimension(nlab),intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: r
+                integer, optional,intent(in),check(len(lab)>=nlab),depend(lab) :: nlab=len(lab)
+                complex(kind=8) dimension(2*nlab*(order+1)) :: qxqy
+            end function besselldqxqyv
+            function besselldqxqyv2(x,y,z1,z2,lab,order,r,nlab) result (qxqy) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) dimension(nlab),intent(in) :: lab
+                integer intent(in) :: order
+                real(kind=8) intent(in) :: r
+                integer, optional,intent(in),check(len(lab)>=nlab),depend(lab) :: nlab=len(lab)
+                complex(kind=8) dimension(2 * order + 2,nlab) :: qxqy
+            end function besselldqxqyv2
+            function bessells_circcheck(x,y,z1in,z2in,lab) result (omega) ! in :bessel:bessel.f95:bessel
+                real(kind=8) intent(in) :: x
+                real(kind=8) intent(in) :: y
+                complex(kind=8) intent(in) :: z1in
+                complex(kind=8) intent(in) :: z2in
+                complex(kind=8) intent(in) :: lab
+                complex(kind=8) :: omega
+            end function bessells_circcheck
+            subroutine circle_line_intersection(z1,z2,zc,r,xouta,youta,xoutb,youtb,n) ! in :bessel:bessel.f95:bessel
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: zc
+                real(kind=8) intent(in) :: r
+                real(kind=8) intent(inout) :: xouta
+                real(kind=8) intent(inout) :: youta
+                real(kind=8) intent(inout) :: xoutb
+                real(kind=8) intent(inout) :: youtb
+                integer intent(inout) :: n
+            end subroutine circle_line_intersection
+            subroutine find_d1d2(z1,z2,zc,r,d1,d2) ! in :bessel:bessel.f95:bessel
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: zc
+                real(kind=8) intent(in) :: r
+                real(kind=8) intent(inout) :: d1
+                real(kind=8) intent(inout) :: d2
+            end subroutine find_d1d2
+            function isinside(z1,z2,zc,r) result (irv) ! in :bessel:bessel.f95:bessel
+                complex(kind=8) intent(in) :: z1
+                complex(kind=8) intent(in) :: z2
+                complex(kind=8) intent(in) :: zc
+                real(kind=8) intent(in) :: r
+                integer :: irv
+            end function isinside
+        end module bessel
+    end interface 
+end python module bessel
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/
