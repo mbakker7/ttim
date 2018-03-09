@@ -1,3 +1,6 @@
+
+from __future__ import print_function
+
 from ttim import *
 from matplotlib.pyplot import *
 
@@ -32,6 +35,6 @@ try:
     ylabel('head (m)')
     legend(loc = 'best')
 except:
-    print 'A figure is created when run from IPython'
+    print('A figure is created when run from IPython')
     pass
 

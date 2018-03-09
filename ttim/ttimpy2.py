@@ -3,6 +3,8 @@ Copyright (C), 2010-2015, Mark Bakker.
 TTim is distributed under the MIT license
 '''
 
+from __future__ import print_function
+
 import numpy as np
 import matplotlib.pyplot as plt
 from bessel import *
@@ -110,7 +112,7 @@ class TimModel:
         if derivative > 0: pot *= self.p**derivative
         if returnphi: return pot
         rv = np.zeros((Nlayers,len(time)))
-        if (time[0] < self.tmin) or (time[-1] > self.tmax): print 'Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted'
+        if (time[0] < self.tmin) or (time[-1] > self.tmax): print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
         #
         for k in range(self.Ngvbc):
             e = self.gvbcList[k]
@@ -162,7 +164,7 @@ class TimModel:
             disx *= self.p**derivative
             disy *= self.p**derivative
         rvx,rvy = np.zeros((Nlayers,len(time))), np.zeros((Nlayers,len(time)))
-        if (time[0] < self.tmin) or (time[-1] > self.tmax): print 'Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted'
+        if (time[0] < self.tmin) or (time[-1] > self.tmax): print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
         #
         for k in range(self.Ngvbc):
             e = self.gvbcList[k]
@@ -220,7 +222,7 @@ class TimModel:
         t = np.atleast_1d(t)
         h = np.empty( (Nlayers,len(t),ny,nx) )
         for j in range(ny):
-            if printrow: print str(j)+' '
+            if printrow: print(str(j)+' ')
             for i in range(nx):
                 h[:,:,j,i] = self.head(xg[i],yg[j],t,layers)
         return h
@@ -234,7 +236,7 @@ class TimModel:
         t = np.atleast_1d(t)
         h = np.empty( (Nlayers,len(t),ny,nx) )
         for j in range(ny):
-            if printrow: print str(j)+' '
+            if printrow: print(str(j)+' ')
             for i in range(nx):
                 h[:,:,j,i] = self.head(xg[i],yg[j],t,layers)
         return h
@@ -273,7 +275,7 @@ class TimModel:
     #    else:  # In leaky layer
     #        vx = 0.0
     #        vy = 0.0
-    #        vz = ( head[-pyLayer] - head[-pyLayer-1] ) / ( aqdata.c[-pyLayer] * aqdata.nll[-pyLayer] ) 
+    #        vz = ( head[-pyLayer] - head[-pyLayer-1] ) / ( aqdata.c[-pyLayer] * aqdata.nll[-pyLayer] )
     #    return array([vx,vy,vz])
     def inverseLapTran(self,pot,t):
         '''returns array of potentials of len(t)
@@ -302,9 +304,9 @@ class TimModel:
         # Compute number of equations
         self.Neq = np.sum( [e.Nunknowns for e in self.elementList] )
         if silent is False:
-            print 'self.neq ',self.Neq
+            print('self.neq ',self.Neq)
         if self.Neq == 0:
-            if silent is False: print 'No unknowns. Solution complete'
+            if silent is False: print('No unknowns. Solution complete')
             return
         mat = np.empty( (self.Neq,self.Neq,self.Np), 'D' )
         rhs = np.empty( (self.Neq,self.Ngvbc,self.Np), 'D' )
@@ -324,9 +326,9 @@ class TimModel:
                     icount += 1
                 e.run_after_solve()
         if silent is False:
-            print 'solution complete'
+            print('solution complete')
         elif (silent == 'dot') or (silent == '.'):
-            print '.',
+            print('.', end='')
             sys.stdout.flush()  # Can be replaced with print with flush in Python 3.3
         if sendback:
             return sol
@@ -338,7 +340,7 @@ class TimModel:
         for key in self.inputargs[1:]:  # The first argument (self) is ignored
             if isinstance(self.inputvalues[key],np.ndarray):
                 rv += key + ' = ' + np.array2string(self.inputvalues[key],separator=',') + ',\n'
-            elif isinstance(self.inputvalues[key],str):                
+            elif isinstance(self.inputvalues[key],str):
                 rv += key + " = '" + self.inputvalues[key] + "',\n"
             else:
                 rv += key + ' = ' + str(self.inputvalues[key]) + ',\n'
@@ -352,8 +354,8 @@ class TimModel:
         for e in self.elementList:
             f.write( e.write() )
         f.close()
-        
-        
+
+
 def param_maq(kaq=[1],z=[1,0],c=[],Saq=[0.001],Sll=[0],topboundary='imp',phreatictop=False):
     # Computes the parameters for a TimModel from input for a maq model
     kaq = np.atleast_1d(kaq).astype('d')
@@ -364,7 +366,7 @@ def param_maq(kaq=[1],z=[1,0],c=[],Saq=[0.001],Sll=[0],topboundary='imp',phreati
     if len(Saq) == 1: Saq = Saq * np.ones(Naq)
     Sll = np.atleast_1d(Sll).astype('d')
     H = z[:-1] - z[1:]
-    assert np.all(H >= 0), 'Error: Not all layers thicknesses are non-negative' + str(H) 
+    assert np.all(H >= 0), 'Error: Not all layers thicknesses are non-negative' + str(H)
     if topboundary[:3] == 'imp':
         assert len(z) == 2*Naq, 'Error: Length of z needs to be ' + str(2*Naq)
         assert len(c) == Naq-1, 'Error: Length of c needs to be ' + str(Naq-1)
@@ -388,14 +390,14 @@ def param_maq(kaq=[1],z=[1,0],c=[],Saq=[0.001],Sll=[0],topboundary='imp',phreati
         Sll = Sll * H[::2]
         if phreatictop and (topboundary[:3]=='lea'): Sll[0] = Sll[0] / H[0]
     return kaq,Haq,c,Saq,Sll
-        
+
 class ModelMaq(TimModel):
     def __init__(self,kaq=[1],z=[1,0],c=[],Saq=[0.001],Sll=[0],topboundary='imp',phreatictop=False,tmin=1,tmax=10,M=20):
         self.storeinput(inspect.currentframe())
         kaq,Haq,c,Saq,Sll = param_maq(kaq,z,c,Saq,Sll,topboundary,phreatictop)
         TimModel.__init__(self,kaq,Haq,c,Saq,Sll,topboundary,tmin,tmax,M)
         self.name = 'ModelMaq'
-        
+
 def param_3d(kaq=[1],z=[1,0],Saq=[0.001],kzoverkh=1.0,phreatictop=False,semi=False):
     # Computes the parameters for a TimModel from input for a 3D model
     kaq = np.atleast_1d(kaq).astype('d')
@@ -425,7 +427,7 @@ class Model3D(TimModel):
         else:
             TimModel.__init__(self,kaq,H,c,Saq,Sll,'semi',tmin,tmax,M)
         self.name = 'Model3D'
-        
+
 class ModelXsec(TimModel):
     ''' Dummy aquifer data as there is no background aquifer. Naqlayers needs to be specified correctly'''
     def __init__(self, Naqlayers = 1, tmin = 1, tmax = 10, M = 20):
@@ -433,7 +435,7 @@ class ModelXsec(TimModel):
         a = np.ones(Naqlayers)
         TimModel.__init__(self, kaq = a, Haq = a, c = a[:-1], Saq = a, Sll = a[:-1], topboundary = 'imp', tmin = tmin, tmax = tmax, M = M)
         self.name = 'ModelXsec'
-    
+
 class AquiferData:
     def __init__(self,model,kaq,Haq,c,Saq,Sll,topboundary):
         self.model = model
@@ -443,7 +445,7 @@ class AquiferData:
         self.T = self.kaq * self.Haq
         self.Tcol = self.T.reshape(self.Naq,1)
         self.c = np.atleast_1d(c).astype('d')
-        self.c[self.c > 1e100] = 1e100 
+        self.c[self.c > 1e100] = 1e100
         self.Saq = np.atleast_1d(Saq).astype('d')
         self.Sll = np.atleast_1d(Sll).astype('d')
         self.Sll[self.Sll < 1e-20] = 1e-20 # Cannot be zero
@@ -503,7 +505,7 @@ class AquiferData:
             d0[0] += dzero / ( self.c[0] * self.T[0] )
         elif self.topboundary[:3] == 'sem':
             d0[0] += a[0] / ( self.c[0] * self.T[0] )
-            
+
         dm1 = -b[1:] / (self.c[1:] * self.T[:-1])
         dp1 = -b[1:] / (self.c[1:] * self.T[1:])
         A = np.diag(dm1,-1) + np.diag(d0,0) + np.diag(dp1,1)
@@ -518,7 +520,7 @@ class AquiferData:
     def potentialToHead(self,pot,pylayers):
         return pot / self.Tcol[pylayers]
     def isInside(self,x,y):
-        print 'Must overload AquiferData.isInside method'
+        print('Must overload AquiferData.isInside method')
         return True
     def inWhichPyLayer(self, z):
         '''Returns -9999 if above top of system, +9999 if below bottom of system, negative for in leaky layer.
@@ -533,7 +535,7 @@ class AquiferData:
         if z >= self.zb[self.Naquifers-1]:
             return self.Naquifers - 1
         return +9999
-    
+
 class Aquifer(AquiferData):
     def __init__(self,model,kaq,Haq,c,Saq,Sll,topboundary):
         AquiferData.__init__(self,model,kaq,Haq,c,Saq,Sll,topboundary)
@@ -552,7 +554,7 @@ class Aquifer(AquiferData):
                 if aq.area < rv.area:
                     rv = aq
         return rv
-    
+
 class XsecAquiferData(AquiferData):
     def __init__(self, model, x1=0, x2=0, kaq=[1], Haq=[1], c=[1], Saq=[.1], Sll=[.1], topboundary='imp'):
         AquiferData.__init__(self, model, kaq, Haq, c, Saq, Sll, topboundary)
@@ -562,19 +564,19 @@ class XsecAquiferData(AquiferData):
         rv = False
         if (x > self.x1) & (x <= self.x2): rv = True
         return rv
-    
+
 class XsecAquiferDataMaq(XsecAquiferData):
     def __init__(self, model, x1=0, x2=0, kaq=[1], z=[1,0], c=[], Saq=[0.001], Sll=[0], topboundary='imp', phreatictop=False):
         kaq, Haq, c, Saq, Sll = param_maq(kaq, z, c, Saq, Sll, topboundary, phreatictop)
         XsecAquiferData.__init__(self, model, x1, x2, kaq, Haq, c, Saq, Sll, topboundary)
-        
+
 class XsecAquiferData3D(XsecAquiferData):
     def __init__(self, model, x1=0, x2=0, kaq=[1,1,1], z=[4,3,2,1], Saq=[0.3,0.001,0.001], kzoverkh=[.1,.1,.1], phreatictop=True, semi=False):
         kaq,Haq,c,Saq,Sll = param_3d(kaq,z,Saq,kzoverkh,phreatictop,semi)
         top = 'imp'
         if semi: top = 'semi'
         XsecAquiferData.__init__(self, model, x1, x2, kaq, Haq, c, Saq, Sll, top)
-    
+
 class CircInhomData(AquiferData):
     def __init__(self,model,x0=0,y0=0,R=1,kaq=[1],Haq=[1],c=[1],Saq=[.1],Sll=[.1],topboundary='imp'):
         AquiferData.__init__(self,model,kaq,Haq,c,Saq,Sll,topboundary)
@@ -592,12 +594,12 @@ class CircInhomDataMaq(CircInhomData):
         kaq,Haq,c,Saq,Sll = param_maq(kaq,z,c,Saq,Sll,topboundary,phreatictop)
         CircInhomData.__init__(self,model,x0,y0,R,kaq,Haq,c,Saq,Sll,topboundary)
 
-    
+
 class CircInhomData3D(CircInhomData):
     def __init__(self,model,x0=0,y0=0,R=1,kaq=[1,1,1],z=[4,3,2,1],Saq=[0.3,0.001,0.001],kzoverkh=[.1,.1,.1],phreatictop=True):
         kaq,Haq,c,Saq,Sll = param_3d(kaq,z,Saq,kzoverkh,phreatictop)
         CircInhomData.__init__(self,model,x0,y0,R,kaq,Haq,c,Saq,Sll,'imp')
-    
+
 class EllipseInhomDataMaq(AquiferData):
     def __init__(self,model,x0=0,y0=0,along=2.0,bshort=1.0,angle=0.0,kaq=[1],z=[1,0],c=[],Saq=[0.001],Sll=[0],topboundary='imp',phreatictop=False):
         kaq,Haq,c,Saq,Sll = param_maq(kaq,z,c,Saq,Sll,topboundary,phreatictop)
@@ -636,7 +638,7 @@ class EllipseInhomDataMaq(AquiferData):
         eta,psi = self.xytoetapsi(x,y)
         alpha = np.arctan2( np.cosh(eta)*np.sin(psi), np.sinh(eta)*np.cos(psi) ) + self.angle
         return alpha
-  
+
 class Element:
     def __init__(self, model, Nparam=1, Nunknowns=0, layers=0, tsandbc=[(0.0,0.0)], type='z', name='', label=None):
         '''Types of elements
@@ -679,7 +681,7 @@ class Element:
         self.Ntstart = len(self.tstart)
     def initialize(self):
         '''Initialization of terms that cannot be initialized before other elements or the aquifer is defined.
-        As we don't want to require a certain order of entering elements, these terms are initialized when Model.solve is called 
+        As we don't want to require a certain order of entering elements, these terms are initialized when Model.solve is called
         The initialization class needs to be overloaded by all derived classes'''
         pass
     def potinf(self,x,y,aq=None):
@@ -758,7 +760,7 @@ class Element:
         '''returns array of strengths (nlayers,len(t)) t must be ordered and tmin <= t <= tmax'''
         # Could potentially be more efficient if s is pre-computed for all elements, but I don't know if that is worthwhile to store as it is quick now
         time = np.atleast_1d(t).copy()
-        if (time[0] < self.model.tmin) or (time[-1] > self.model.tmax): print 'Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted'
+        if (time[0] < self.model.tmin) or (time[-1] > self.model.tmax): print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
         rv = np.zeros((self.Nlayers,np.size(time)))
         if self.type == 'g':
             s = self.strengthinflayers * self.model.p ** derivative
@@ -774,12 +776,12 @@ class Element:
                 e = self.model.gvbcList[k]
                 for itime in range(e.Ntstart):
                     t = time - e.tstart[itime]
-                    #print 'e,time ',e,t
+                    #print('e,time ',e,t)
                     if t[-1] >= self.model.tmin:  # Otherwise all zero
                         for i in range(self.Nlayers):
                             rv[i] += e.bc[itime] * self.model.inverseLapTran(s[k,i],t)
         return rv
-        
+
     #def potential(self,x,y,t,layers=None,aq=None,derivative=0,returnphi=0):
     #    '''Returns pot[Naq,Ntimes] if layers=None, otherwise pot[len(layers,Ntimes)]
     #    t must be ordered '''
@@ -799,7 +801,9 @@ class Element:
     #    if derivative > 0: pot *= self.p**derivative
     #    if returnphi: return pot
     #    rv = np.zeros((nlayers,len(time)))
-    #    if (time[0] < self.tmin) or (time[-1] > self.tmax): print 'Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted'
+    #    if (time[0] < self.tmin) or (time[-1] > self.tmax): print('Warning,
+    #    some of the times are smaller than tmin or larger than tmax; zeros are
+    #    substituted'))
     #    #
     #    for k in range(self.ngvbc):
     #        e = self.gvbcList[k]
@@ -823,12 +827,12 @@ class Element:
     #                            if not np.any( pot[k,i,n*self.npint:(n+1)*self.npint] == 0.0) : # If there is a zero item, zero should be returned; funky enough this can be done with a straight equal comparison
     #                                rv[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap( tp, self.tintervals[n], self.tintervals[n+1], pot[k,i,n*self.npint:(n+1)*self.npint], self.gamma[n], self.M, Nt )
     #                        it = it + Nt
-    #    return rv        
-        
-        
-        
+    #    return rv
+
+
+
     def headinside(self,t):
-        print "This function not implemented for this element"
+        print("This function not implemented for this element")
         return
     def layout(self):
         return '','',''
@@ -839,7 +843,7 @@ class Element:
         for key in self.inputargs[2:]:  # The first two are ignored
             if isinstance(self.inputvalues[key],np.ndarray):
                 rv += key + ' = ' + np.array2string(self.inputvalues[key],separator=',') + ',\n'
-            elif isinstance(self.inputvalues[key],str):                
+            elif isinstance(self.inputvalues[key],str):
                 rv += key + " = '" + self.inputvalues[key] + "',\n"
             else:
                 rv += key + ' = ' + str(self.inputvalues[key]) + ',\n'
@@ -850,7 +854,7 @@ class Element:
         for most elements nothing needs to be done,
         but for strings of elements some arrays may need to be filled'''
         pass
-    
+
 class HeadEquation:
     def equation(self):
         '''Mix-in class that returns matrix rows for head-specified conditions. (really written as constant potential element)
@@ -865,7 +869,7 @@ class HeadEquation:
         rhs = np.zeros( (self.Nunknowns,self.model.Ngvbc,self.model.Np), 'D' )  # Needs to be initialized to zero
         for icp in range(self.Ncp):
             istart = icp*self.Nlayers
-            ieq = 0  
+            ieq = 0
             for e in self.model.elementList:
                 if e.Nunknowns > 0:
                     mat[istart:istart+self.Nlayers,ieq:ieq+e.Nunknowns,:] = e.potinflayers(self.xc[icp],self.yc[icp],self.pylayers)
@@ -890,7 +894,7 @@ class HeadEquationNores:
         rhs = np.zeros( (self.Nunknowns,self.model.Ngvbc,self.model.Np), 'D' )  # Needs to be initialized to zero
         for icp in range(self.Ncp):
             istart = icp*self.Nlayers
-            ieq = 0  
+            ieq = 0
             for e in self.model.elementList:
                 if e.Nunknowns > 0:
                     mat[istart:istart+self.Nlayers,ieq:ieq+e.Nunknowns,:] = e.potinflayers(self.xc[icp],self.yc[icp],self.pylayers)
@@ -902,7 +906,7 @@ class HeadEquationNores:
                 for i in range(self.Nlayers):
                     rhs[istart+i,self.model.Ngbc+iself,:] = self.pc[istart+i] / self.model.p
         return mat, rhs
-    
+
 class LeakyWallEquation:
     def equation(self):
         '''Mix-in class that returns matrix rows for leaky-wall condition
@@ -913,7 +917,7 @@ class LeakyWallEquation:
         rhs = np.zeros( (self.Nunknowns,self.model.Ngvbc,self.model.Np), 'D' )  # Needs to be initialized to zero
         for icp in range(self.Ncp):
             istart = icp*self.Nlayers
-            ieq = 0  
+            ieq = 0
             for e in self.model.elementList:
                 if e.Nunknowns > 0:
                     qx,qy = e.disinflayers(self.xc[icp],self.yc[icp],self.pylayers)
@@ -931,7 +935,7 @@ class LeakyWallEquation:
             #    for i in range(self.nlayers):
             #        rhs[istart+i,self.model.ngbc+iself,:] = self.pc[istart+i] / self.model.p
         return mat, rhs
-    
+
 class NoflowEquation:
     def equation(self):
         '''Mix-in class that returns matrix rows for no-flow condition
@@ -942,7 +946,7 @@ class NoflowEquation:
         rhs = np.zeros( (self.Nunknowns,self.model.Ngvbc,self.model.Np), 'D' )  # Needs to be initialized to zero
         for icp in range(self.Ncp):
             istart = icp*self.Nlayers
-            ieq = 0  
+            ieq = 0
             for e in self.model.elementList:
                 if e.Nunknowns > 0:
                     qx,qy = e.disinflayers(self.xc[icp],self.yc[icp],self.pylayers)
@@ -956,7 +960,7 @@ class NoflowEquation:
             #    for i in range(self.nlayers):
             #        rhs[istart+i,self.model.ngbc+iself,:] = self.pc[istart+i] / self.model.p
         return mat, rhs
-    
+
 class HeadEquationNew:
     '''Variable Head BC'''
     def equation(self):
@@ -972,7 +976,7 @@ class HeadEquationNew:
         rhs = np.zeros( (self.Nunknowns,self.model.Ngvbc,self.model.Np), 'D' )  # Needs to be initialized to zero
         for icp in range(self.Ncp):
             istart = icp*self.Nlayers
-            ieq = 0  
+            ieq = 0
             for e in self.model.elementList:
                 if e.Nunknowns > 0:
                     mat[istart:istart+self.Nlayers,ieq:ieq+e.Nunknowns,:] = e.potinflayers(self.xc[icp],self.yc[icp],self.pylayers)
@@ -986,7 +990,7 @@ class HeadEquationNew:
                 for i in range(self.Nlayers):
                     rhs[istart+i,self.model.Ngbc+iself,:] = self.pc[istart+i,:]
         return mat, rhs
-    
+
 class WellBoreStorageEquation:
     def equation(self):
         '''Mix-in class that returns matrix rows for multi-aquifer element with
@@ -1033,7 +1037,7 @@ class MscreenEquation:
         ieq = 0
         for icp in range(self.Ncp):
             istart = icp*self.Nlayers
-            ieq = 0 
+            ieq = 0
             for e in self.model.elementList:
                 if e.Nunknowns > 0:
                     head = e.potinflayers(self.xc[icp],self.yc[icp],self.pylayers) / self.aq.T[self.pylayers][:,np.newaxis,np.newaxis]  # T[self.layers,np.newaxis,np.newaxis] is not allowed
@@ -1052,7 +1056,7 @@ class MscreenEquation:
                 iself = self.model.vbcList.index(self)
                 rhs[istart+self.Nlayers-1,self.model.Ngbc+iself,:] = 1.0  # If self.type == 'z', it should sum to zero, which is the default value of rhs
         return mat, rhs
-    
+
 class MscreenDitchEquation:
     def equation(self):
         '''Mix-in class that returns matrix rows for multi-scren conditions where total discharge is specified.
@@ -1062,7 +1066,7 @@ class MscreenDitchEquation:
         Set h_i - h_(i+1) = 0 and Sum Q_i = Q
         I would say
         headin_i - headin_(i+1) = 0
-        headout_i - c*qs_i - headout_(i+1) + c*qs_(i+1) = 0 
+        headout_i - c*qs_i - headout_(i+1) + c*qs_(i+1) = 0
         In case of storage:
         Sum Q_i - A * p^2 * headin = Q
         '''
@@ -1071,7 +1075,7 @@ class MscreenDitchEquation:
         ieq = 0
         for icp in range(self.Ncp):
             istart = icp*self.Nlayers
-            ieq = 0 
+            ieq = 0
             for e in self.model.elementList:
                 if e.Nunknowns > 0:
                     head = e.potinflayers(self.xc[icp],self.yc[icp],self.pylayers) / self.aq.T[self.pylayers][:,np.newaxis,np.newaxis]  # T[self.layers,np.newaxis,np.newaxis] is not allowed
@@ -1098,23 +1102,23 @@ class MscreenDitchEquation:
             mat[ieq,:,:] -= mat[ieq+self.Nlayers,:,:]  # Head first layer control point icp - Head first layer control point icp + 1
             rhs[ieq,:,:] -= rhs[ieq+self.Nlayers,:,:]
         # Last equation setting the total discharge of the ditch
-        # print 'istartself ',istartself
-        mat[-1,:,:] = 0.0  
+        # print('istartself ',istartself)
+        mat[-1,:,:] = 0.0
         mat[-1,istartself:istartself+self.Nparam,:] = 1.0
         if self.Astorage is not None:
             matlast = np.zeros( (self.model.Neq,  self.model.Np), 'D' )  # Used to store last equation in case of ditch storage
-            rhslast = np.zeros( (self.model.Np), 'D' )  # Used to store last equation in case of ditch storage 
+            rhslast = np.zeros( (self.model.Np), 'D' )  # Used to store last equation in case of ditch storage
             ieq = 0
             for e in self.model.elementList:
                 head = e.potinflayers(self.xc[0],self.yc[0],self.pylayers) / self.aq.T[self.pylayers][:,np.newaxis,np.newaxis]  # T[self.layers,np.newaxis,np.newaxis] is not allowed
                 matlast[ieq:ieq+e.Nunknowns] -= self.Astorage * self.model.p**2 * head[0,:]
                 if e == self:
-                    # only need to correct first unknown 
+                    # only need to correct first unknown
                     matlast[ieq] += self.Astorage * self.model.p**2 * self.resfach[0] * e.strengthinflayers[0]
                 ieq += e.Nunknowns
             for i in range(self.model.Ngbc):
                 head = self.model.gbcList[i].unitpotentiallayers(self.xc[0],self.yc[0],self.pylayers) / self.aq.T[self.pylayers][:,np.newaxis]
-                rhslast += self.Astorage * self.model.p**2 * head[0] 
+                rhslast += self.Astorage * self.model.p**2 * head[0]
             mat[-1] += matlast
         rhs[-1,:,:] = 0.0
         if self.type == 'v':
@@ -1122,7 +1126,7 @@ class MscreenDitchEquation:
             rhs[-1,self.model.Ngbc+iself,:] = 1.0  # If self.type == 'z', it should sum to zero, which is the default value of rhs
             if self.Astorage is not None: rhs[-1,self.model.Ngbc+iself,:] += rhslast
         return mat, rhs
-    
+
 class InhomEquation:
     def equation(self):
         '''Mix-in class that returns matrix rows for inhomogeneity conditions'''
@@ -1130,7 +1134,7 @@ class InhomEquation:
         rhs = np.zeros( (self.Nunknowns,self.model.Ngvbc,self.model.Np), 'D' )  # Needs to be initialized to zero
         for icp in range(self.Ncp):
             istart = icp*2*self.Nlayers
-            ieq = 0  
+            ieq = 0
             for e in self.model.elementList:
                 if e.Nunknowns > 0:
                     mat[istart:istart+self.Nlayers,ieq:ieq+e.Nunknowns,:] = \
@@ -1149,7 +1153,7 @@ class InhomEquation:
                 qxout,qyout = self.model.gbcList[i].unitdischargelayers(self.xc[icp],self.yc[icp],self.pylayers,self.aqout)
                 rhs[istart+self.Nlayers:istart+2*self.Nlayers,i,:] -= (qxin-qxout) * np.cos(self.thetacp[icp]) + (qyin-qyout) * np.sin(self.thetacp[icp])
         return mat, rhs
-    
+
 class BesselRatioApprox:
     # Never fully debugged
     def __init__(self,Norder,Nterms):
@@ -1185,7 +1189,7 @@ class BesselRatioApprox:
             top = np.sum( self.hankelnk / ( 2.0 * rho / lab[k] )**self.krange, 1 )
             bot = np.sum( self.hankelnk / ( 2.0 * R / lab[k] )**self.krange, 1 )
             rv[:,k] = top / bot * np.sqrt ( float(R) / rho ) * np.exp( (R-rho)/ lab[k] )
-        return rv    
+        return rv
     def ivratiop( self, rho, R, lab ):
         lab = np.atleast_1d(lab)
         rv = np.empty((self.Norder,len(lab)),'D')
@@ -1204,7 +1208,7 @@ class BesselRatioApprox:
             bot = np.sum( self.hankelnk / ( 2.0 * R / lab[k] )**self.krange, 1 )
             rv[:,k] = -top / bot * np.sqrt ( float(R) / rho ) * np.exp( (R-rho)/ lab[k] )
         return rv
-    
+
 class CircInhomRadial(Element,InhomEquation):
     def __init__(self,model,x0=0,y0=0,R=1.0,label=None):
         Element.__init__(self, model, Nparam=2*model.aq.Naq, Nunknowns=2*model.aq.Naq, layers=range(1,model.aq.Naq+1), type='z', name='CircInhom', label=label)
@@ -1255,7 +1259,7 @@ class CircInhomRadial(Element,InhomEquation):
                         if self.circ_in_small[i,j]:
                             rv[i,i,j,:] = self.facin[i,j,:] * iv( 0, r / self.aqin.lab2[i,j,:] )
                         else:
-                            print 'using approx'
+                            print('using approx')
                             rv[i,i,j,:] = self.approx.ivratio(r,self.R,self.aqin.lab2[i,j,:])
         if aq == self.aqout:
             r = np.sqrt( (x-self.x0)**2 + (y-self.y0)**2 )
@@ -1265,7 +1269,7 @@ class CircInhomRadial(Element,InhomEquation):
                         if self.circ_out_small[i,j]:
                             rv[self.aqin.Naq+i,i,j,:] = self.facin[i,j,:] * kv( 0, r / self.aqout.lab2[i,j,:] )
                         else:
-                            print 'using approx'
+                            print('using approx')
                             rv[self.aqin.Naq+i,i,j,:] = self.approx.kvratio(r,self.R,self.aqout.lab2[i,j,:])
         rv.shape = (self.Nparam,aq.Naq,self.model.Np)
         return rv
@@ -1301,7 +1305,7 @@ class CircInhomRadial(Element,InhomEquation):
         return qx,qy
     def layout(self):
         return 'line', self.x0 + self.R * np.cos(np.linspace(0,2*np.pi,100)), self.y0 + self.R * np.sin(np.linspace(0,2*np.pi,100))
-                
+
 class CircInhom(Element,InhomEquation):
     def __init__(self,model,x0=0,y0=0,R=1.0,order=0,label=None,test=False):
         Element.__init__(self, model, Nparam=2*model.aq.Naq*(2*order+1), Nunknowns=2*model.aq.Naq*(2*order+1), layers=range(model.aq.Naq), type='z', name='CircInhom', label=label)
@@ -1334,8 +1338,8 @@ class CircInhom(Element,InhomEquation):
                 # When the circle is too big, an assertion is thrown. In the future, the approximation of the ratio of bessel functions needs to be completed
                 # For now, the logic is there, but not used
                 if self.test:
-                    print 'inside  relative radius: ',self.R / abs(self.aqin.lab2[i,j,0])
-                    print 'outside relative radius: ',self.R / abs(self.aqout.lab2[i,j,0])
+                    print('inside  relative radius: ',self.R / abs(self.aqin.lab2[i,j,0]))
+                    print('outside relative radius: ',self.R / abs(self.aqout.lab2[i,j,0]))
                 #assert self.R / abs(self.aqin.lab2[i,j,0]) < self.Rbig, 'TTim input error, Radius too big'
                 #assert self.R / abs(self.aqout.lab2[i,j,0]) < self.Rbig, 'TTim input error, Radius too big'
                 if self.R / abs(self.aqin.lab2[i,j,0]) < self.Rbig:
@@ -1412,7 +1416,7 @@ class CircInhom(Element,InhomEquation):
                             qr[i,0,i,j,:] = -pot[1] / self.aqin.lab2[i,j,:] * self.facin[0,i,j,:]
                             for n in range(1,self.order+1):
                                 qr[i,2*n-1,i,j,:] = -(pot[n-1] + pot[n+1]) / 2 / self.aqin.lab2[i,j,:] * np.cos(n*alpha) * self.facin[n,i,j,:]
-                                qr[i,2*n  ,i,j,:] = -(pot[n-1] + pot[n+1]) / 2 / self.aqin.lab2[i,j,:] * np.sin(n*alpha) * self.facin[n,i,j,:] 
+                                qr[i,2*n  ,i,j,:] = -(pot[n-1] + pot[n+1]) / 2 / self.aqin.lab2[i,j,:] * np.sin(n*alpha) * self.facin[n,i,j,:]
                                 qt[i,2*n-1,i,j,:] =   pot[n] * np.sin(n*alpha) * n / r * self.facin[n,i,j,:]
                                 qt[i,2*n  ,i,j,:] =  -pot[n] * np.cos(n*alpha) * n / r * self.facin[n,i,j,:]
                         else:
@@ -1459,7 +1463,7 @@ class CircInhom(Element,InhomEquation):
             qr.shape = (self.Nparam/2,aq.Naq,self.model.Np)
             qt.shape = (self.Nparam/2,aq.Naq,self.model.Np)
             qx[self.Nparam/2:,:,:] = qr * np.cos(alpha) - qt * np.sin(alpha);
-            qy[self.Nparam/2:,:,:] = qr * np.sin(alpha) + qt * np.cos(alpha);            
+            qy[self.Nparam/2:,:,:] = qr * np.sin(alpha) + qt * np.cos(alpha);
         return qx,qy
     def layout(self):
         return 'line', self.x0 + self.R * np.cos(np.linspace(0,2*np.pi,100)), self.y0 + self.R * np.sin(np.linspace(0,2*np.pi,100))
@@ -1467,17 +1471,17 @@ class CircInhom(Element,InhomEquation):
 def CircInhomMaq(model,x0=0,y0=0,R=1,order=1,kaq=[1],z=[1,0],c=[],Saq=[0.001],Sll=[0],topboundary='imp',phreatictop=False,label=None,test=False):
     CircInhomDataMaq(model,x0,y0,R,kaq,z,c,Saq,Sll,topboundary,phreatictop)
     return CircInhom(model,x0,y0,R,order,label,test)
-    
+
 def CircInhom3D(model,x0=0,y0=0,R=1,order=1,kaq=[1,1,1],z=[4,3,2,1],Saq=[0.3,0.001,0.001],kzoverkh=[.1,.1,.1],phreatictop=True,label=None):
-    CircInhomData3D(model,x0,y0,R,kaq,z,Saq,kzoverkh,phreatictop)       
+    CircInhomData3D(model,x0,y0,R,kaq,z,Saq,kzoverkh,phreatictop)
     return CircInhom(model,x0,y0,R,order,label)
 
 def EllipseInhomMaq(model,x0=0,y0=0,along=2.0,bshort=1.0,angle=0.0,order=1,kaq=[1],z=[1,0],c=[],Saq=[0.001],Sll=[0],topboundary='imp',phreatictop=False,label=None):
     EllipseInhomDataMaq(model,x0,y0,along,bshort,angle,kaq,z,c,Saq,Sll,topboundary,phreatictop)
     return EllipseInhom(model,x0,y0,along,bshort,angle,order,label)
-    
+
 def EllipseInhom3D(self,model,x0=0,y0=0,along=2.0,bshort=1.0,angle=0.0,order=1,kaq=[1,1,1],z=[4,3,2,1],Saq=[0.3,0.001,0.001],kzoverkh=[.1,.1,.1],phreatictop=True,label=None):
-    EllipseInhomData3D(model,x0,y0,along,bshort,angle,kaq,z,Saq,kzoverkh,phreatictop)       
+    EllipseInhomData3D(model,x0,y0,along,bshort,angle,kaq,z,Saq,kzoverkh,phreatictop)
     return EllipseInhom(model,x0,y0,along,bshort,angle,order,label)
 
 class EllipseInhom(Element,InhomEquation):
@@ -1532,7 +1536,7 @@ class EllipseInhom(Element,InhomEquation):
                         #    rv[i,2*n-1,i,j] = self.mfin[i][j].ce(n,psi) * self.mfin[i][j].Ie(n,eta)
                         #    rv[i,2*n  ,i,j] = self.mfin[i][j].se(n,psi) * self.mfin[i][j].Io(n,eta)
                         rv[i,self.neven,i,j] = self.mfin[i][j].ce(self.norder,psi)     * self.mfin[i][j].Ie(self.norder,eta)
-                        rv[i,self.nodd ,i,j] = self.mfin[i][j].se(self.norder[1:],psi) * self.mfin[i][j].Io(self.norder[1:],eta)                            
+                        rv[i,self.nodd ,i,j] = self.mfin[i][j].se(self.norder[1:],psi) * self.mfin[i][j].Io(self.norder[1:],eta)
         if aq == self.aqout:
             eta,psi = self.xytoetapsi(x,y)
             for i in range(self.aqout.Naq):
@@ -1589,7 +1593,7 @@ class EllipseInhom(Element,InhomEquation):
             factor = -1.0 / ( self.afoc * np.sqrt( np.cosh(eta)**2 - np.cos(psi)**2 ) )
             cosangle,sinangle = self.aqin.outwardnormal(x,y)
             qx[self.Nparam/2:,:,:] = factor * ( qeta * cosangle - qpsi * sinangle )
-            qy[self.Nparam/2:,:,:] = factor * ( qeta * sinangle + qpsi * cosangle )        
+            qy[self.Nparam/2:,:,:] = factor * ( qeta * sinangle + qpsi * cosangle )
         return qx,qy
     def layout(self):
         theta = arange(0,2*pi+0.001,pi/50)
@@ -1619,7 +1623,7 @@ class WellBase(Element):
         self.term = -1.0 / (2*np.pi) * laboverrwk1 * self.flowcoef * coef  # shape (self.nparam,self.aq.Naq,self.model.npval)
         self.term2 = self.term.reshape(self.Nparam,self.aq.Naq,self.model.Nin,self.model.Npin)
         self.strengthinf = self.flowcoef * coef
-        self.strengthinflayers = np.sum(self.strengthinf * self.aq.eigvec[self.pylayers,:,:], 1) 
+        self.strengthinflayers = np.sum(self.strengthinf * self.aq.eigvec[self.pylayers,:,:], 1)
         self.resfach = self.res / ( 2*np.pi*self.rw*self.aq.Haq[self.pylayers] )  # Q = (h - hw) / resfach
         self.resfacp = self.resfach * self.aq.T[self.pylayers]  # Q = (Phi - Phiw) / resfacp
     def setflowcoef(self):
@@ -1731,7 +1735,7 @@ class LineSinkBase(Element):
         return self.model.head(self.xc,self.yc,t)[self.pylayers] - self.resfach[:,np.newaxis] * self.strength(t)
     def layout(self):
         return 'line', [self.x1,self.x2], [self.y1,self.y2]
-        
+
 
 class CircAreaSink(Element):
     '''Circular Area Sink'''
@@ -1794,13 +1798,13 @@ class CircAreaSink(Element):
                 for i in range(self.aq.Naq):
                     for j in range(self.model.Nin):
                         if (r-self.R) / abs(self.aq.lab2[i,j,0]) < self.Rzero:
-                            qr[0,i,j,:] = self.termoutq[i,j,:] * kv(1,r/self.aq.lab2[i,j,:])                
+                            qr[0,i,j,:] = self.termoutq[i,j,:] * kv(1,r/self.aq.lab2[i,j,:])
             qr.shape = (self.Nparam,aq.Naq,self.model.Np)
             qx[:] = qr * (x-self.xc) / r; qy[:] = qr * (y-self.yc) / r
         return qx,qy
     def layout(self):
         return 'line', self.xc + self.R*np.cos(np.linspace(0,2*np.pi,100)), self.xc + self.R*np.sin(np.linspace(0,2*np.pi,100))
-        
+
 class LineSinkHoBase(Element):
     '''Higher Order LineSink Base Class. All Higher Order Line Sink elements are derived from this class'''
     def __init__(self,model,x1=-1,y1=0,x2=1,y2=0,tsandbc=[(0.0,1.0)],res=0.0,wh='H',order=0,layers=0,type='',name='LineSinkBase',label=None,addtomodel=True):
@@ -1880,7 +1884,7 @@ class LineSinkHoBase(Element):
         return self.model.head(self.xc,self.yc,t)[self.pylayers] - self.resfach[:,np.newaxis] * self.strength(t)
     def layout(self):
         return 'line', [self.x1,self.x2], [self.y1,self.y2]
-        
+
 class LineDoubletHoBase(Element):
     '''Higher Order LineDoublet Base Class. All Higher Order Line Doublet elements are derived from this class'''
     def __init__(self,model,x1=-1,y1=0,x2=1,y2=0,tsandbc=[(0.0,0.0)],res='imp',order=0,layers=0,type='',name='LineDoubletHoBase',label=None,addtomodel=True):
@@ -1911,7 +1915,7 @@ class LineDoubletHoBase(Element):
         self.xc = zcp.real; self.yc = zcp.imag
         Zcp.imag = -1e-6  # control point just on negative side (this is needed for building the system of equations)
         zcp = Zcp * (self.z2 - self.z1) / 2.0 + 0.5 * (self.z1 + self.z2)
-        self.xcneg = zcp.real; self.ycneg = zcp.imag  # control points just on negative side     
+        self.xcneg = zcp.real; self.ycneg = zcp.imag  # control points just on negative side
         #
         self.aq = self.model.aq.find_aquifer_data(self.xc[0], self.yc[0])
         self.setbc()
@@ -1958,13 +1962,13 @@ class LineDoubletHoBase(Element):
         return rvx,rvy
     def layout(self):
         return 'line', [self.x1,self.x2], [self.y1,self.y2]
-    
+
 class DischargeWell(WellBase):
     '''Well with non-zero and potentially variable discharge through time'''
     def __init__(self,model,xw=0,yw=0,rw=0.1,tsandQ=[(0.0,1.0)],res=0.0,layers=0,label=None):
         self.storeinput(inspect.currentframe())
         WellBase.__init__(self,model,xw,yw,rw,tsandbc=tsandQ,res=res,layers=layers,type='g',name='DischargeWell',label=label)
-    
+
 class Well(WellBase,WellBoreStorageEquation):
     '''One or multi-screen well with wellbore storage'''
     def __init__(self,model,xw=0,yw=0,rw=0.1,tsandQ=[(0.0,1.0)],res=0.0,layers=0,rc=None,wbstype='pumping',label=None):
@@ -1993,7 +1997,7 @@ class Well(WellBase,WellBoreStorageEquation):
         elif self.wbstype == 'slug':
             self.flowcoef = 1.0  # Delta function
 
-        
+
 class LineSink(LineSinkBase):
     '''LineSink with non-zero and potentially variable discharge through time'''
     def __init__(self,model,x1=-1,y1=0,x2=1,y2=0,tsandQ=[(0.0,1.0)],res=0.0,wh='H',layers=0,label=None,addtomodel=True):
@@ -2013,7 +2017,7 @@ class ZeroMscreenWell(WellBase,MscreenEquation):
     def initialize(self):
         WellBase.initialize(self)
         self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
-        
+
 class ZeroMscreenLineSink(LineSinkBase,MscreenEquation):
     '''MscreenLineSink with zero discharge. Needs to be screened in multiple layers; Head is same in all screened layers'''
     def __init__(self,model,x1=-1,y1=0,x2=1,y2=0,res=0.0,wh='H',layers=[0,1],vres=0.0,wv=1.0,label=None,addtomodel=True):
@@ -2028,7 +2032,7 @@ class ZeroMscreenLineSink(LineSinkBase,MscreenEquation):
         LineSinkBase.initialize(self)
         self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
         self.vresfac = self.vres / (self.wv * self.L)  # Qv = (hn - hn-1) / vresfac[n-1]
-        
+
 class MscreenWellOld(WellBase,MscreenEquation):
     '''MscreenWell that varies through time. May be screened in multiple layers but heads are same in all screened layers'''
     def __init__(self,model,xw=0,yw=0,rw=0.1,tsandQ=[(0.0,1.0)],res=0.0,layers=[0,1],label=None):
@@ -2040,7 +2044,7 @@ class MscreenWellOld(WellBase,MscreenEquation):
     def initialize(self):
         WellBase.initialize(self)
         self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
-        
+
 class MscreenLineSink(LineSinkBase,MscreenEquation):
     '''MscreenLineSink that varies through time. Must be screened in multiple layers but heads are same in all screened layers'''
     def __init__(self,model,x1=-1,y1=0,x2=1,y2=0,tsandQ=[(0.0,1.0)],res=0.0,wh='H',layers=[0,1],vres=0.0,wv=1.0,label=None,addtomodel=True):
@@ -2055,7 +2059,7 @@ class MscreenLineSink(LineSinkBase,MscreenEquation):
         LineSinkBase.initialize(self)
         self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
         self.vresfac = self.vres / (self.wv * self.L)  # Qv = (hn - hn-1) / vresfac[n-1]
-        
+
 class ZeroHeadWell(WellBase,HeadEquation):
     '''HeadWell that remains zero and constant through time'''
     def __init__(self,model,xw=0,yw=0,rw=0.1,res=0.0,layers=0,label=None):
@@ -2065,7 +2069,7 @@ class ZeroHeadWell(WellBase,HeadEquation):
     def initialize(self):
         WellBase.initialize(self)
         self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
-        
+
 class ZeroHeadLineSink(LineSinkBase,HeadEquation):
     '''HeadLineSink that remains zero and constant through time'''
     def __init__(self,model,x1=-1,y1=0,x2=1,y2=0,res=0.0,wh='H',layers=0,label=None,addtomodel=True):
@@ -2075,7 +2079,7 @@ class ZeroHeadLineSink(LineSinkBase,HeadEquation):
     def initialize(self):
         LineSinkBase.initialize(self)
         self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
-    
+
 class HeadWell(WellBase,HeadEquation):
     '''HeadWell of which the head varies through time. May be screened in multiple layers but all with the same head'''
     def __init__(self,model,xw=0,yw=0,rw=0.1,tsandh=[(0.0,1.0)],res=0.0,layers=0,label=None):
@@ -2086,7 +2090,7 @@ class HeadWell(WellBase,HeadEquation):
         WellBase.initialize(self)
         self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
         self.pc = self.aq.T[self.pylayers] # Needed in solving; We solve for a unit head
-        
+
 
 from scipy.special import erf
 def fbar(p,t0=100.0,a=20.0):
@@ -2102,7 +2106,7 @@ class HeadWellNew(WellBase,HeadEquationNew):
         self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
         self.pc = np.empty((1,self.model.Np),'D')
         self.pc[0] = self.aq.T[self.pylayers] * fbar(self.model.p,t0=100,a=20.0) # Needed in solving
-        
+
 class HeadLineSink(LineSinkBase,HeadEquation):
     '''HeadLineSink of which the head varies through time. May be screened in multiple layers but all with the same head'''
     def __init__(self,model,x1=-1,y1=0,x2=1,y2=0,tsandh=[(0.0,1.0)],res=0.0,wh='H',layers=0,label=None,addtomodel=True):
@@ -2113,7 +2117,7 @@ class HeadLineSink(LineSinkBase,HeadEquation):
         LineSinkBase.initialize(self)
         self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
         self.pc = self.aq.T[self.pylayers] # Needed in solving; We solve for a unit head
-        
+
 class HeadLineSinkHo(LineSinkHoBase,HeadEquationNores):
     '''HeadLineSink of which the head varies through time. May be screened in multiple layers but all with the same head'''
     def __init__(self,model,x1=-1,y1=0,x2=1,y2=0,tsandh=[(0.0,1.0)],order=0,layers=0,label=None,addtomodel=True):
@@ -2126,7 +2130,7 @@ class HeadLineSinkHo(LineSinkHoBase,HeadEquationNores):
         self.pc = np.empty(self.Nparam)
         for i,T in enumerate(self.aq.T[self.pylayers]):
             self.pc[i::self.Nlayers] =  T # Needed in solving; we solve for a unit head
-            
+
 class LeakyLineDoublet(LineDoubletHoBase,LeakyWallEquation):
     '''Leaky LineDoublet'''
     def __init__(self,model,x1=-1,y1=0,x2=1,y2=0,res='imp',order=0,layers=0,label=None,addtomodel=True):
@@ -2204,14 +2208,14 @@ class LineSinkStringBase(Element):
         for i in range(self.Nls):
             rv[i,:,:] = self.lsList[i].strength(t,derivative=derivative)
         return rv
-    
+
 #class LineSinkString(LineSinkStringBase):
 #    def __init__(self,model,xy=[(-1,0),(1,0)],tsandQ=[(0.0,1.0)],res=0.0,layers=1,label=None):
 #        LineSinkStringBase.__init__(self,model,xy=xy,tsandbc=tsandQ,res=res,layers=layers,type='g',name='LineSinkString',label=label)
 #        for i in range(self.Nls):
 #            self.lsList.append( LineSink(model,x1=self.x[i],y1=self.y[i],x2=self.x[i+1],y2=self.y[i+1],tsandQ=tsandQ,res=res,layers=layers,label=None,addtomodel=False) )
 #        self.model.addElement(self)
-    
+
 class ZeroMscreenLineSinkString(LineSinkStringBase,MscreenEquation):
     def __init__(self,model,xy=[(-1,0),(1,0)],res=0.0,wh='H',layers=[0,1],vres=0.0,wv=1.0,label=None):
         LineSinkStringBase.__init__(self,model,tsandbc=[(0.0,0.0)],layers=layers,type='z',name='ZeroMscreenLineSinkString',label=label)
@@ -2226,7 +2230,7 @@ class ZeroMscreenLineSinkString(LineSinkStringBase,MscreenEquation):
         self.vresfac = np.zeros_like( self.resfach )
         for i in range(self.Nls):
             self.vresfac[i*self.Nlayers:(i+1)*self.Nlayers-1] = self.lsList[i].vresfac[:]
-    
+
 class MscreenLineSinkString(LineSinkStringBase,MscreenEquation):
     def __init__(self,model,xy=[(-1,0),(1,0)],tsandQ=[(0.0,1.0)],res=0.0,wh='H',layers=[0,1],label=None):
         LineSinkStringBase.__init__(self,model,tsandbc=tsandQ,layers=layers,type='v',name='MscreenLineSinkString',label=label)
@@ -2236,7 +2240,7 @@ class MscreenLineSinkString(LineSinkStringBase,MscreenEquation):
         for i in range(self.Nls):
             self.lsList.append( MscreenLineSink(model,x1=self.x[i],y1=self.y[i],x2=self.x[i+1],y2=self.y[i+1],tsandQ=tsandQ,res=res,wh=wh,layers=layers,label=None,addtomodel=False) )
         self.model.addelement(self)
-        
+
 class MscreenLineSinkDitchString(LineSinkStringBase,MscreenDitchEquation):
     def __init__(self,model,xy=[(-1,0),(1,0)],tsandQ=[(0.0,1.0)],res=0.0,wh='H',layers=[0,1],Astorage=None,label=None):
         self.storeinput(inspect.currentframe())
@@ -2251,7 +2255,7 @@ class MscreenLineSinkDitchString(LineSinkStringBase,MscreenDitchEquation):
     def initialize(self):
         LineSinkStringBase.initialize(self)
         self.vresfac = np.zeros_like( self.resfach )  # set to zero, as I don't quite know what it would mean if it is not zero
-        
+
 class MscreenLineSinkDitchString2(LineSinkStringBase,MscreenDitchEquation):
     def __init__(self,model,xylist=[[(-1,0),(1,0)],[(2,0),(4,0)]],tsandQ=[(0.0,1.0)],res=0.0,wh='H',layers=[0,1],label=None):
         LineSinkStringBase.__init__(self,model,tsandbc=tsandQ,layers=layers,type='v',name='MscreenLineSinkStringDitch',label=label)
@@ -2267,7 +2271,7 @@ class MscreenLineSinkDitchString2(LineSinkStringBase,MscreenDitchEquation):
         self.vresfac = np.zeros_like( self.resfach )  # set to zero, as I don't quite know what it would mean if it is not zero
     def layout(self):
         return 'string', self.xls, self.yls
-        
+
 class ZeroHeadLineSinkString(LineSinkStringBase,HeadEquation):
     def __init__(self,model,xy=[(-1,0),(1,0)],res=0.0,wh='H',layers=0,label=None):
         LineSinkStringBase.__init__(self,model,tsandbc=[(0.0,0.0)],layers=layers,type='z',name='ZeroHeadLineSinkString',label=label)
@@ -2291,7 +2295,7 @@ class HeadLineSinkString(LineSinkStringBase,HeadEquation):
         LineSinkStringBase.initialize(self)
         self.pc = np.zeros(self.Nls*self.Nlayers)
         for i in range(self.Nls): self.pc[i*self.Nlayers:(i+1)*self.Nlayers] = self.lsList[i].pc
-        
+
 class LeakyLineDoubletString(Element,LeakyWallEquation):
     def __init__(self,model,xy=[(-1,0),(1,0)],res='imp',order=0,layers=0,label=None):
         self.storeinput(inspect.currentframe())
@@ -2349,7 +2353,7 @@ class LeakyLineDoubletString(Element,LeakyWallEquation):
         return rvx,rvy
     def layout(self):
         return 'line', self.xldlayout, self.yldlayout
-    
+
 def xsection(ml,x1=0,x2=1,y1=0,y2=0,N=100,t=1,layers=0,color=None,lw=1,newfig=True,sstart=0):
     if newfig: plt.figure()
     x = np.linspace(x1,x2,N)
@@ -2364,19 +2368,19 @@ def xsection(ml,x1=0,x2=1,y1=0,y2=0,N=100,t=1,layers=0,color=None,lw=1,newfig=Tr
             else:
                 plt.plot(s,h[i,j,:],color,lw=lw)
     plt.draw()
-                
+
 def timcontour( ml, xmin, xmax, nx, ymin, ymax, ny, levels = 10, t=0.0, layers = 0,\
                color = 'k', lw = 0.5, style = 'solid',layout = True, newfig = True,\
                labels = False, labelfmt = '%1.2f'):
     '''Contour heads with pylab'''
-    print 'grid of '+str((nx,ny))+'. gridding in progress. hit ctrl-c to abort'
+    print('grid of '+str((nx,ny))+'. gridding in progress. hit ctrl-c to abort')
     h = ml.headgrid(xmin,xmax,nx,ymin,ymax,ny,t,layers)  # h[nlayers,Ntimes,Ny,Nx]
     xg, yg = np.linspace(xmin,xmax,nx), np.linspace(ymin,ymax,ny)
     Nlayers, Ntimes = h.shape[0:2]
     # Contour
     if type(levels) is list: levels = np.arange( levels[0],levels[1],levels[2] )
     # Colors
-    if color is not None: color = [color]   
+    if color is not None: color = [color]
     if newfig:
         fig = plt.figure( figsize=(8,8) )
         ax = fig.add_subplot(111)
@@ -2396,7 +2400,7 @@ def timcontour( ml, xmin, xmax, nx, ymin, ymax, ny, levels = 10, t=0.0, layers =
     if labels:
         ax.clabel(a,fmt=labelfmt)
     plt.draw()
-    
+
 def surfgrid(ml,xmin,xmax,nx,ymin,ymax,ny,t,layer=0,filename='/temp/dump'):
     '''Give filename without extension'''
     h = ml.headgrid(xmin,xmax,nx,ymin,ymax,ny,t,layer)[0,0]
@@ -2412,7 +2416,7 @@ def surfgrid(ml,xmin,xmax,nx,ymin,ymax,ny,t,layer=0,filename='/temp/dump'):
             out.write(str(h[i,j])+' ')
         out.write('\n')
     out.close
-    
+
 def pyvertcontour( ml, xmin, xmax, ymin, ymax, nx, zg, levels = 10, t=0.0,\
                color = 'k', width = 0.5, style = 'solid',layout = True, newfig = True, \
                labels = False, labelfmt = '%1.2f', fill=False, sendback = False):
@@ -2422,7 +2426,7 @@ def pyvertcontour( ml, xmin, xmax, ymin, ymax, nx, zg, levels = 10, t=0.0,\
     xg = np.linspace(xmin,xmax,nx)
     yg = np.linspace(ymin,ymax,nx)
     sg = np.sqrt((xg-xg[0])**2 + (yg-yg[0])**2)
-    print 'gridding in progress. hit ctrl-c to abort'
+    print('gridding in progress. hit ctrl-c to abort')
     pot = np.zeros( ( ml.aq.Naq, nx ), 'd' )
     t = np.atleast_1d(t)
     for ip in range(nx):
@@ -2431,13 +2435,13 @@ def pyvertcontour( ml, xmin, xmax, ymin, ymax, nx, zg, levels = 10, t=0.0,\
     if type(levels) is list:
         levels = np.arange( levels[0],levels[1],levels[2] )
     elif levels == 'ask':
-        print ' min,max: ',pot.min(),', ',pot.max(),'. Enter: hmin hmax step '
+        print(' min,max: ',pot.min(),', ',pot.max(),'. Enter: hmin hmax step ')
         input = raw_input().split()
         levels = np.arange(float(input[0]),float(input[1])+1e-8,float(input[2]))
-    print 'Levels are ',levels
+    print('Levels are ',levels)
     # Colors
     if color is not None:
-        color = [color]   
+        color = [color]
     if newfig:
         fig = plt.figure( figsize=(8,8) )
         ax = fig.add_subplot(111)
@@ -2459,7 +2463,7 @@ def pyvertcontour( ml, xmin, xmax, ymin, ymax, nx, zg, levels = 10, t=0.0,\
     fig.canvas.draw()
     if sendback == 1: return a
     if sendback == 2: return sg,zg,pot
-                
+
 def timlayout( ml, ax = None, color = 'k', lw = 0.5, style = '-' ):
     show = False
     if ax is None:
@@ -2469,7 +2473,7 @@ def timlayout( ml, ax = None, color = 'k', lw = 0.5, style = '-' ):
     for e in ml.elementList:
         t,x,y = e.layout()
         if t == 'point':
-            ax.plot( [x], [y], color+'o', markersize=3 ) 
+            ax.plot( [x], [y], color+'o', markersize=3 )
         if t == 'line':
             ax.plot( x, y, color=color, ls = style, lw = lw )
         if t == 'string':
@@ -2482,7 +2486,7 @@ def timlayout( ml, ax = None, color = 'k', lw = 0.5, style = '-' ):
     if show:
         ax.set_aspect('equal','box')
         plt.show()
-        
+
 ### Test for OneD
 class OneDBase(Element):
     def __init__(self, model, tsandbc=[(0.0,1.0)], layers=1, xleft = 0, xright = 1, type = '', name='OneDBase', label = None):
@@ -2617,7 +2621,7 @@ class OneD(Element):
     #    for i in range(self.aq.Naq):
     #        rv[:,i,:] = 1.0 / self.model.p * self.coef2[:,i,:]
     #    return rv
-    
+
 class HeadOneD(OneD,HeadEquation):
     def __init__(self, model, tsandh = [(0.0,1.0)], layers = 1, rightside = 'inf', L = np.inf, label = None):
         OneD.__init__(self, model, tsandbc = tsandh, layers=layers, rightside=rightside, L=L, type = 'v', label = label)
@@ -2632,9 +2636,9 @@ class HeadOneD(OneD,HeadEquation):
     def check(self,full_output=False):
         maxerror = np.amax( np.abs( self.pc[:,np.newaxis] / self.model.p - self.model.phi(self.xc,self.yc)[self.pylayer,:] ) )
         if full_output:
-            print self.name+' with control point at '+str((self.xc,self.yc))+' max error ',maxerror
+            print(self.name+' with control point at '+str((self.xc,self.yc))+' max error ',maxerror)
         return maxerror
-    
+
 class XsecLake(Element):
     def __init__(self, model, x1 = 0.0, x2 = 1.0, tsandh=[(0.0,1.0)], B = 1.0, label = None):
         Element.__init__(self, model, Nparam=1, Nunknowns=0, layers=range(model.aq.Naq), tsandbc=tsandh, type='g', name='XsecLake', label=label)
@@ -2667,7 +2671,7 @@ class XsecLake(Element):
     def disinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
         return np.zeros((self.Nparam,aq.Naq,self.model.Np),'D'), np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
-    
+
 class XsecInhom(Element, InhomEquation):
     def __init__(self, model, xinhom = 0, label = None):
         Element.__init__(self, model, Nparam=2*model.aq.Naq, Nunknowns=2*model.aq.Naq, layers=range(model.aq.Naq), type='z', name='XsecInhom', label=label)
@@ -2684,7 +2688,7 @@ class XsecInhom(Element, InhomEquation):
         self.aqout = self.model.aq.find_aquifer_data(self.xinhom * (1 + 1e-10) + 1 - 1e-10, self.yc)
         assert self.aqin.Naq == self.aqout.Naq, 'TTim input error: Number of layers needs to be the same inside and outside circular inhomogeneity'
         self.setbc()
-        self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )        
+        self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
     def potinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
         if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
@@ -2719,7 +2723,7 @@ class XsecInhom(Element, InhomEquation):
         qx.shape = (self.Nparam,aq.Naq,self.model.Np)
         qy.shape = (self.Nparam,aq.Naq,self.model.Np)
         return qx, qy
-    
+
 #ml = ModelMaq(kaq=[10,10,10], z=[12,8,4,0], c=[100,100], Saq=[0.001,0.001,0.001], Sll=[0.001,0.001], tmin=0.01, tmax=10, M=20)
 #aq1 = XsecAquiferDataMaq(ml, x1=-np.inf, x2=0.0, kaq=[1,2,3], z=[6,5,4,3,2,1,0], c=[100,100,100], Saq=[0.001,0.001,0.001], Sll=[0.001,0.001,0.001],topboundary='semi')
 #aq2 = XsecAquiferDataMaq(ml, x1=0.0,  x2=np.inf, kaq=[1,2,3], z=[5,4,3,2,1,0], c=[100,100], Saq=[0.001,0.001,0.001], Sll=[0.001,0.001])
@@ -2795,21 +2799,21 @@ class XsecInhom(Element, InhomEquation):
 ##p3 = ca.potinf(x-d,y)
 ##p4 = ca.potinf(x,y-d)
 ##numlap = (p1+p2+p3+p4-4.0*p0)/d**2 - p0 / ml.aq.lab**2
-##print 'numlap'
-##print numlap
-##print 'exact'
-##print -ca.an
+##print('numlap')
+##print(numlap)
+##print('exact')
+##print(-ca.an)
 ##qxnum = (p3-p1)/(2*d)
 ##qynum = (p4-p2)/(2*d)
 ##qx,qy = ca.disinf(x,y)
-##print 'qxnum'
-##print qxnum
-##print 'qx'
-##print qx
-##print 'qynum'
-##print qynum
-##print 'qy'
-##print qy
+##print('qxnum')
+##print(qxnum)
+##print('qx')
+##print(qx)
+##print('qynum')
+##print(qynum)
+##print('qy')
+##print(qy)
 #x = 90.0
 #y = 3.0
 #d = 1e-1
@@ -2865,7 +2869,7 @@ class XsecInhom(Element, InhomEquation):
 #w = DischargeWell(ml,xw=.5,yw=0,rw=.1,tsandQ=[0,5.0],layers=1)
 #ml.solve()
 
-#ml.solve()       
+#ml.solve()
 #h1,h2 = np.zeros((2,e1.Ncp)), np.zeros((2,e1.Ncp))
 #qn1,qn2 = np.zeros((2,e1.Ncp)), np.zeros((2,e1.Ncp))
 #for i in range(e1.Ncp):
@@ -2909,7 +2913,7 @@ class XsecInhom(Element, InhomEquation):
 #ml = Model3D( kaq=[2,1,5,10,4], z=[10,8,6,4,2,0], Saq=[.1,.0001,.0002,.0002,.0001], phreatictop=True, kzoverkh=0.1, tmin=1e-3, tmax=1e3 )
 #w = MscreenWell(ml,0,-25,rw=.3,tsandQ=[(0,100),(100,50)],layers=[2,3])
 #ml.solve()
-    
+
 ##ml = Model3D(kaq=2.0,z=[10,5,0],Saq=[.002,.001],kzoverkh=0.2,phreatictop=False,tmin=.1,tmax=10,M=15)
 #ml = ModelMaq(kaq=[10,5],z=[4,2,1,0],c=[100],Saq=[1e-3,1e-4],Sll=[1e-6],tmin=100,tmax=300,M=50)
 #w = HeadWellNew(ml,0,0,.1,tsandh=[(0.0,1.0)],layers=1)
@@ -2928,7 +2932,7 @@ class XsecInhom(Element, InhomEquation):
 ##lss = ZeroMscreenLineSinkString(ml,[(-10,5),(-5,5),(0,5)],res=1.0,layers=[1,2])
 ##ml.initialize()
 #ml.solve()
-#print ml.potential(50,50,[0.5,5])
+#print(ml.potential(50,50,[0.5,5]))
 
 #ml2 = ModelMaq(kaq=[10,5],z=[4,2,1,0],c=[100],Saq=[1e-3,1e-4],Sll=[1e-6],tmin=.1,tmax=10,M=15)
 #L1 = np.sqrt(10**2+5**2)
@@ -2945,7 +2949,7 @@ class XsecInhom(Element, InhomEquation):
 #ls3b = ZeroMscreenLineSink(ml2,-5,5,0,5,res=1.0,layers=[1,2])
 ##lssb = HeadLineSinkStringOld(ml2,[(-10,5),(-5,5),(0,5)],tsandh=[(0,0.02),(3,0.01)],res=0.0,layers=[1,2])
 #ml2.solve()
-#print ml2.potential(50,50,[0.5,5])
+#print(ml2.potential(50,50,[0.5,5]))
 
 #lss = HeadLineSinkString(ml,[(-10,5),(-5,5),(0,5)],tsandh=[(0,0.02),(3,0.01)],res=1.0,layers=[1,2])
 #lss = MscreenLineSinkString(ml,[(-10,5),(-5,5),(0,5)],tsandQ=[(0,.03*5),(2,.07*5)],res=0.5,layers=[1,2])
@@ -2971,25 +2975,25 @@ class XsecInhom(Element, InhomEquation):
 ##w3 = ZeroHeadWell(ml,0,100,.1,res=1.0,layers=[1,2])
 ##w3 = HeadWell(ml,0,100,.1,tsandh=[(0,2),(3,1)],res=1.0,layers=[1,2])
 #ml.solve()
-###print ml.potential(2,3,[.5,5])
-#print ml.potential(50,50,[0.5,5])
+###print(ml.potential(2,3,[.5,5]))
+#print(ml.potential(50,50,[0.5,5]))
 #ml2.solve()
-#print ml2.potential(50,50,[.5,5])
-#print lss.strength([.5,5])
+#print(ml2.potential(50,50,[.5,5]))
+#print(lss.strength([.5,5]))
 #
 #ml2 = ModelMaq(kaq=[10,5],z=[4,2,1,0],c=[100],Saq=[1e-3,1e-4],Sll=[1e-6],tmin=0.1,tmax=10,M=15)
 #ls1a = LineSink(ml2,-10,-10,0,-5,tsandsig=[(0,.05),(1,.02)],res=1.0,layers=[1,2],label='mark1')
 #ls2a = LineSink(ml2,0,-5,10,10,tsandsig=[(0,.03),(2,.07)],layers=[1],label='mark2')
 #ls3a = HeadLineSinkStringOld(ml2,[(-10,5),(-5,5),(0,5)],tsandh=[(0,0.02),(3,0.01)],res=0.0,layers=[1,2])
 #ml2.solve()
-#print ml2.potential(50,50,[0.5,5])
+#print(ml2.potential(50,50,[0.5,5]))
 
-#print 'Q from strength:  ',w3.strength(.5)
-#print 'Q from head diff: ',(ml.head(w3.xc,w3.yc,.5)-w3.headinside(.5))/w3.res*2*np.pi*w3.rw*ml.aq.Haq[:,np.newaxis]
-#print 'Q from head diff: ',(ml.head(w3.xc,w3.yc,.5)-2.0)/w3.res*2*np.pi*w3.rw*ml.aq.Haq[:,np.newaxis]
-#print w3.strength([.5,5])
-#print ls3.strength([.5,5])
-#print sum(ls3.strength([.5,5]),0)
+#print('Q from strength:  ',w3.strength(.5))
+#print('Q from head diff: ',(ml.head(w3.xc,w3.yc,.5)-w3.headinside(.5))/w3.res*2*np.pi*w3.rw*ml.aq.Haq[:,np.newaxis])
+#print('Q from head diff: ',(ml.head(w3.xc,w3.yc,.5)-2.0)/w3.res*2*np.pi*w3.rw*ml.aq.Haq[:,np.newaxis])
+#print(w3.strength([.5,5]))
+#print(ls3.strength([.5,5]))
+#print(sum(ls3.strength([.5,5]),0))
 #Q = w3.strength([.5,5])
-#print sum(Q,0)
-#print ml.potential(w3.xc,w3.yc,[.5,5])
+#print(sum(Q,0))
+#print(ml.potential(w3.xc,w3.yc,[.5,5]))
