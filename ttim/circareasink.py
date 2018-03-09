@@ -44,11 +44,13 @@ class CircAreaSink(Element):
         self.setflowcoef()
         self.an = self.aq.coef[0, :] * self.flowcoef  # Since recharge is in layer 0, and RHS is -N
         self.an.shape = (self.aq.naq, self.model.nint, self.model.npint)
-        self.termin  = self.aq.lab2 * self.R * self.an * kv(1, self.R/self.aq.lab2)
+        self.termin  = self.aq.lab2 * self.R * self.an
         self.termin2 = self.aq.lab2 ** 2 * self.an
-        self.terminq = self.R * self.an * kv(1, self.R / self.aq.lab2)
-        self.termout = self.aq.lab2 * self.R * self.an * iv(1, self.R / self.aq.lab2)
-        self.termoutq= self.R * self.an * iv(1, self.R / self.aq.lab2)
+        self.terminq = self.R * self.an
+        self.termout = self.aq.lab2 * self.R * self.an
+        self.i1R = iv(1, self.R / self.aq.lab2)
+        self.k1R = kv(1, self.R / self.aq.lab2)
+        self.termoutq= self.R * self.an
         self.dischargeinf = self.aq.coef[0, :] * self.flowcoef
         self.dischargeinflayers = np.sum(self.dischargeinf * self.aq.eigvec[self.layers, :, :], 1)
 
@@ -68,12 +70,12 @@ class CircAreaSink(Element):
                 for i in range(self.aq.naq):
                     for j in range(self.model.nint):
                         #if r / abs(self.aq.lab2[i,j,0]) < self.rzero:
-                        rv[0, i, j, :] = -self.termin[i, j, :] * iv(0, r / self.aq.lab2[i, j, :]) + self.termin2[i, j, :]
+                        rv[0, i, j] = -self.termin[i, j] * self.K1RI0r(r, i, j) + self.termin2[i, j]
             else:
                 for i in range(self.aq.naq):
                     for j in range(self.model.nint):
                         if (r - self.R) / abs(self.aq.lab2[i, j, 0]) < self.rzero:
-                            rv[0, i, j, :] = self.termout[i, j, :] * kv(0, r / self.aq.lab2[i, j, :])
+                            rv[0, i, j, :] = self.termout[i, j, :] * self.I1RK0r(r, i, j)                
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
     
@@ -90,12 +92,13 @@ class CircAreaSink(Element):
                 for i in range(self.aq.naq):
                     for j in range(self.model.nint):
                         #if r / abs(self.aq.lab2[i,j,0]) < self.rzero:
-                        qr[0, i, j, :] = self.terminq[i, j, :] * iv(1, r / self.aq.lab2[i, j, :])
+                        qr[0, i, j] = self.terminq[i, j] * self.K1RI1r(r, i, j)
             else:
                 for i in range(self.aq.naq):
                     for j in range(self.model.nint):
                         if (r - self.R) / abs(self.aq.lab2[i, j, 0]) < self.rzero:
-                            qr[0, i, j, :] = self.termoutq[i, j, :] * kv(1, r / self.aq.lab2[i, j, :])                
+                            qr[0, i, j] = self.termoutq[i, j, :] * self.I1RK1r(r, i, j)
+                            #iv(1, self.R / self.aq.lab2[i, j]) * kv(1, r / self.aq.lab2[i, j])                
             qr.shape = (self.nparam, aq.naq, self.model.npval)
             qx[:] = qr * (x - self.xc) / r
             qy[:] = qr * (y - self.yc) / r
@@ -104,3 +107,47 @@ class CircAreaSink(Element):
     def plot(self):
         plt.plot(self.xc + self.R * np.cos(np.linspace(0, 2 * np.pi, 100)), \
                  self.yc + self.R * np.sin(np.linspace(0, 2 * np.pi, 100)), 'k')
+        
+    def K1RI0r(self, rin, iaq, ipint):
+        r = rin / self.aq.lab2[iaq, ipint]
+        R = self.R / self.aq.lab2[iaq, ipint]
+        if np.isinf(self.i1R[iaq, ipint]).any():
+            rv = np.sqrt(1 / (4 * r * R)) * np.exp(r - R) * \
+                 (1 + 3 / (8 * R) - 15 / (128 * R ** 2) + 315 / (3072 * R ** 3)) * \
+                 (1 + 1 / (8 * r) +  9 / (128 * r ** 2) + 225 / (3072 * r ** 3))
+        else:
+            rv = self.k1R[iaq, ipint] * iv(0, r)
+        return rv
+        
+    def I1RK0r(self, rin, iaq, ipint):
+        r = rin / self.aq.lab2[iaq, ipint]
+        R = self.R / self.aq.lab2[iaq, ipint]
+        if np.isinf(self.i1R[iaq, ipint]).any():
+            rv = np.sqrt(1 / (4 * r * R)) * np.exp(R - r) * \
+                 (1 - 3 / (8 * R) - 15 / (128 * R ** 2) - 315 / (3072 * R ** 3)) * \
+                 (1 - 1 / (8 * r) +  9 / (128 * r ** 2) - 225 / (3072 * r ** 3))
+        else:
+            rv = self.i1R[iaq, ipint] * kv(0, r)
+        return rv
+    
+    def K1RI1r(self, rin, iaq, ipint):
+        r = rin / self.aq.lab2[iaq, ipint]
+        R = self.R / self.aq.lab2[iaq, ipint]
+        if np.isinf(self.i1R[iaq, ipint]).any():
+            rv = np.sqrt(1 / (4 * r * R)) * np.exp(r - R) * \
+                 (1 + 3 / (8 * R) - 15 / (128 * R ** 2) + 315 / (3072 * R ** 3)) * \
+                 (1 - 3 / (8 * r) - 15 / (128 * r ** 2) - 315 / (3072 * r ** 3))
+        else:
+            rv = self.k1R[iaq, ipint] * iv(1, r)
+        return rv
+
+    def I1RK1r(self, rin, iaq, ipint):
+        r = rin / self.aq.lab2[iaq, ipint]
+        R = self.R / self.aq.lab2[iaq, ipint]
+        if np.isinf(self.i1R[iaq, ipint]).any():
+            rv = np.sqrt(1 / (4 * r * R)) * np.exp(R - r) * \
+                 (1 - 3 / (8 * R) - 15 / (128 * R ** 2) - 315 / (3072 * R ** 3)) * \
+                 (1 + 3 / (8 * r) - 15 / (128 * r ** 2) + 315 / (3072 * r ** 3))
+        else:
+            rv = self.i1R[iaq, ipint] * kv(1, r)
+        return rv
