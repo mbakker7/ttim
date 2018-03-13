@@ -10,14 +10,15 @@ from .util import PlotTtim
 
 class TimModel(PlotTtim):
     def __init__(self, kaq=[1, 1], Haq=[1, 1], c=[1e100, 100], Saq=[0.3, 0.003], \
-                 Sll=[0], topboundary='conf', phreatictop=False, tmin=1, tmax=10, M=20):
+                 Sll=[0], topboundary='conf', phreatictop=False, tmin=1, tmax=10, tstart=0, M=20):
         self.elementlist = []
         self.elementdict = {}
         self.vbclist = []  # list with variable boundary condition 'v' elements
         self.zbclist = []  # list with zero and constant boundary condition 'z' elements
         self.gbclist = []  # list with given boundary condition 'g' elements; given bc elements don't have any unknowns
-        self.tmin = float(tmin)
-        self.tmax = float(tmax)
+        self.tmin = tmin
+        self.tmax = tmax
+        self.tstart = tstart
         self.M = M
         self.aq = Aquifer(self, kaq, Haq, c, Saq, Sll, topboundary, phreatictop)
         self.compute_laplace_parameters()
@@ -73,8 +74,8 @@ class TimModel(PlotTtim):
         self.tintervals = 10.0**np.arange(itmin,itmax+1)
         # lower and upper limit are adjusted to prevent any problems from t exactly at the beginning and end of the interval
         # also, you cannot count on t >= 10**log10(t) for all possible t
-        self.tintervals[0] = self.tintervals[0] * ( 1 - np.finfo(float).epsneg )
-        self.tintervals[-1] = self.tintervals[-1] * ( 1 + np.finfo(float).eps )
+        self.tintervals[0] = self.tintervals[0] * (1 - 1e-12)
+        self.tintervals[-1] = self.tintervals[-1] * (1 + 1e-12)
         #alpha = 1.0
         alpha = 0.0  # I don't see why it shouldn't be 0.0
         tol = 1e-9
@@ -101,7 +102,7 @@ class TimModel(PlotTtim):
         if layers is None:
             layers = range(aq.naq)
         nlayers = len(layers)
-        time = np.atleast_1d(t).copy()
+        time = np.atleast_1d(t - self.tstart).copy()
         pot = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
         for i in range(self.ngbc):
             pot[i, :] += self.gbclist[i].unitpotential(x, y, aq)
@@ -115,7 +116,7 @@ class TimModel(PlotTtim):
         if returnphi:
             return pot
         rv = np.zeros((nlayers, len(time)))
-        if (time[0] < self.tmin) or (time[-1] > self.tmax):
+        if (time[0] < self.tintervals[0]) or (time[-1] > self.tintervals[-1]):
             print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
         #
         for k in range(self.ngvbc):
@@ -123,11 +124,11 @@ class TimModel(PlotTtim):
             for itime in range(e.Ntstart):
                 t = time - e.tstart[itime]
                 it = 0
-                if t[-1] >= self.tmin:  # Otherwise all zero
-                    if (t[0] < self.tmin):
-                        it = np.argmax(t >= self.tmin)  # clever call that should be replaced with find_first function when included in numpy
+                if t[-1] >= self.tintervals[0]:  # Otherwise all zero
+                    if (t[0] < self.tintervals[0]):
+                        it = np.argmax(t >= self.tintervals[0])  # clever call that should be replaced with find_first function when included in numpy
                     for n in range(self.nint):
-                        tp = t[(t >= self.tintervals[n]) & (t < self.tintervals[n+1])]
+                        tp = t[(t >= self.tintervals[n]) & (t < self.tintervals[n + 1])]
                         ## I think these lines are not needed anymore as I modified tintervals[0] and tintervals[-1] by eps
                         #if n == self.nint-1:
                         #    tp = t[ (t >= self.tintervals[n]) & (t <= self.tintervals[n+1]) ]
@@ -157,7 +158,7 @@ class TimModel(PlotTtim):
         else:
             layers = np.atleast_1d(layers)  # corrected for base zero
         Nlayers = len(layers)
-        time = np.atleast_1d(t).copy()
+        time = np.atleast_1d(t - self.tstart).copy()
         disx = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
         disy = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
         for i in range(self.ngbc):
@@ -176,7 +177,7 @@ class TimModel(PlotTtim):
             disx *= self.p ** derivative
             disy *= self.p ** derivative
         rvx,rvy = np.zeros((Nlayers,len(time))), np.zeros((Nlayers,len(time)))
-        if (time[0] < self.tmin) or (time[-1] > self.tmax):
+        if (time[0] < self.tintervals[0]) or (time[-1] > self.tintervals[-1]):
             print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
         #
         for k in range(self.ngvbc):
@@ -184,8 +185,9 @@ class TimModel(PlotTtim):
             for itime in range(e.Ntstart):
                 t = time - e.tstart[itime]
                 it = 0
-                if t[-1] >= self.tmin:  # Otherwise all zero
-                    if (t[0] < self.tmin): it = np.argmax( t >= self.tmin )  # clever call that should be replaced with find_first function when included in numpy
+                if t[-1] >= self.tintervals[0]:  # Otherwise all zero
+                    if (t[0] < self.tintervals[0]):
+                        it = np.argmax( t >= self.tintervals[0])  # clever call that should be replaced with find_first function when included in numpy
                     for n in range(self.nint):
                         tp = t[ (t >= self.tintervals[n]) & (t < self.tintervals[n+1]) ]
                         Nt = len(tp)
@@ -221,14 +223,14 @@ class TimModel(PlotTtim):
             layers = range(aq.naq)
         else:
             layers = np.atleast_1d(layers)  # corrected for base zero
-        pot = self.potential(x,y,t,layers,aq,derivative)
-        return aq.potential_to_head(pot,layers)
+        pot = self.potential(x, y, t, layers, aq, derivative)
+        return aq.potential_to_head(pot, layers)
     
-    def headinside(self,elabel,t):
-        return self.elementdict[elabel].headinside(t)
+    def headinside(self, elabel, t):
+        return self.elementdict[elabel].headinside(t - self.tstart)
     
     def strength(self,elabel,t):
-        return self.elementdict[elabel].strength(t)
+        return self.elementdict[elabel].strength(t - self.tstart)
     
     def headalongline(self, x, y, t, layers=None):
         """Head along line or curve
@@ -250,7 +252,8 @@ class TimModel(PlotTtim):
 
         """
         
-        xg, yg = np.atleast_1d(x),np.atleast_1d(y)
+        xg = np.atleast_1d(x)
+        yg = np.atleast_1d(y)
         if layers is None:
             Nlayers = self.aq.find_aquifer_data(xg[0], yg[0]).naq
         else:
@@ -261,7 +264,7 @@ class TimModel(PlotTtim):
         t = np.atleast_1d(t)
         h = np.zeros( (Nlayers,len(t),nx) )
         for i in range(nx):
-            h[:,:,i] = self.head(xg[i],yg[i],t,layers)
+            h[:,:,i] = self.head(xg[i], yg[i], t, layers)
         return h
     
     def headgrid(self, xg, yg, t, layers=None, printrow=False):
@@ -337,7 +340,7 @@ class TimModel(PlotTtim):
         yg = np.linspace(y1, y2, ny)
         return self.headgrid(xg, yg, t, layers, printrow)
     
-    def inverseLapTran(self,pot,t):
+    def inverseLapTran(self, pot, t):
         '''returns array of potentials of len(t)
         t must be ordered and tmin <= t <= tmax'''
         t = np.atleast_1d(t)
@@ -358,7 +361,7 @@ class TimModel(PlotTtim):
                     it = it + nt
         return rv
     
-    def solve(self,printmat=0, sendback=0, silent=False):
+    def solve(self, printmat=0, sendback=0, silent=False):
         """Compute solution
         
         """
@@ -465,7 +468,9 @@ class ModelMaq(TimModel):
         the minimum time for which heads can be computed after any change
         in boundary condition.
     tmax : scalar
-        the maximum time for which heads can be computed.
+        the maximum time for which heads can be computed
+    tstart : scalar
+        time at start of simulation (default 0)
     M : integer
         the number of terms to be used in the numerical inversion algorithm.
         20 is usually sufficient. If drawdown curves appear to oscillate,
@@ -475,10 +480,10 @@ class ModelMaq(TimModel):
     
     def __init__(self, kaq=[1], z=[1,0], c=[], Saq=[0.001], Sll=[0], \
                  topboundary='conf', phreatictop=False, \
-                 tmin=1, tmax=10, M=20):
+                 tmin=1, tmax=10, tstart=0, M=20):
         self.storeinput(inspect.currentframe())
         kaq, Haq, c, Saq, Sll = param_maq(kaq, z, c, Saq, Sll, topboundary, phreatictop)
-        TimModel.__init__(self, kaq, Haq, c, Saq, Sll, topboundary, phreatictop, tmin, tmax, M)
+        TimModel.__init__(self, kaq, Haq, c, Saq, Sll, topboundary, phreatictop, tmin, tmax, tstart, M)
         self.name = 'ModelMaq'
         
 class Model3D(TimModel):
@@ -525,6 +530,8 @@ class Model3D(TimModel):
         in boundary condition.
     tmax : scalar
         the maximum time for which heads can be computed.
+    tstart : scalar
+        time at start of simulation (default 0)
     M : integer
         the number of terms to be used in the numerical inversion algorithm.
         20 is usually sufficient. If drawdown curves appear to oscillate,
@@ -534,9 +541,9 @@ class Model3D(TimModel):
     
     def __init__(self, kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, \
                  topboundary='conf', phreatictop=True, topres=0, \
-                 tmin=1, tmax=10, M=20):
+                 tmin=1, tmax=10, tstart=0, M=20):
         '''z must have the length of the number of layers + 1'''
         self.storeinput(inspect.currentframe())
         kaq, Haq, c, Saq, Sll = param_3d(kaq, z, Saq, kzoverkh, phreatictop, topboundary, topres)
-        TimModel.__init__(self, kaq, Haq, c, Saq, Sll, topboundary, phreatictop, tmin, tmax, M)
+        TimModel.__init__(self, kaq, Haq, c, Saq, Sll, topboundary, phreatictop, tmin, tmax, tstart, M)
         self.name = 'Model3D'

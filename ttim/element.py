@@ -23,7 +23,7 @@ class Element:
         #
         tsandbc = np.atleast_2d(tsandbc).astype('d')
         assert tsandbc.shape[1] == 2, "TTim input error: tsandQ or tsandh need to be 2D lists or arrays like [(0,1),(2,5),(8,0)] "
-        self.tstart,self.bcin = tsandbc[:,0], tsandbc[:,1]
+        self.tstart, self.bcin = tsandbc[:,0] - self.model.tstart, tsandbc[:,1]
         if self.tstart[0] > 0:
             self.tstart = np.hstack((np.zeros(1), self.tstart))
             self.bcin = np.hstack((np.zeros(1), self.bcin))
