@@ -583,8 +583,13 @@ class HeadLineSinkHo(LineSinkHoBase, HeadEquationNores):
     def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandh=[(0.0,1.0)],\
                  order=0, layers=0, label=None, addtomodel=True):
         self.storeinput(inspect.currentframe())
+        if tsandh == 'fixed':
+            tsandh = [(0, 0)]
+            etype = 'z'
+        else:
+            etype = 'v'
         LineSinkHoBase.__init__(self, model, x1=x1, y1=y1, x2=x2, y2=y2, tsandbc=tsandh,  \
-                                res=0.0, wh='H', order=order, layers=layers, type='v',  \
+                                res=0.0, wh='H', order=order, layers=layers, type=etype,  \
                                 name='HeadLineSinkHo', label=label, addtomodel=addtomodel)
         self.nunknowns = self.nparam
 
