@@ -43,7 +43,7 @@ class Element:
             self.bc[1:] = self.bcin[1:] - self.bcin[:-1]
         else:
             self.bc = self.bcin.copy()
-        self.Ntstart = len(self.tstart)
+        self.ntstart = len(self.tstart)
         
     def initialize(self):
         '''Initialization of terms that cannot be initialized before other elements or the aquifer is defined.
@@ -160,7 +160,7 @@ class Element:
         rv = np.zeros((self.nlayers, np.size(time)))
         if self.type == 'g':
             s = self.dischargeinflayers * self.model.p ** derivative
-            for itime in range(self.Ntstart):
+            for itime in range(self.ntstart):
                 time -=  self.tstart[itime]
                 for i in range(self.nlayers):
                     rv[i] += self.bc[itime] * self.model.inverseLapTran(s[i], time)
@@ -170,7 +170,7 @@ class Element:
             s = s[:, self.layers, :] * self.model.p ** derivative
             for k in range(self.model.ngvbc):
                 e = self.model.gvbclist[k]
-                for itime in range(e.Ntstart):
+                for itime in range(e.ntstart):
                     t = time - e.tstart[itime]
                     if t[-1] >= self.model.tmin:  # Otherwise all zero
                         for i in range(self.nlayers):

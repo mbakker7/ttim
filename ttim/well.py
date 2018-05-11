@@ -24,7 +24,7 @@ class WellBase(Element):
     def initialize(self):
         self.xc = np.array([self.xw + self.rw])
         self.yc = np.array([self.yw]) # Control point to make sure the point is always the same for all elements
-        self.Ncp = 1
+        self.ncp = 1
         self.aq = self.model.aq.find_aquifer_data(self.xw, self.yw)
         self.setbc()
         coef = self.aq.coef[self.layers, :]

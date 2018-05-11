@@ -121,7 +121,7 @@ class TimModel(PlotTtim):
         #
         for k in range(self.ngvbc):
             e = self.gvbclist[k]
-            for itime in range(e.Ntstart):
+            for itime in range(e.ntstart):
                 t = time - e.tstart[itime]
                 it = 0
                 if t[-1] >= self.tintervals[0]:  # Otherwise all zero
@@ -182,7 +182,7 @@ class TimModel(PlotTtim):
         #
         for k in range(self.ngvbc):
             e = self.gvbclist[k]
-            for itime in range(e.Ntstart):
+            for itime in range(e.ntstart):
                 t = time - e.tstart[itime]
                 it = 0
                 if t[-1] >= self.tintervals[0]:  # Otherwise all zero
