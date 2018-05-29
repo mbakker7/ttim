@@ -20,7 +20,7 @@ class PlotTtim:
             fig = plt.gcf()
             ax1 = fig.axes[0]
         if ax1 is not None:
-            plt.axes(ax1)
+            plt.sca(ax1)
             for e in self.elementlist:
                 e.plot()
             plt.axis('scaled')
