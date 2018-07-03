@@ -18,11 +18,12 @@ def param_maq(kaq=[1],z=[1,0],c=[],Saq=[0.001],Sll=[0],topboundary='conf',phreat
         if len(Sll) == 1: Sll = Sll * np.ones(Naq-1)
         assert len(Sll) == Naq-1, 'Error: Length of Sll needs to be ' + str(Naq-1)
         Haq = H[::2]
-        Saq = Saq * Haq
-        if phreatictop: Saq[0] = Saq[0] / H[0]
-        Sll = Sll * H[1::2]
-        c = np.hstack((1e100,c))  # changed (nan,c) to (1e100,c) as I get an error
-        Sll = np.hstack((1e-30,Sll)) # Was: Sll = np.hstack((np.nan,Sll)), but that gives error when c approaches inf
+        #Saq = Saq * Haq
+        #if phreatictop: Saq[0] = Saq[0] / H[0]
+        Hll = H[1::2]
+        #Sll = Sll * Hll
+        c = np.hstack((1e100, c))  # changed (nan,c) to (1e100,c) as I get an error
+        Sll = np.hstack((1e-30, Sll)) # Was: Sll = np.hstack((np.nan,Sll)), but that gives error when c approaches inf
     else: # leaky layers on top
         assert len(z) == 2*Naq+1, 'Error: Length of z needs to be ' + str(2*Naq+1)
         assert len(c) == Naq, 'Error: Length of c needs to be ' + str(Naq)
@@ -30,10 +31,11 @@ def param_maq(kaq=[1],z=[1,0],c=[],Saq=[0.001],Sll=[0],topboundary='conf',phreat
         if len(Sll) == 1: Sll = Sll * np.ones(Naq)
         assert len(Sll) == Naq, 'Error: Length of Sll needs to be ' + str(Naq)
         Haq = H[1::2]
-        Saq = Saq * Haq
-        Sll = Sll * H[::2]
-        if phreatictop and (topboundary[:3]=='lea'): Sll[0] = Sll[0] / H[0]
-    return kaq,Haq,c,Saq,Sll
+        #Saq = Saq * Haq
+        Hll = H[::2]
+        #Sll = Sll * Hll
+        #if phreatictop and (topboundary[:3]=='lea'): Sll[0] = Sll[0] / H[0]
+    return kaq, Haq, Hll, c, Saq, Sll
     
 def param_3d(kaq=[1], z=[1, 0], Saq=[0.001], kzoverkh=1, phreatictop=False, \
              topboundary='conf', topres=0):
@@ -50,10 +52,12 @@ def param_3d(kaq=[1], z=[1, 0], Saq=[0.001], kzoverkh=1, phreatictop=False, \
     c = 0.5 * H[:-1] / (kzoverkh[:-1] * kaq[:-1]) + \
         0.5 * H[1:] /  (kzoverkh[1:] * kaq[1:])
     Saq = Saq * H
-    if phreatictop:
-        Saq[0] = Saq[0] / H[0]
+    #if phreatictop:
+    #    Saq[0] = Saq[0] / H[0]
     c = np.hstack((1e100, c))
     if topboundary == 'semi':
         c[0] = topres
-    Sll = 1e-20 * np.ones(len(c))
+    Hll = 1e-20 * np.ones(len(c))
+    Sll = 1e-20 * np.ones(len(c))  # can not be zero
+    # TO DO: include leakage in semi-confining layer
     return kaq, H, c, Saq, Sll

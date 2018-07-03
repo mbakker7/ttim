@@ -9,7 +9,7 @@ from .bessel import *
 from .util import PlotTtim
 
 class TimModel(PlotTtim):
-    def __init__(self, kaq=[1, 1], Haq=[1, 1], c=[1e100, 100], Saq=[0.3, 0.003], \
+    def __init__(self, kaq=[1, 1], Haq=[1, 1], Hll=[0], c=[1e100, 100], Saq=[1e-4, 1e-4], \
                  Sll=[0], topboundary='conf', phreatictop=False, tmin=1, tmax=10, tstart=0, M=20):
         self.elementlist = []
         self.elementdict = {}
@@ -20,7 +20,7 @@ class TimModel(PlotTtim):
         self.tmax = tmax
         self.tstart = tstart
         self.M = M
-        self.aq = Aquifer(self, kaq, Haq, c, Saq, Sll, topboundary, phreatictop)
+        self.aq = Aquifer(self, kaq, Haq, Hll, c, Saq, Sll, topboundary, phreatictop)
         self.compute_laplace_parameters()
         self.name = 'TimModel'
         self.modelname = 'ml' # Used for writing out input
@@ -482,8 +482,8 @@ class ModelMaq(TimModel):
                  topboundary='conf', phreatictop=False, \
                  tmin=1, tmax=10, tstart=0, M=20):
         self.storeinput(inspect.currentframe())
-        kaq, Haq, c, Saq, Sll = param_maq(kaq, z, c, Saq, Sll, topboundary, phreatictop)
-        TimModel.__init__(self, kaq, Haq, c, Saq, Sll, topboundary, phreatictop, tmin, tmax, tstart, M)
+        kaq, Haq, Hll, c, Saq, Sll = param_maq(kaq, z, c, Saq, Sll, topboundary, phreatictop)
+        TimModel.__init__(self, kaq, Haq, Hll, c, Saq, Sll, topboundary, phreatictop, tmin, tmax, tstart, M)
         self.name = 'ModelMaq'
         
 class Model3D(TimModel):
@@ -545,5 +545,5 @@ class Model3D(TimModel):
         '''z must have the length of the number of layers + 1'''
         self.storeinput(inspect.currentframe())
         kaq, Haq, c, Saq, Sll = param_3d(kaq, z, Saq, kzoverkh, phreatictop, topboundary, topres)
-        TimModel.__init__(self, kaq, Haq, c, Saq, Sll, topboundary, phreatictop, tmin, tmax, tstart, M)
+        TimModel.__init__(self, kaq, Haq, 1e-20, c, Saq, Sll, topboundary, phreatictop, tmin, tmax, tstart, M)
         self.name = 'Model3D'

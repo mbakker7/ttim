@@ -3,11 +3,12 @@ import matplotlib.pyplot as plt
 import inspect # Used for storing the input
 
 class AquiferData:
-    def __init__(self, model, kaq, Haq, c, Saq, Sll, topboundary, phreatictop):
+    def __init__(self, model, kaq, Haq, Hll, c, Saq, Sll, topboundary, phreatictop):
         self.model = model
         self.kaq = np.atleast_1d(kaq).astype('d')
         self.naq = len(kaq)
         self.Haq = np.atleast_1d(Haq).astype('d')
+        self.Hll = np.atleast_1d(Hll).astype('d')
         self.T = self.kaq * self.Haq
         self.Tcol = self.T.reshape(self.naq, 1)
         self.c = np.atleast_1d(c).astype('d')
@@ -16,7 +17,7 @@ class AquiferData:
         self.Sll = np.atleast_1d(Sll).astype('d')
         self.Sll[self.Sll < 1e-20] = 1e-20 # Cannot be zero
         self.topboundary = topboundary[:3]
-        self.phreatictop = phreatictop  # used in calibration
+        self.phreatictop = phreatictop
         #self.D = self.T / self.Saq
         self.area = 1e200 # Smaller than default of ml.aq so that inhom is found
     
@@ -37,7 +38,14 @@ class AquiferData:
         # Recompute T for when kaq is changed manually
         self.T = self.kaq * self.Haq
         self.Tcol = self.T.reshape(self.naq, 1)
-        self.D = self.T / self.Saq
+        # Compute Saq and Sll
+        self.Scoefaq = self.Saq * self.Haq
+        self.Scoefll = self.Sll * self.Hll
+        if (self.topboundary == 'con') and self.phreatictop:
+            self.Scoefaq[0] = self.Scoefaq[0] / self.Haq[0]
+        elif (self.topboundary == 'lea') and self.phreatictop:
+            self.Scoefll[0] = self.Scoefll[0] / self.Hll[0]
+        self.D = self.T / self.Scoefaq
         #
         self.eigval = np.zeros((self.naq, self.model.npval), 'D')
         self.lab = np.zeros((self.naq, self.model.npval), 'D')
@@ -56,7 +64,7 @@ class AquiferData:
         self.lababs = np.abs(self.lab2[:,:,0]) # used to check distances
     
     def compute_lab_eigvec(self, p, returnA = False, B = None):
-        sqrtpSc = np.sqrt( p * self.Sll * self.c )
+        sqrtpSc = np.sqrt( p * self.Scoefll * self.c )
         a, b = np.zeros_like(sqrtpSc), np.zeros_like(sqrtpSc)
         small = np.abs(sqrtpSc) < 200
         a[small] = sqrtpSc[small] / np.tanh(sqrtpSc[small])
@@ -113,15 +121,9 @@ class AquiferData:
             return self.naq - 1
         return +9999
     
-    def set_kaq(self, value, layer):
-        self.kaq[layer] = value
-        
-    def set_Saq(self, value, layer):
-        self.Saq[layer] = value
-    
 class Aquifer(AquiferData):
-    def __init__(self, model, kaq, Haq, c, Saq, Sll, topboundary, phreatictop):
-        AquiferData.__init__(self, model, kaq, Haq, c, Saq, Sll, \
+    def __init__(self, model, kaq, Haq, Hll, c, Saq, Sll, topboundary, phreatictop):
+        AquiferData.__init__(self, model, kaq, Haq, Hll, c, Saq, Sll, \
                              topboundary, phreatictop)
         self.inhomlist = []
         self.area = 1e300 # Needed to find smallest inhomogeneity
