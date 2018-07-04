@@ -6,7 +6,7 @@ class AquiferData:
     def __init__(self, model, kaq, Haq, Hll, c, Saq, Sll, topboundary, phreatictop):
         self.model = model
         self.kaq = np.atleast_1d(kaq).astype('d')
-        self.naq = len(kaq)
+        self.naq = len(self.kaq)
         self.Haq = np.atleast_1d(Haq).astype('d')
         self.Hll = np.atleast_1d(Hll).astype('d')
         self.T = self.kaq * self.Haq

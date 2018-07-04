@@ -540,10 +540,10 @@ class Model3D(TimModel):
     """
     
     def __init__(self, kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, \
-                 topboundary='conf', phreatictop=True, topres=0, \
+                 topboundary='conf', phreatictop=True, topres=0, topthick=0, topSll=0,\
                  tmin=1, tmax=10, tstart=0, M=20):
         '''z must have the length of the number of layers + 1'''
         self.storeinput(inspect.currentframe())
-        kaq, Haq, c, Saq, Sll = param_3d(kaq, z, Saq, kzoverkh, phreatictop, topboundary, topres)
-        TimModel.__init__(self, kaq, Haq, 1e-20, c, Saq, Sll, topboundary, phreatictop, tmin, tmax, tstart, M)
+        kaq, Haq, Hll, c, Saq, Sll = param_3d(kaq, z, Saq, kzoverkh, phreatictop, topboundary, topres, topthick, topSll)
+        TimModel.__init__(self, kaq, Haq, Hll, c, Saq, Sll, topboundary, phreatictop, tmin, tmax, tstart, M)
         self.name = 'Model3D'

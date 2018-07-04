@@ -24,6 +24,7 @@ def param_maq(kaq=[1],z=[1,0],c=[],Saq=[0.001],Sll=[0],topboundary='conf',phreat
         #Sll = Sll * Hll
         c = np.hstack((1e100, c))  # changed (nan,c) to (1e100,c) as I get an error
         Sll = np.hstack((1e-30, Sll)) # Was: Sll = np.hstack((np.nan,Sll)), but that gives error when c approaches inf
+        Hll = np.hstack((1e-30, Hll))
     else: # leaky layers on top
         assert len(z) == 2*Naq+1, 'Error: Length of z needs to be ' + str(2*Naq+1)
         assert len(c) == Naq, 'Error: Length of c needs to be ' + str(Naq)
@@ -38,26 +39,27 @@ def param_maq(kaq=[1],z=[1,0],c=[],Saq=[0.001],Sll=[0],topboundary='conf',phreat
     return kaq, Haq, Hll, c, Saq, Sll
     
 def param_3d(kaq=[1], z=[1, 0], Saq=[0.001], kzoverkh=1, phreatictop=False, \
-             topboundary='conf', topres=0):
+             topboundary='conf', topres=0, topthick=0, topSll=0):
     # Computes the parameters for a TimModel from input for a 3D model
     kaq = np.atleast_1d(kaq).astype('d')
     z = np.atleast_1d(z).astype('d')
-    Naq = len(z) - 1
-    if len(kaq) == 1: kaq = kaq * np.ones(Naq)
+    naq = len(z) - 1
+    if len(kaq) == 1: kaq = kaq * np.ones(naq)
     Saq = np.atleast_1d(Saq).astype('d')
-    if len(Saq) == 1: Saq = Saq * np.ones(Naq)
+    if len(Saq) == 1: Saq = Saq * np.ones(naq)
     kzoverkh = np.atleast_1d(kzoverkh).astype('d')
-    if len(kzoverkh) == 1: kzoverkh = kzoverkh * np.ones(Naq)
-    H = z[:-1] - z[1:]
-    c = 0.5 * H[:-1] / (kzoverkh[:-1] * kaq[:-1]) + \
-        0.5 * H[1:] /  (kzoverkh[1:] * kaq[1:])
-    Saq = Saq * H
+    if len(kzoverkh) == 1: kzoverkh = kzoverkh * np.ones(naq)
+    Haq = z[:-1] - z[1:]
+    c = 0.5 * Haq[:-1] / (kzoverkh[:-1] * kaq[:-1]) + \
+        0.5 * Haq[1:] /  (kzoverkh[1:] * kaq[1:])
+    # Saq = Saq * H
     #if phreatictop:
     #    Saq[0] = Saq[0] / H[0]
     c = np.hstack((1e100, c))
-    if topboundary == 'semi':
-        c[0] = topres
     Hll = 1e-20 * np.ones(len(c))
-    Sll = 1e-20 * np.ones(len(c))  # can not be zero
-    # TO DO: include leakage in semi-confining layer
-    return kaq, H, c, Saq, Sll
+    Sll = 1e-20 * np.ones(len(c))
+    if (topboundary[:3] == 'sem') or (topboundary[:3] == 'lea'):
+        c[0] = np.max([1e-20, topres])
+        Hll[0] = np.max([1e-20, topthick])
+        Sll[0] = np.max([1e-20, topSll])
+    return kaq, Haq, Hll, c, Saq, Sll
