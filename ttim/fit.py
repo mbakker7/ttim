@@ -6,7 +6,7 @@ class Calibrate:
     
     def __init__(self, model):
         self.model = model
-        self.parameters = pd.DataFrame(columns=['initial', 'optimal', 'pmin', 'pmax', 'std', 'perc_std'])
+        self.parameters = pd.DataFrame(columns=['optimal', 'std', 'perc_std', 'pmin', 'pmax', 'initial', 'parray'])
         self.seriesdict = {}
         
     def set_parameter(self, name=None, parameter=None, layer=0, initial=0, pmin=-np.inf, pmax=np.inf):
@@ -32,18 +32,19 @@ class Calibrate:
         else:
             print('parameter name not recognized or no parameter reference supplied')
             return
-        self.parameters.loc[name] = {'initial':initial, 'pmin':pmin, 'pmax':pmax, 'optimal':p[:], 'std':None, 'perc_std':None}
+        self.parameters.loc[name] = {'optimal':initial, 'std':None, 'perc_std':None, 'pmin':pmin, 'pmax':pmax, 'initial':initial, 'parray':p[:]}
         #self.parametersdict[name] = p
         
     def series(self, name, x, y, layer, t, h):
         s = Series(x, y, layer, t, h)
         self.seriesdict[name] = s
         
-    def residuals(self, p):
-        print('.', end='')
+    def residuals(self, p, printdot=False):
+        if printdot:
+            print('.', end='')
         # set the values of the variables
         for i, k in enumerate(self.parameters.index):
-            self.parameters.loc[k, 'optimal'][:] = p[i]  # [:] needed to do set value in array
+            self.parameters.loc[k, 'parray'][:] = p[i]  # [:] needed to do set value in array
         self.model.solve(silent=True)
         rv = np.empty(0)
         for key in self.seriesdict:
@@ -52,13 +53,14 @@ class Calibrate:
             rv = np.append(rv, s.h - h)
         return rv
     
-    def fit(self, report=True):
-        self.fitresult = least_squares(self.residuals, self.parameters.initial.values,
+    def fit(self, report=True, diff_step=1e-4, xtol=1e-8):
+        self.fitresult = least_squares(self.residuals, self.parameters.initial.values, args=(True,),
                                         bounds=(self.parameters.pmin.values, self.parameters.pmax.values),
-                                        method='trf', diff_step=1e-5, xtol=1e-8)
+                                        method='trf', diff_step=diff_step, xtol=xtol)
+        print('', flush=True)
         # Call residuals to specify optimal values for model
         res = self.residuals(self.fitresult.x)
-        print('')
+        self.parameters['optimal'] = self.parameters['parray'].values.astype('float')
         nparam = len(self.fitresult.x)
         H = self.fitresult.jac.T @ self.fitresult.jac
         sigsq = np.var(res, ddof=nparam)
@@ -73,6 +75,10 @@ class Calibrate:
             print(self.sig)
             print(self.covmat)
             print(self.cormat)
+            
+    def rmse(self):
+        r = self.residuals(self.parameters['optimal'].values)
+        return np.sqrt(np.mean(r ** 2))
             
             
 class CalibrateOld:
