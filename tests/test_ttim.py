@@ -32,6 +32,6 @@ try:
     ylabel('head (m)')
     legend(loc = 'best')
 except:
-    print 'A figure is created when run from IPython'
+    print('A figure is created when run from IPython')
     pass
 

@@ -30,5 +30,3 @@ print('Parameter estimation using data at observation well 30 m')
 p30 = minimize(residual, p, kws={'t':to1, 'rdata':ro1, 'data':ho1}, epsfcn=1e-4)
 print()
 print(fit_report(p30.params))
-
-

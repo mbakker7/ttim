@@ -8,6 +8,8 @@ from .aquifer import Aquifer
 from .bessel import *
 from .util import PlotTtim
 
+__all__=['ModelMaq', 'Model3D']
+
 class TimModel(PlotTtim):
     def __init__(self, kaq=[1, 1], Haq=[1, 1], Hll=[0], c=[1e100, 100], Saq=[1e-4, 1e-4], \
                  Sll=[0], topboundary='conf', phreatictop=False, tmin=1, tmax=10, tstart=0, M=20):

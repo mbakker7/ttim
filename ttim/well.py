@@ -5,6 +5,8 @@ import inspect # Used for storing the input
 from .element import Element
 from .equation import HeadEquation, WellBoreStorageEquation
 
+__all__=['DischargeWell', 'HeadWell', 'Well', 'TestWell']
+
 class WellBase(Element):
     '''Well Base Class. All Well elements are derived from this class'''
     def __init__(self, model, xw=0, yw=0, rw=0.1, tsandbc=[(0, 1)], res=0, \

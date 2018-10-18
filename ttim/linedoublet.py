@@ -5,6 +5,8 @@ from .element import Element
 from .bessel import *
 from .equation import LeakyWallEquation
 
+__all__=['LeakyLineDoublet', 'LeakyLineDoubletString']
+
 class LineDoubletHoBase(Element):
     '''Higher Order LineDoublet Base Class. All Higher Order Line Doublet elements are derived from this class'''
     def __init__(self,model,x1=-1,y1=0,x2=1,y2=0,tsandbc=[(0.0,0.0)],res='imp',order=0,layers=0,type='',name='LineDoubletHoBase',label=None,addtomodel=True):

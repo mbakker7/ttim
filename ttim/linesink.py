@@ -5,6 +5,8 @@ from .element import Element
 from .bessel import *
 from .equation import HeadEquation, HeadEquationNores, MscreenEquation, MscreenDitchEquation
 
+__all__=['LineSink', 'HeadLineSink', 'HeadLineSinkString', 'LineSinkDitchString', 'HeadLineSinkHo']
+
 class LineSinkBase(Element):
     '''LineSink Base Class. All LineSink elements are derived from this class'''
     def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandbc=[(0, 1)], \

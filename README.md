@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jentjr/ttim.svg?branch=ci_build_branch)](https://travis-ci.org/jentjr/ttim)
+[![Build status](https://ci.appveyor.com/api/projects/status/ohivd9p3x0j1io2h?svg=true)](https://ci.appveyor.com/project/jentjr/ttim)
 # TTim, A Multi-Layer, Transient, Analytic Element Model
 
 ## Introduction
@@ -29,7 +31,7 @@ for both Windows and MaxOS.
 
 **Dependencies:**
 
-TimML requires **NumPy** 1.12 (or higher) and **matplotlib** 2.0 (or higher). 
+TTim requires **NumPy** 1.12 (or higher) and **matplotlib** 2.0 (or higher). 
 
 **For base Python distributions:**
 

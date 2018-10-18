@@ -4,6 +4,8 @@ from scipy.special import kv, iv
 import inspect # Used for storing the input
 from .element import Element
 
+__all__=['CircAreaSink']
+
 class CircAreaSink(Element):
     """
     Create a circular area-sink with uniform infiltration rate in aquifer

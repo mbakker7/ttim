@@ -14,9 +14,11 @@ __author__='Mark Bakker'
 from .version import __version__
 
 # Import all classes and functions
-from .model import ModelMaq, Model3D
-from .well import DischargeWell, HeadWell, Well, TestWell
-from .linesink import LineSink, HeadLineSink, HeadLineSinkString, LineSinkDitchString, HeadLineSinkHo
-from .linedoublet import LeakyLineDoublet, LeakyLineDoubletString
-from .circareasink import CircAreaSink
-from .fit import Calibrate
+from .model import *
+from .well import *
+from .linesink import *
+from .linedoublet import *
+from .circareasink import *
+from .fit import *
+
+__all__=[s for s in dir() if not s.startswith("_")]
