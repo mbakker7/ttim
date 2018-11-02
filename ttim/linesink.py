@@ -374,15 +374,19 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
         self.x = xy[:, 0]
         self.y = xy[:, 1]
         self.nls = len(self.x) - 1
-        for i in range(self.nls):
-            self.lslist.append(HeadLineSink(model, x1=self.x[i], y1=self.y[i], \
-                                            x2=self.x[i + 1], y2=self.y[i + 1], \
-                                            tsandh=tsandh, res=res, wh=wh, \
-                                            layers=layers, label=None, \
-                                            addtomodel=False) )
+        self.tsandh = tsandh
+        self.res = np.atleast_1d(float(res))
+        self.wh = wh
         self.model.addelement(self)
 
     def initialize(self):
+        self.lslist = []
+        for i in range(self.nls):
+            self.lslist.append(HeadLineSink(self.model, x1=self.x[i], y1=self.y[i], \
+                                            x2=self.x[i + 1], y2=self.y[i + 1], \
+                                            tsandh=self.tsandh, res=self.res, wh=self.wh, \
+                                            layers=self.layers, label=None, \
+                                            addtomodel=False) )
         LineSinkStringBase.initialize(self)
         self.pc = np.zeros(self.nls * self.nlayers)
         for i in range(self.nls):
