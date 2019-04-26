@@ -1,53 +1,141 @@
 import numpy as np
 import pandas as pd
 from scipy.optimize import least_squares
+import re
 
 __all__=['Calibrate']
 
 class Calibrate:
     
     def __init__(self, model):
+        """initialize Calibration class
+        
+        Parameters
+        ----------
+        model : ttim.Model
+            model to calibrate
+        
+        """
+
         self.model = model
         self.parameters = pd.DataFrame(columns=['optimal', 'std', 'perc_std', 'pmin', 'pmax', 'initial', 'parray'])
         self.seriesdict = {}
         
     def set_parameter(self, name=None, parameter=None, layer=0, initial=0, pmin=-np.inf, pmax=np.inf):
+        """set parameter to be optimized
+        
+        Parameters
+        ----------
+        name : str, optional
+            parameter name, kan include layer information. 
+            See Usage below.
+        parameter : np.array, optional
+            array containing the parameter to be optimized (only 
+            used when name is None)
+        layer : int, optional
+            0-indexed layer, only used if name is None (the default is 0)
+        initial : np.float, optional
+            initial value for the parameter (the default is 0)
+        pmin : np.float, optional
+            lower bound for parameter value (the default is -np.inf)
+        pmax : np.float, optional
+            upper bound for paramater value (the default is np.inf)
+
+        Usage
+        -----
+        name can be be 'kaq', 'Saq' or 'c'. A number after the parameter name
+        denotes the layer number, i.e. 'kaq0' refers to the hydraulic conductivity 
+        of layer 0. name also supports layer ranges, entered by adding a '-' and a
+        layer number, i.e. 'kaq0-3' denotes conductivity for layers 0 up to and
+        including 3.
+
+        If name is of the form 'kaq#' or 'Saq#-#', no parameter or layer needs 
+        to be provided otherwise, parameter needs to be an array and layer 
+        needs to be specified.
+        
         """
-        if name is 'kaq#' or 'Saq#', no parameter of layer needs to be provided
-        otherwise, parameter needs to be an array and layer needs to be specified
-        """
+
         if parameter is not None:
             assert isinstance(parameter, np.ndarray), "Error: parameter needs to be numpy array"
-            p = parameter[layer:layer + 1]
+            p = parameter[layer:layer+1]
         elif isinstance(name, str):
-            # Set, kaq, Saq
-            if name[:3] == 'kaq':
-                layer = int(name[3:])
-                p = self.model.aq.kaq[layer:layer + 1]
-            elif name[:3] == 'Saq':
-                layer = int(name[3:])
-                p = self.model.aq.Saq[layer:layer + 1]
-            elif name[0] == 'c':
-                layer = int(name[1:])
-                p = self.model.aq.c[layer:layer + 1]
-            # TO DO: set c, Sll
+            # find numbers in name str for support layer ranges
+            layers_from_name = re.findall(r'\d+', name)
+            if "-" in name:
+                fromlay, tolay = [np.int(i) for i in layers_from_name]
+                if name[:3] == 'kaq':
+                    p = self.model.aq.kaq[fromlay:tolay+1]
+                elif name[:3] == 'Saq':
+                    p = self.model.aq.Saq[fromlay:tolay+1]
+                elif name[0] == 'c':
+                    p = self.model.aq.c[fromlay:tolay+1]
+                # TODO: set Sll
+            else:
+                layer = np.int(layers_from_name[0])
+                # Set, kaq, Saq, c
+                if name[:3] == 'kaq':
+                    p = self.model.aq.kaq[layer:layer + 1]
+                elif name[:3] == 'Saq':
+                    p = self.model.aq.Saq[layer:layer + 1]
+                elif name[0] == 'c':
+                    p = self.model.aq.c[layer:layer + 1]
+                # TODO: set Sll
         else:
             print('parameter name not recognized or no parameter reference supplied')
             return
-        self.parameters.loc[name] = {'optimal':initial, 'std':None, 'perc_std':None, 'pmin':pmin, 'pmax':pmax, 'initial':initial, 'parray':p[:]}
+        self.parameters.loc[name] = {'optimal':initial, 'std':None, 'perc_std':None, 
+                                     'pmin':pmin, 'pmax':pmax, 'initial':initial, 'parray':p[:]}
         #self.parametersdict[name] = p
         
     def series(self, name, x, y, layer, t, h):
+        """method to add observations to Calibration object
+        
+        Parameters
+        ----------
+        name : str
+            name of series
+        x : np.float
+            x-coordinate
+        y : np.float
+            y-coordinate
+        layer : int
+            layer number, 0-indexed
+        t : np.array
+            array containing timestamps of timeseries
+        h : np.array
+            array containing timeseries values, i.e. head observations
+        
+        """
+
         s = Series(x, y, layer, t, h)
         self.seriesdict[name] = s
         
     def residuals(self, p, printdot=False):
+        """method to calculate residuals given certain parameters
+        
+        Parameters
+        ----------
+        p : np.array
+            array containing parameter values
+        printdot : bool, optional
+            print dot for each function call
+        
+        Returns
+        -------
+        np.array
+            array containing all residuals
+        
+        """
+
         if printdot:
             print('.', end='')
         # set the values of the variables
+        
         for i, k in enumerate(self.parameters.index):
             self.parameters.loc[k, 'parray'][:] = p[i]  # [:] needed to do set value in array
+            
         self.model.solve(silent=True)
+        
         rv = np.empty(0)
         for key in self.seriesdict:
             s = self.seriesdict[key]
@@ -62,7 +150,8 @@ class Calibrate:
         print('', flush=True)
         # Call residuals to specify optimal values for model
         res = self.residuals(self.fitresult.x)
-        self.parameters['optimal'] = self.parameters['parray'].values.astype('float')
+        for ipar in self.parameters.index:
+            self.parameters.loc[ipar, 'optimal'] = self.parameters.loc[ipar, 'parray'][0]
         nparam = len(self.fitresult.x)
         H = self.fitresult.jac.T @ self.fitresult.jac
         sigsq = np.var(res, ddof=nparam)
@@ -79,6 +168,14 @@ class Calibrate:
             print(self.cormat)
             
     def rmse(self):
+        """calculate root-mean-squared-error
+        
+        Returns
+        -------
+        np.float
+            return rmse value
+        """
+
         r = self.residuals(self.parameters['optimal'].values)
         return np.sqrt(np.mean(r ** 2))
             
