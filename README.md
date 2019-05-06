@@ -46,17 +46,23 @@ To uninstall TTim type:
 There is no installer for Python 3.7. An installer is planned for the summer of 2019. There are two options to run TTim on Python 3.7:
 
 * Install a virtual environment for Python 3.6. In a terminal, type
+    
     conda create -n py36 python=3.6 anaconda
+    
     conda activate py36
+    
     pip install ttim
 
 To activate the environment and start a jupyter notebook, type the following in a terminal:
+    
     conda activate py36
+    
     jupyter notebook
 
 * If you have FORTRAN and C compilers installed (for example gfortran), you can go to the directory where TTim is installed and type
 
     f2py -c -m --fcompiler=gfortran bessel bessel.f95
+    
     f2py -c -m --fcompiler=gfortran invlap invlap.f90
 
     
