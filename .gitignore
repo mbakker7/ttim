@@ -71,6 +71,7 @@ __config__.py
 
 # IPython Notebook
 .ipynb_checkpoints
+.DS_Store
 
 # pyenv
 .python-version
@@ -94,3 +95,6 @@ ENV/
 
 # pycharm
 .idea/
+
+#f2py
+Info.plist
