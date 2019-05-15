@@ -148,7 +148,7 @@ class TimModel(PlotTtim):
                             it = it + nt
         return rv
     
-    def discharge(self, x, y, t, layers=None, aq=None, derivative=0):
+    def disvec(self, x, y, t, layers=None, aq=None, derivative=0):
         '''Returns qx[naq, ntimes], qy[naq, ntimes] if layers=None, otherwise
         qx[len(layers,Ntimes)],qy[len(layers,Ntimes)]
         t must be ordered '''
@@ -162,10 +162,10 @@ class TimModel(PlotTtim):
         disx = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
         disy = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
         for i in range(self.ngbc):
-            qx,qy = self.gbclist[i].unitdischarge(x, y, aq)
+            qx,qy = self.gbclist[i].unitdisvec(x, y, aq)
             disx[i,:] += qx; disy[i,:] += qy
         for e in self.vzbclist:
-            qx,qy = e.discharge(x,y,aq)
+            qx,qy = e.disvec(x, y, aq)
             disx += qx; disy += qy
         if layers is None:
             disx = np.sum(disx[:, np.newaxis, :, :] * aq.eigvec, 2)

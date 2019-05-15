@@ -60,7 +60,7 @@ class WellBase(Element):
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
     
-    def disinf(self, x, y, aq=None):
+    def disvecinf(self, x, y, aq=None):
         '''Can be called with only one x,y value'''
         if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         qx = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')

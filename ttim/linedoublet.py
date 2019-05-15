@@ -72,7 +72,7 @@ class LineDoubletHoBase(Element):
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
 
-    def disinf(self,x,y,aq=None):
+    def disvecinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
         if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rvx,rvy = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D'), np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
@@ -234,12 +234,12 @@ class LeakyLineDoubletString(Element, LeakyWallEquation):
             rv[i*ld.nparam:(i+1)*ld.nparam,:] = ld.potinf(x,y,aq)
         return rv
 
-    def disinf(self, x, y, aq=None):
+    def disvecinf(self, x, y, aq=None):
         '''Returns array (nunknowns,nperiods)'''
         if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rvx,rvy = np.zeros((self.nparam, aq.naq, self.model.npval), 'D'), np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
         for i,ld in enumerate(self.ldlist):
-            qx,qy = ld.disinf(x,y,aq)
+            qx,qy = ld.disvecinf(x,y,aq)
             rvx[i*ld.nparam:(i+1)*ld.nparam,:] = qx
             rvy[i*ld.nparam:(i+1)*ld.nparam,:] = qy
         return rvx,rvy

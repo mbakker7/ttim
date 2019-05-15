@@ -70,7 +70,7 @@ class LineSinkBase(Element):
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
 
-    def disinf(self,x,y,aq=None):
+    def disvecinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
@@ -253,13 +253,13 @@ class LineSinkStringBase(Element):
             rv[i*self.nlayers:(i + 1) * self.nlayers, :] = self.lslist[i].potinf(x, y, aq)
         return rv
 
-    def disinf(self,x,y,aq=None):
+    def disvecinf(self,x,y,aq=None):
         '''Returns array (nunknowns,Nperiods)'''
         if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
         rvx = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
         rvy = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
         for i in range(self.nls):
-            qx,qy = self.lslist[i].disinf(x,y,aq)
+            qx,qy = self.lslist[i].disvecinf(x,y,aq)
             rvx[i*self.nlayers:(i + 1) * self.nlayers, :] = qx
             rvy[i*self.nlayers:(i + 1) * self.nlayers, :] = qy
         return rvx,rvy
@@ -547,7 +547,7 @@ class LineSinkHoBase(Element):
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
 
-    def disinf(self, x, y, aq=None):
+    def disvecinf(self, x, y, aq=None):
         '''Can be called with only one x,y value'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)

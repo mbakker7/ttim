@@ -98,7 +98,7 @@ class LeakyWallEquation:
             ieq = 0  
             for e in self.model.elementlist:
                 if e.nunknowns > 0:
-                    qx,qy = e.disinflayers(self.xc[icp],self.yc[icp],self.layers)
+                    qx,qy = e.disvecinflayers(self.xc[icp],self.yc[icp],self.layers)
                     mat[istart:istart+self.nlayers,ieq:ieq+e.nunknowns,:] = qx * self.cosout[icp] + qy * self.sinout[icp]
                     if e == self:
                         hmin = e.potinflayers(self.xcneg[icp],self.ycneg[icp],self.layers) / self.aq.T[self.layers][:,np.newaxis,np.newaxis]
@@ -106,7 +106,7 @@ class LeakyWallEquation:
                         mat[istart:istart+self.nlayers,ieq:ieq+e.nunknowns,:] -= self.resfac[:,np.newaxis,np.newaxis] * (hplus-hmin)
                     ieq += e.nunknowns
             for i in range(self.model.ngbc):
-                qx,qy = self.model.gbclist[i].unitdischargelayers(self.xc[icp],self.yc[icp],self.layers)
+                qx,qy = self.model.gbclist[i].unitdisveclayers(self.xc[icp],self.yc[icp],self.layers)
                 rhs[istart:istart+self.nlayers,i,:] -=  qx * self.cosout[icp] + qy * self.sinout[icp]
             #if self.type == 'v':
             #    iself = self.model.vbclist.index(self)

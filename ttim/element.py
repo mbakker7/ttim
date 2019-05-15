@@ -69,28 +69,28 @@ class Element:
             aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum(self.potinf(x, y, aq), 0)
     
-    def disinf(self, x, y, aq=None):
+    def disvecinf(self, x, y, aq=None):
         '''Returns 2 complex arrays of size (nparam, Naq, npval)'''
-        raise 'Must overload Element.disinf()'
+        raise 'Must overload Element.disvecinf()'
     
-    def discharge(self, x, y, aq=None):
+    def disvec(self, x, y, aq=None):
         '''Returns 2 complex arrays of size (ngvbc, Naq, npval)'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        qx, qy = self.disinf(x, y, aq)
+        qx, qy = self.disvecinf(x, y, aq)
         return np.sum(self.parameters[:, :, np.newaxis, :] * qx, 1), \
                np.sum( elf.parameters[:, :, np.newaxis, :] * qy, 1 )
     
-    def unitdischarge(self, x, y, aq=None):
+    def unitdisvec(self, x, y, aq=None):
         '''Returns 2 complex arrays of size (Naq, npval)
         Can be more efficient for given elements'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        qx, qy = self.disinf(x, y, aq)
+        qx, qy = self.disvecinf(x, y, aq)
         return np.sum(qx, 0), np.sum(qy, 0)
     
     # Functions used to build equations
-    def potinflayers(self,x,y,layers=0,aq=None):
+    def potinflayers(self, x, y, layers=0, aq=None):
         '''layers can be scalar, list, or array. returns array of size (len(layers),nparam,npval)
         only used in building equations'''
         if aq is None:
@@ -118,34 +118,34 @@ class Element:
         phi = np.sum(pot[np.newaxis, :, :] * aq.eigvec, 1)
         return phi[layers, :]
     
-    def disinflayers(self, x, y, layers=0, aq=None):
+    def disvecinflayers(self, x, y, layers=0, aq=None):
         '''layers can be scalar, list, or array. returns 2 arrays of size (len(layers),nparam,npval)
         only used in building equations'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        qx, qy = self.disinf(x, y, aq)
+        qx, qy = self.disvecinf(x, y, aq)
         rvx = np.sum(qx[:, np.newaxis, :, :] * aq.eigvec, 2)
         rvy = np.sum(qy[:, np.newaxis, :, :] * aq.eigvec, 2)
         rvx = rvx.swapaxes(0, 1)
         rvy = rvy.swapaxes(0, 1) # As the first axes needs to be the number of layers
         return rvx[layers, :], rvy[layers, :]
     
-    def dischargelayers(self, x, y, layers=0, aq=None):
+    def disveclayers(self, x, y, layers=0, aq=None):
         '''Returns 2 complex array of size (ngvbc, len(layers), npval)
         only used in building equations'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        qx, qy = self.discharge(x, y, aq)
+        qx, qy = self.disvec(x, y, aq)
         rvx = np.sum(qx[:, np.newaxis, :, :] * aq.eigvec, 2)
         rvy = np.sum(qy[:, np.newaxis, :, :] * aq.eigvec, 2)
         return rvx[:, layers, :], rvy[:, layers, :]
     
-    def unitdischargelayers(self, x, y, layers=0, aq=None):
+    def unitdisveclayers(self, x, y, layers=0, aq=None):
         '''Returns complex array of size (len(layers), npval)
         only used in building equations'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        qx, qy = self.unitdischarge(x, y, aq)
+        qx, qy = self.unitdisvec(x, y, aq)
         rvx = np.sum(qx[np.newaxis, :, :] * aq.eigvec, 1)
         rvy = np.sum(qy[np.newaxis, :, :] * aq.eigvec, 1)
         return rvx[layers, :], rvy[layers, :]
