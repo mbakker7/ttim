@@ -2,4 +2,4 @@ Well with specified head
 ------------------------
 
 .. autoclass:: ttim.well.HeadWell
-    :members: headinside
+    :members: headinside, discharge

@@ -4,27 +4,16 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>String of head-specified line-sinks &#8212; ttim 0.4.a1 documentation</title>
-    
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.4.a1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Line-sink ditch string" href="linesinkditchstring.html" />
@@ -35,30 +24,31 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="string-of-head-specified-line-sinks">
 <h1>String of head-specified line-sinks<a class="headerlink" href="#string-of-head-specified-line-sinks" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="ttim.linesink.HeadLineSinkString">
-<em class="property">class </em><code class="descclassname">ttim.linesink.</code><code class="descname">HeadLineSinkString</code><span class="sig-paren">(</span><em>model, xy=[(-1, 0), (1, 0)], tsandh=[(0, 1)], res=0, wh=’H’, layers=0, label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/linesink.html#HeadLineSinkString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.linesink.HeadLineSinkString" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">ttim.linesink.</code><code class="descname">HeadLineSinkString</code><span class="sig-paren">(</span><em>model, xy=[(-1, 0), (1, 0)], tsandh=[(0, 1)], res=0, wh='H', layers=0, label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/linesink.html#HeadLineSinkString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.linesink.HeadLineSinkString" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create string of head-specified line-sinks
 which may optionally have a width and resistance
 Inflow per unit length of line-sink is computed as</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\sigma = w(h_{aq} - h_{ls})/c\]</div>
-<p>where <span class="math">\(c\)</span> is the resistance of the bottom of the line-sink,
-<span class="math">\(w\)</span> is the width over which water enters the line-sink,
-<span class="math">\(h_{aq}\)</span> is the head in the aquifer at the center of the line-sink,
-<span class="math">\(h_{ls}\)</span> is the specified head inside the line-sink
-Note that all that matters is the conductance term <span class="math">\(w/c\)</span> but
+<p>where <span class="math notranslate nohighlight">\(c\)</span> is the resistance of the bottom of the line-sink,
+<span class="math notranslate nohighlight">\(w\)</span> is the width over which water enters the line-sink,
+<span class="math notranslate nohighlight">\(h_{aq}\)</span> is the head in the aquifer at the center of the line-sink,
+<span class="math notranslate nohighlight">\(h_{ls}\)</span> is the specified head inside the line-sink
+Note that all that matters is the conductance term <span class="math notranslate nohighlight">\(w/c\)</span> but
 both are specified separately</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -68,7 +58,7 @@ both are specified separately</p>
 <li><strong>model</strong> (<em>Model object</em>) – Model to which the element is added</li>
 <li><strong>xy</strong> (<em>array</em><em> or </em><em>list</em>) – list or array of (x,y) pairs of coordinates of end-points of
 line-sinks in string</li>
-<li><strong>tsandh</strong> (<em>list</em><em> or </em><em>2D array of</em><em> (</em><em>time</em><em>, </em><a class="reference internal" href="../models/model3d.html#ttim.model.Model3D.head" title="ttim.model.Model3D.head"><em>head</em></a><em>) </em><em>values</em><em> or </em><em>string</em>) – if list or 2D array: pairs of time and head after that time
+<li><strong>tsandh</strong> (<em>list</em><em> or </em><em>2D array of</em><em> (</em><em>time</em><em>, </em><em>head</em><em>) </em><em>values</em><em> or </em><em>string</em>) – if list or 2D array: pairs of time and head after that time
 if ‘fixed’: head is fixed (no change in head) during entire simulation</li>
 <li><strong>res</strong> (<em>scalar</em><em> (</em><em>default is 0</em><em>)</em>) – resistance of line-sink</li>
 <li><strong>wh</strong> (<em>scalar</em><em> or </em><em>str</em>) – distance over which water enters line-sink
@@ -86,12 +76,26 @@ if list or array: element is placed in all these layers</li>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="headlinesink.html#ttim.linesink.HeadLineSink" title="ttim.linesink.HeadLineSink"><code class="xref py py-class docutils literal"><span class="pre">HeadLineSink</span></code></a></p>
+<p class="last"><a class="reference internal" href="headlinesink.html#ttim.linesink.HeadLineSink" title="ttim.linesink.HeadLineSink"><code class="xref py py-class docutils literal notranslate"><span class="pre">HeadLineSink</span></code></a></p>
 </div>
 <dl class="method">
 <dt id="ttim.linesink.HeadLineSinkString.discharge">
 <code class="descname">discharge</code><span class="sig-paren">(</span><em>t</em>, <em>derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.linesink.HeadLineSinkString.discharge" title="Permalink to this definition">¶</a></dt>
-<dd><p>returns array of discharges (Nlayers,len(t)) t must be ordered and tmin &lt;= t &lt;= tmax</p>
+<dd><p>The discharge in each layer</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>t</strong> (<em>scalar</em><em>, </em><em>list</em><em> or </em><em>array</em>) – times at which discharge is computed.
+t must be ordered and tmin &lt;= t &lt;= tmax</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Discharge in each screen with zeros for layers that are not
+screened</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array of discharges (nlayers,len(t))</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -138,6 +142,7 @@ the line-sink is screened in, and each time</td>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -192,12 +197,14 @@ the line-sink is screened in, and each time</td>
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -208,8 +215,8 @@ the line-sink is screened in, and each time</td>
       &copy;2017, Mark Bakker.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="../_sources/linesinks/headlinesinkstring.rst.txt"

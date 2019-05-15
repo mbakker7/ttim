@@ -152,7 +152,21 @@ class Element:
     
     # Other functions
     def discharge(self, t, derivative=0):
-        '''returns array of discharges (nlayers,len(t)) t must be ordered and tmin <= t <= tmax'''
+        """The discharge in each layer
+        
+        Parameters
+        ----------
+        t : scalar, list or array
+            times at which discharge is computed.
+            t must be ordered and tmin <= t <= tmax
+        
+        Returns
+        -------
+        array of discharges (nlayers,len(t))
+            Discharge in each screen with zeros for layers that are not
+            screened
+            
+        """
         # Could potentially be more efficient if s is pre-computed for all elements, but I don't know if that is worthwhile to store as it is quick now
         time = np.atleast_1d(t).astype('d')
         if (time[0] < self.model.tmin) or (time[-1] > self.model.tmax):

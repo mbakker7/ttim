@@ -4,27 +4,16 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Model3D &#8212; ttim 0.4.a1 documentation</title>
-    
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.4.a1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Elements" href="../aems.html" />
@@ -35,20 +24,21 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="model3d">
 <h1>Model3D<a class="headerlink" href="#model3d" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="ttim.model.Model3D">
-<em class="property">class </em><code class="descclassname">ttim.model.</code><code class="descname">Model3D</code><span class="sig-paren">(</span><em>kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, topboundary=’conf’, phreatictop=True, topres=0, tmin=1, tmax=10, M=20</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/model.html#Model3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.model.Model3D" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">ttim.model.</code><code class="descname">Model3D</code><span class="sig-paren">(</span><em>kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, topboundary='conf', phreatictop=True, topres=0, topthick=0, topSll=0, tmin=1, tmax=10, tstart=0, M=20</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/model.html#Model3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.model.Model3D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a multi-layer model object consisting of
 many aquifer layers. The resistance between the layers is computed
 from the vertical hydraulic conductivity of the layers.</p>
@@ -83,6 +73,7 @@ phreatic storage (and not multiplied with the aquifer thickness)</li>
 <li><strong>tmin</strong> (<em>scalar</em>) – the minimum time for which heads can be computed after any change
 in boundary condition.</li>
 <li><strong>tmax</strong> (<em>scalar</em>) – the maximum time for which heads can be computed.</li>
+<li><strong>tstart</strong> (<em>scalar</em>) – time at start of simulation (default 0)</li>
 <li><strong>M</strong> (<em>integer</em>) – the number of terms to be used in the numerical inversion algorithm.
 20 is usually sufficient. If drawdown curves appear to oscillate,
 more terms may be needed, but this seldom happens.</li>
@@ -201,7 +192,7 @@ if None: all layers are returned</li>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><code class="xref py py-func docutils literal"><span class="pre">headgrid2()</span></code></p>
+<p class="last"><code class="xref py py-func docutils literal notranslate"><span class="pre">headgrid2()</span></code></p>
 </div>
 </dd></dl>
 
@@ -232,7 +223,7 @@ if None: all layers are returned</li>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><code class="xref py py-func docutils literal"><span class="pre">headgrid()</span></code></p>
+<p class="last"><code class="xref py py-func docutils literal notranslate"><span class="pre">headgrid()</span></code></p>
 </div>
 </dd></dl>
 
@@ -262,6 +253,7 @@ if None: all layers are returned</li>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -307,12 +299,14 @@ if None: all layers are returned</li>
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -323,8 +317,8 @@ if None: all layers are returned</li>
       &copy;2017, Mark Bakker.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="../_sources/models/model3d.rst.txt"
