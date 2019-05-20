@@ -49,7 +49,8 @@ setup(
         'License :: OSI Approved :: MIT License',
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 3.6'
+        'Programming Language :: Python :: 3.6',
+        'Topic :: Scientific/Engineering :: Hydrology'
         ],
     platforms='Windows, Mac OS-X',
     install_requires=['numpy>=1.12', 'matplotlib>=2.0', 'lmfit>=0.9'],
