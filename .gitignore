@@ -98,3 +98,8 @@ ENV/
 
 #f2py
 Info.plist
+
+# vscode
+.vscode
+
+*.mod
