@@ -394,20 +394,21 @@ def ucheb(a, c, z, n0):
     complex(kind=8) :: z2, S, T
 
     """
-    cnp1 = 1
-    cnp2 = 0
-    cnp3 = 0
+
+    cnp1 = np.complex(1.)
+    cnp2 = np.complex(0.)
+    cnp3 = np.complex(0.)
     ts = (-1)**(n0+1)
     S = ts
-    T = 1
-    z2 = 2 * z
-    b = 1 + a - c
+    T = 1.
+    z2 = 2. * z
+    b = 1. + a - c
 
     for n in range(n0, -1, -1):
         u = (n+a) * (n+b)
         n2 = 2 * n
-        A1 = 1 - (z2 + (n2+3)*(n+a+1)*(n+b+1) / (n2+4)) / u
-        A2 = 1 - (n2+2)*(n2+3-z2) / u
+        A1 = 1. - (z2 + (n2+3)*(n+a+1)*(n+b+1.) / (n2+4.)) / u
+        A2 = 1. - (n2+2.)*(n2+3.-z2) / u
         A3 = -(n+1)*(n+3-a)*(n+3-b) / (u*(n+2))
         cn = (2*n+2) * A1 * cnp1 + A2 * cnp2 + A3 * cnp3
         ts = -ts
@@ -416,8 +417,7 @@ def ucheb(a, c, z, n0):
         cnp3 = cnp2
         cnp2 = cnp1
         cnp1 = cn
-
-    cn = cn / 2
+    cn = cn / 2.
     S = S - cn
     T = T - cn
     ufunc = z**(-a) * T / S
@@ -1203,7 +1203,7 @@ def bessellsv(x, y, z1, z2, lab, order, R, nlab):
     # the largest lambda (the first one)
     d1, d2 = find_d1d2(z1, z2, np.complex(x, y), R*np.abs(lab[0]))
     for n in range(0, nlab):
-        omega[(n)*nterms:(n+1)*nterms] = bessells(x, y, z1, z2, lab[n],
+        omega[n*nterms:(n+1)*nterms] = bessells(x, y, z1, z2, lab[n],
                                                   order, d1, d2)
     return omega
 
@@ -1826,12 +1826,14 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
     complex(kind=8), dimension(0:50) :: alphanew, betanew, alphanew2 ! Order fixed to 10
     integer :: m, n, p
     """
+    zminzbar = np.zeros(21, dtype=np.complex_)
+
     L = np.abs(z2-z1)
-    bigz = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1)
+    bigz = (2. * np.complex(x, y) - (z1+z2)) / (z2-z1)
     bigy = bigz.imag
     biga = np.abs(lab)
     ang = np.arctan2(lab.imag, lab.real)
-    biglab = 2 * biga / L
+    biglab = 2. * biga / L
     biglabcomplex = 2.0 * lab / L
 
     tol = 1e-12
@@ -1839,22 +1841,16 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
     exprange = np.exp(-np.complex(0, 2) * ang * nrange)
     anew = a1 * exprange
     bnew = (b1 - a1 * np.complex(0, 2) * ang) * exprange
-    # anew[0] = 0
-    # print *,'anew0 ',anew[0]
-    # anew(1:20) = 0
-    # bnew(0:20) = 0
 
-    zeta = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1) / biglab
+    zeta = (2. * np.complex(x, y) - (z1+z2)) / (z2-z1) / biglab
     zetabar = np.conj(zeta)
-    zminzbar = np.zeros(21, dtype=np.complex_)
-    zminzbar[20] = 1.0
+    zminzbar[-1] = 1.
     for n in range(1, 21):
         # Ordered from high power to low power
         zminzbar[20-n] = zminzbar[21-n] * (zeta-zetabar)
 
     gamnew = np.asarray(gam, dtype=np.complex_)
     gam2 = np.zeros(gam.shape, dtype=np.complex_)
-
     for n in range(21):
         gamnew[n, 0:n+1] = gamnew[n, 0:n+1] * zminzbar[20-n:20+1]
         gam2[n, 0:n+1] = np.conj(gamnew[n, 0:n+1])
@@ -1865,7 +1861,6 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
     alpha[0] = anew[0]
     beta[0] = bnew[0]
     alpha2[0] = anew[0]
-
     for n in range(1, 21):
         alpha[n:2*n+1] = alpha[n:2*n+1] + anew[n] * gamnew[n, 0:n+1]
         beta[n:2*n+1] = beta[n:2*n+1] + bnew[n] * gamnew[n, 0:n+1]
@@ -1873,22 +1868,21 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
 
     d1minzeta = d1/biglab - zeta
     d2minzeta = d2/biglab - zeta
-    # d1minzeta = -1/biglab - zeta
-    # d2minzeta = 1/biglab - zeta
+
     if (np.abs(d1minzeta) < tol):
-        d1minzeta = d1minzeta + np.complex(tol, 0)
+        d1minzeta = d1minzeta + np.complex(tol, 0.)
     if (np.abs(d2minzeta) < tol):
-        d2minzeta = d2minzeta + np.complex(tol, 0)
+        d2minzeta = d2minzeta + np.complex(tol, 0.)
     log1 = np.log(d1minzeta)
     log2 = np.log(d2minzeta)
 
     alphanew = np.zeros(51, dtype=np.complex_)
     alphanew2 = np.zeros(51, dtype=np.complex_)
     betanew = np.zeros(51, dtype=np.complex_)
-
     omega = np.zeros(order+1, dtype=np.complex_)
 
     for p in range(order+1):
+
         alphanew[0:40+p+1] = 0.
         betanew[0:40+p+1] = 0.
         alphanew2[0:40+p+1] = 0.
@@ -2241,8 +2235,9 @@ def besselldqxqyv(x, y, z1, z2, lab, order, R, nlab):
     d1, d2 = find_d1d2(z1, z2, np.complex(x, y), R*np.abs(lab[0]))
     for n in range(nlab):
         qxqylab = besselldqxqy(x, y, z1, z2, lab[n], order, d1, d2)
-        qxqy[(n)*nterms:(n+1)*nterms] = qxqylab[0:order+1]
-        qxqy[(n)*nterms+nhalf:(n+1)*nterms+nhalf] = qxqylab[order+1:2*order+1+1]
+        qxqy[n*nterms:(n+1)*nterms] = qxqylab[0:order+1]
+        qxqy[n*nterms+nhalf:(n+1)*nterms +
+             nhalf] = qxqylab[order+1:2*order+1+1]
 
     return qxqy
 
@@ -2412,32 +2407,3 @@ def isinside(z1, z2, zc, R):
         if ((xa < Lover2) and (xb > -Lover2)):
             irv = 1
     return irv
-
-# program besseltest
-# use bessel
-
-# real(kind=8), dimension[0:1] :: omega
-# real(kind=8), dimension(0:0) :: omegac
-# complex(kind=8), dimension[0:1] :: om0, om1, om2, om3, om4, qxnum, qynum, wdis
-# complex(kind=8), dimension(2) :: omv
-# complex(kind=8), dimension(2) :: labv
-# complex(kind=8), dimension[0:1] :: qxqy, qxqy2
-# complex(kind=8), dimension(0:11) :: qxqyv
-# complex(kind=8) :: lab, z, om, z1, z2, z3
-# real(kind=8) :: d, L, x, y, R, xa, xb, ya, yb, d1, d2
-# integer :: order, N, irv
-# call initialize()
-# z1 = np.complex(-20,0)
-# z2 = np.complex(1,0)
-# x = 2
-# y = 3
-# R = 5
-# labv[0] = np.complex(1,2)
-# labv(2) = np.complex(3,4)
-# om0 = bessellsv(x,y,z1,z2,labv,0,R,2)
-# call circle_line_intersection( z1, z2, np.complex(x,y), R*np.abs(labv[0]), xa, ya, xb, yb, N )
-# print *,'za,zb ',np.complex(xa,ya),np.complex(xb,yb)
-# call bessellsuniv(x,y,np.complex(xa,ya),np.complex(xb,yb),labv[0],2,om1)
-# print *,'om0 ',om0
-# print *,'om1 ',om1
-# end
