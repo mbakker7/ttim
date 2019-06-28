@@ -365,109 +365,109 @@ def besselk0OLD(x, y, lab):
     return omega
 
 
-@numba.njit(nogil=True)
-def besselcheb(z, Nt):
-    """
-    implicit none
-    integer, intent(in) :: Nt
-    complex(kind=8), intent(in) :: z
-    complex(kind=8) :: omega
-    complex(kind=8) :: z2
-    """
-    z2 = 2.0 * z
-    omega = np.sqrt(np.pi) * np.exp(-z) * ucheb(0.5, 1, z2, Nt)
-    return omega
+# @numba.njit(nogil=True)
+# def besselcheb(z, Nt):
+#     """
+#     implicit none
+#     integer, intent(in) :: Nt
+#     complex(kind=8), intent(in) :: z
+#     complex(kind=8) :: omega
+#     complex(kind=8) :: z2
+#     """
+#     z2 = 2.0 * z
+#     omega = np.sqrt(np.pi) * np.exp(-z) * ucheb(0.5, 1, z2, Nt)
+#     return omega
+# 
+# 
+# @numba.njit(nogil=True)
+# def ucheb(a, c, z, n0):
+#     """
+#     implicit none
+#     integer, intent(in) :: c, n0
+#     real(kind=8), intent(in) :: a
+#     complex(kind=8), intent(in) :: z
+#     complex(kind=8) :: ufunc
+# 
+#     integer :: n, n2, ts
+#     real(kind=8) :: A3, u, b
+#     complex(kind=8) :: A1, A2, cn,cnp1,cnp2,cnp3
+#     complex(kind=8) :: z2, S, T
+# 
+#     """
+# 
+#     cnp1 = np.complex(1.)
+#     cnp2 = np.complex(0.)
+#     cnp3 = np.complex(0.)
+#     ts = (-1)**(n0+1)
+#     S = ts
+#     T = 1.
+#     z2 = 2. * z
+#     b = 1. + a - c
+# 
+#     for n in range(n0, -1, -1):
+#         u = (n+a) * (n+b)
+#         n2 = 2 * n
+#         A1 = 1. - (z2 + (n2+3)*(n+a+1)*(n+b+1.) / (n2+4.)) / u
+#         A2 = 1. - (n2+2.)*(n2+3.-z2) / u
+#         A3 = -(n+1)*(n+3-a)*(n+3-b) / (u*(n+2))
+#         cn = (2*n+2) * A1 * cnp1 + A2 * cnp2 + A3 * cnp3
+#         ts = -ts
+#         S = S + ts * cn
+#         T = T + cn
+#         cnp3 = cnp2
+#         cnp2 = cnp1
+#         cnp1 = cn
+#     cn = cn / 2.
+#     S = S - cn
+#     T = T - cn
+#     ufunc = z**(-a) * T / S
+#     return ufunc
 
 
-@numba.njit(nogil=True)
-def ucheb(a, c, z, n0):
-    """
-    implicit none
-    integer, intent(in) :: c, n0
-    real(kind=8), intent(in) :: a
-    complex(kind=8), intent(in) :: z
-    complex(kind=8) :: ufunc
-
-    integer :: n, n2, ts
-    real(kind=8) :: A3, u, b
-    complex(kind=8) :: A1, A2, cn,cnp1,cnp2,cnp3
-    complex(kind=8) :: z2, S, T
-
-    """
-
-    cnp1 = np.complex(1.)
-    cnp2 = np.complex(0.)
-    cnp3 = np.complex(0.)
-    ts = (-1)**(n0+1)
-    S = ts
-    T = 1.
-    z2 = 2. * z
-    b = 1. + a - c
-
-    for n in range(n0, -1, -1):
-        u = (n+a) * (n+b)
-        n2 = 2 * n
-        A1 = 1. - (z2 + (n2+3)*(n+a+1)*(n+b+1.) / (n2+4.)) / u
-        A2 = 1. - (n2+2.)*(n2+3.-z2) / u
-        A3 = -(n+1)*(n+3-a)*(n+3-b) / (u*(n+2))
-        cn = (2*n+2) * A1 * cnp1 + A2 * cnp2 + A3 * cnp3
-        ts = -ts
-        S = S + ts * cn
-        T = T + cn
-        cnp3 = cnp2
-        cnp2 = cnp1
-        cnp1 = cn
-    cn = cn / 2.
-    S = S - cn
-    T = T - cn
-    ufunc = z**(-a) * T / S
-    return ufunc
-
-
-@numba.njit(nogil=True)
-def besselk0complex(x, y):
-    """
-    implicit none
-    real(kind=8), intent(in) :: x,y
-    real(kind=8) :: phi
-    real(kind=8) :: d
-    complex(kind=8) :: zeta, zetabar, omega, logdminzdminzbar, dminzeta, term
-    complex(kind=8), dimension(0:20) :: zminzbar
-    complex(kind=8), dimension(0:20,0:20) :: gamnew
-    complex(kind=8), dimension(0:40) :: alpha, beta
-    """
-    d = 0.
-    zeta = np.complex(x, y)
-    zetabar = np.conj(zeta)
-    zminzbar = np.zeros(21, dtype=np.complex_)
-    for n in range(21):
-        # Ordered from high power to low power
-        zminzbar[n] = (zeta-zetabar)**(20-n)
-
-    gamnew = np.asarray(gam, dtype=np.complex_)
-    for n in range(21):
-        gamnew[n, 0:n+1] = gamnew[n, 0:n+1] * zminzbar[20-n:20+1]
-
-    alpha = np.zeros(41, dtype=np.complex_)
-    beta = np.zeros(41, dtype=np.complex_)
-    alpha[0] = a[0]
-    beta[0] = b[0]
-    for n in range(1, 21):
-        alpha[n:2*n+1] = alpha[n:2*n+1] + a[n] * gamnew[n, :n+1]
-        beta[n:2*n+1] = beta[n:2*n+1] + b[n] * gamnew[n, :n+1]
-
-    omega = np.complex(0., 0.)
-    logdminzdminzbar = np.log((d-zeta) * (d-zetabar))
-    dminzeta = d - zeta
-    term = 1.
-
-    for n in range(41):
-        omega = omega + (alpha[n] * logdminzdminzbar + beta[n]) * term
-        term = term * dminzeta
-
-    phi = np.real(omega)
-
-    return phi
+# @numba.njit(nogil=True)
+# def besselk0complex(x, y):
+#     """
+#     implicit none
+#     real(kind=8), intent(in) :: x,y
+#     real(kind=8) :: phi
+#     real(kind=8) :: d
+#     complex(kind=8) :: zeta, zetabar, omega, logdminzdminzbar, dminzeta, term
+#     complex(kind=8), dimension(0:20) :: zminzbar
+#     complex(kind=8), dimension(0:20,0:20) :: gamnew
+#     complex(kind=8), dimension(0:40) :: alpha, beta
+#     """
+#     d = 0.
+#     zeta = np.complex(x, y)
+#     zetabar = np.conj(zeta)
+#     zminzbar = np.zeros(21, dtype=np.complex_)
+#     for n in range(21):
+#         # Ordered from high power to low power
+#         zminzbar[n] = (zeta-zetabar)**(20-n)
+# 
+#     gamnew = np.asarray(gam, dtype=np.complex_)
+#     for n in range(21):
+#         gamnew[n, 0:n+1] = gamnew[n, 0:n+1] * zminzbar[20-n:20+1]
+# 
+#     alpha = np.zeros(41, dtype=np.complex_)
+#     beta = np.zeros(41, dtype=np.complex_)
+#     alpha[0] = a[0]
+#     beta[0] = b[0]
+#     for n in range(1, 21):
+#         alpha[n:2*n+1] = alpha[n:2*n+1] + a[n] * gamnew[n, :n+1]
+#         beta[n:2*n+1] = beta[n:2*n+1] + b[n] * gamnew[n, :n+1]
+# 
+#     omega = np.complex(0., 0.)
+#     logdminzdminzbar = np.log((d-zeta) * (d-zetabar))
+#     dminzeta = d - zeta
+#     term = 1.
+# 
+#     for n in range(41):
+#         omega = omega + (alpha[n] * logdminzdminzbar + beta[n]) * term
+#         term = term * dminzeta
+# 
+#     phi = np.real(omega)
+# 
+#     return phi
 
 
 @numba.njit(nogil=True)
@@ -544,9 +544,9 @@ def bessellsreal(x, y, x1, y1, x2, y2, lab):
     for n in range(21):
         # Ordered from high power to low power
         zminzbar[n] = (zeta-zetabar)**(20-n)
-    gamnew = np.asarray(gam, dtype=np.complex_).copy()
+    gamnew = np.zeros((21, 21), dtype=np.complex_)
     for n in range(21):
-        gamnew[n, 0:n+1] = gamnew[n, 0:n+1] * zminzbar[20-n:20+1]
+        gamnew[n, 0:n+1] = gam[n, 0:n+1] * zminzbar[20-n:20+1]
 
     alpha = np.zeros(41, dtype=np.complex_)
     beta = np.zeros(41, dtype=np.complex_)
