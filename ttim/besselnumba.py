@@ -608,10 +608,10 @@ def bessellsrealho(x, y, x1, y1, x2, y2, lab, order):
     for n in range(21):
         # Ordered from high power to low power
         zminzbar[n] = (zeta-zetabar)**(20-n)
-
-    gamnew = np.asarray(gam, dtype=np.complex_)
+        
+    gamnew = np.zeros((21, 21), dtype=np.complex_)
     for n in range(21):
-        gamnew[n, 0:n] = gamnew[n, 0:n] * zminzbar[20-n:20]
+        gamnew[n, 0:n+1] = gam[n, 0:n+1] * zminzbar[20-n:20+1]
 
     alpha = np.zeros(41, dtype=np.complex_)
     beta = np.zeros(41, dtype=np.complex_)
@@ -692,10 +692,10 @@ def bessells_int(x, y, z1, z2, lab):
         # Ordered from high power to low power
         zminzbar[20-n] = zminzbar[21-n] * (zeta-zetabar)
 
-    gamnew = np.asarray(gam, dtype=np.complex_)
-    gam2 = np.zeros(gam.shape, dtype=np.complex_)
+    gamnew = np.zeros((21, 21), dtype=np.complex_)
+    gam2 = np.zeros((21, 21), dtype=np.complex_)
     for n in range(21):
-        gamnew[n, 0:n+1] = gamnew[n, 0:n+1] * zminzbar[20-n:20+1]
+        gamnew[n, 0:n+1] = gam[n, 0:n+1] * zminzbar[20-n:20+1]
         gam2[n, 0:n+1] = np.conj(gamnew[n, 0:n+1])
 
     alpha = np.zeros(41, dtype=np.complex_)
@@ -783,10 +783,10 @@ def bessells_int_ho(x, y, z1, z2, lab, order, d1, d2):
         # Ordered from high power to low power
         zminzbar[20-n] = zminzbar[21-n] * (zeta-zetabar)
 
-    gamnew = np.asarray(gam, dtype=np.complex_)
-    gam2 = np.zeros(gam.shape, dtype=np.complex_)
+    gamnew = np.zeros((21, 21), dtype=np.complex_)
+    gam2 = np.zeros((21, 21), dtype=np.complex_)
     for n in range(21):
-        gamnew[n, 0:n+1] = gamnew[n, 0:n+1] * zminzbar[20-n:20+1]
+        gamnew[n, 0:n+1] = gam[n, 0:n+1] * zminzbar[20-n:20+1]
         gam2[n, 0:n+1] = np.conj(gamnew[n, 0:n+1])
 
     alpha = np.zeros(41, dtype=np.complex_)
@@ -895,10 +895,10 @@ def bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     for n in range(1, 21):
         # Ordered from high power to low po
         zminzbar[20-n] = zminzbar[21-n] * (zeta-zetabar)
-    gamnew = np.asarray(gam, dtype=np.complex_)
-    gam2 = np.zeros(gam.shape, dtype=np.complex_)
+    gamnew = np.zeros((21, 21), dtype=np.complex_)
+    gam2 = np.zeros((21, 21), dtype=np.complex_)
     for n in range(21):
-        gamnew[n, 0:n+1] = gamnew[n, 0:n+1] * zminzbar[20-n:20+1]
+        gamnew[n, 0:n+1] = gam[n, 0:n+1] * zminzbar[20-n:20+1]
         gam2[n, 0:n+1] = np.conj(gamnew[n, 0:n+1])
 
     alpha = np.zeros(41, dtype=np.complex_)
@@ -1580,11 +1580,11 @@ def besselld_int_ho(x, y, z1, z2, lab, order, d1, d2):
         # Ordered from high power to low power
         zminzbar[20-n] = zminzbar[21-n] * (zeta-zetabar)
 
-    gamnew = np.asarray(gam, dtype=np.complex_)
-    gam2 = np.zeros(gam.shape, dtype=np.complex_)
+    gamnew = np.zeros((21, 21), dtype=np.complex_)
+    gam2 = np.zeros((21, 21), dtype=np.complex_)
 
     for n in range(21):
-        gamnew[n, 0:n+1] = gamnew[n, 0:n+1] * zminzbar[20-n:20+1]
+        gamnew[n, 0:n+1] = gam[n, 0:n+1] * zminzbar[20-n:20+1]
         gam2[n, 0:n+1] = np.conj(gamnew[n, 0:n+1])
 
     alpha = np.zeros(41, dtype=np.complex_)
@@ -1849,10 +1849,10 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
         # Ordered from high power to low power
         zminzbar[20-n] = zminzbar[21-n] * (zeta-zetabar)
 
-    gamnew = np.asarray(gam, dtype=np.complex_)
-    gam2 = np.zeros(gam.shape, dtype=np.complex_)
+    gamnew = np.zeros((21, 21), dtype=np.complex_)
+    gam2 = np.zeros((21, 21), dtype=np.complex_)
     for n in range(21):
-        gamnew[n, 0:n+1] = gamnew[n, 0:n+1] * zminzbar[20-n:20+1]
+        gamnew[n, 0:n+1] = gam[n, 0:n+1] * zminzbar[20-n:20+1]
         gam2[n, 0:n+1] = np.conj(gamnew[n, 0:n+1])
 
     alpha = np.zeros(41, dtype=np.complex_)
@@ -1970,11 +1970,11 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
         # Ordered from high power to low power
         zminzbar[20-n] = zminzbar[21-n] * (zeta-zetabar)
 
-    gamnew = np.asarray(gam, dtype=np.complex_)
-    gam2 = np.zeros(gam.shape, dtype=np.complex_)
+    gamnew = np.zeros((21, 21), dtype=np.complex_)
+    gam2 = np.zeros((21, 21), dtype=np.complex_)
 
     for n in range(21):
-        gamnew[n, 0:n+1] = gamnew[n, 0:n+1] * zminzbar[20-n:20+1]
+        gamnew[n, 0:n+1] = gam[n, 0:n+1] * zminzbar[20-n:20+1]
         gam2[n, 0:n+1] = np.conj(gamnew[n, 0:n+1])
 
     alpha = np.zeros(41, dtype=np.complex_)
