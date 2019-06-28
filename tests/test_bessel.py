@@ -687,24 +687,21 @@ def test_circle_line_intersection():
     xoutb = 1.
     youtb = 1.
     N = 0
-    bessel.circle_line_intersection(
-        z1, z2, zc, R, xouta, youta, xoutb, youtb, N)
-    a = (xouta, youta, xoutb, youtb, N)
+    xyn = bessel.circle_line_intersection_func(z1, z2, zc, R)
+    a = (xyn[0], xyn[1], xyn[2], xyn[3], int(xyn[4]))
     b = besselnumba.circle_line_intersection(z1, z2, zc, R)
     assert np.allclose(a, b), "not equal"
     return a, b
 
 
 def test_find_d1d2():
-    z1 = 1. + 1.j
-    z2 = 5. + 5.j
-    zc = 2. + 2.j
-
-    R = 10.
+    z1 = -1 -2j
+    z2 = 2 + 1j
+    zc = 2 + 0.5j
+    R = 2.0
     d1 = 0.
     d2 = 0.
-    bessel.find_d1d2(z1, z2, zc, R, d1, d2)
-    a = (d1, d2)
+    a = bessel.find_d1d2_func(z1, z2, zc, R)
     b = besselnumba.find_d1d2(z1, z2, zc, R)
     assert np.allclose(a, b), "not equal"
     return a, b

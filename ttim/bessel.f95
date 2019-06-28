@@ -2178,7 +2178,23 @@ contains
 
         return
     end subroutine circle_line_intersection
-
+    
+    function circle_line_intersection_func(z1, z2, zc, R) result(xayaxbybn)
+        implicit none
+        complex(kind=8), intent(in) :: z1, z2, zc
+        real(kind=8), intent(in) :: R
+        real(kind=8), dimension(5) :: xayaxbybn
+        real(kind=8) :: xouta, youta, xoutb, youtb
+        integer :: N
+        call circle_line_intersection(z1, z2, zc, R, xouta, youta, xoutb, youtb, N)
+        xayaxbybn(1) = xouta
+        xayaxbybn(2) = youta
+        xayaxbybn(3) = xoutb
+        xayaxbybn(4) = youtb
+        xayaxbybn(5) = N
+        return
+    end function circle_line_intersection_func
+        
     subroutine find_d1d2( z1, z2, zc, R, d1, d2 )
         implicit none
         complex(kind=8), intent(in) :: z1, z2, zc
@@ -2213,6 +2229,18 @@ contains
 
         return
     end subroutine find_d1d2
+    
+    function find_d1d2_func(z1, z2, zc, R) result(d1d2)
+        implicit none
+        complex(kind=8), intent(in) :: z1, z2, zc
+        real(kind=8), intent(in) :: R
+        real(kind=8), dimension(2) :: d1d2
+        real(kind=8) :: d1, d2
+        call find_d1d2(z1, z2, zc, R, d1, d2)
+        d1d2(1) = d1
+        d1d2(2) = d2
+        return
+    end function find_d1d2_func
 
     function isinside( z1, z2, zc, R ) result(irv)
         ! Checks whether point zc is within oval with 'radius' R from line element
