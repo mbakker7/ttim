@@ -103,3 +103,6 @@ Info.plist
 .vscode
 
 *.mod
+
+# pytest
+.pytest_cache/
