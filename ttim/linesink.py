@@ -65,7 +65,7 @@ class LineSinkBase(Element):
                     bessel.circle_line_intersection(self.z1, self.z2, x + y * 1j, self.rzero * abs(self.model.aq.lab2[i, j, 0]), self.xa, self.ya, self.xb, self.yb, self.np)
                     if self.np > 0:
                         za = complex(self.xa,self.ya); zb = complex(self.xb,self.yb) # f2py has problem returning complex arrays -> fixed in new numpy
-                        bessel.bessellsuniv(x,y,za,zb,self.aq.lab2[i,j,:],pot)
+                        pot[:] = bessel.bessellsuniv(x, y, za, zb, self.aq.lab2[i, j, :])
                         rv[:,i,j,:] = self.term2[:,i,j,:] * pot / self.L  # Divide by L as the parameter is now total discharge
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
@@ -81,7 +81,7 @@ class LineSinkBase(Element):
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
                     if bessel.isinside(self.z1, self.z2, x+y*1j, self.rzero*self.aq.lababs[i, j]):
-                        qxqy[:,:] = bessel.bessellsqxqyv2(x, y, self.z1, self.z2,self.aq.lab2[i,j,:], self.order, self.rzero * self.aq.lababs[i, j]) / self.L  # Divide by L as the parameter is now total discharge
+                        qxqy[:,:] = bessel.bessellsqxqyv2(x, y, self.z1, self.z2, self.aq.lab2[i,j,:], self.order, self.rzero * self.aq.lababs[i, j]) / self.L  # Divide by L as the parameter is now total discharge
                         rvx[:,i,j,:] = self.term2[:,i,j,:] * qxqy[0]
                         rvy[:,i,j,:] = self.term2[:,i,j,:] * qxqy[1]
         rvx.shape = (self.nparam, aq.naq, self.model.npval)

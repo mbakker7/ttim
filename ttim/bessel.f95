@@ -1216,7 +1216,7 @@ contains
         end do
     end function bessellsqxqyv2
 
-    function bessellsuni(x,y,z1,z2,lab) result(omega)
+    function bessellsuni(x, y, z1, z2, lab) result(omega)
         ! Uniform strength
         implicit none
         real(kind=8), intent(in) :: x,y
@@ -1255,19 +1255,19 @@ contains
         return
     end function bessellsuni
 
-    subroutine bessellsuniv(x,y,z1,z2,lab,nlab,omega)
+    function bessellsuniv(x, y, z1, z2, lab, nlab) result(omega)
         ! Uniform strength
         implicit none
         real(kind=8), intent(in) :: x,y
         complex(kind=8), intent(in) :: z1,z2
         integer, intent(in) :: nlab
         complex(kind=8), dimension(nlab), intent(in) :: lab
-        complex(kind=8), dimension(nlab), intent(inout) :: omega
+        complex(kind=8), dimension(nlab) :: omega
         integer :: n
-        do n = 1,nlab
+        do n = 1, nlab
             omega(n) = bessellsuni(x,y,z1,z2,lab(n))
         end do
-    end subroutine bessellsuniv
+    end function bessellsuniv
 
 !!!!!!! Line Doublet Functions
     function lapld_int_ho(x,y,z1,z2,order) result(omega)
@@ -2295,9 +2295,9 @@ program besseltest
     om0 = bessellsv(x,y,z1,z2,labv,0,R,2)
     call circle_line_intersection( z1, z2, dcmplx(x,y), R*abs(labv(1)), xa, ya, xb, yb, N )
     print *,'za,zb ',dcmplx(xa,ya),dcmplx(xb,yb)
-    call bessellsuniv(x,y,dcmplx(xa,ya),dcmplx(xb,yb),labv(1),2,om1)
-    print *,'om0 ',om0
-    print *,'om1 ',om1
+    !call bessellsuniv(x,y,dcmplx(xa,ya),dcmplx(xb,yb),labv(1),2,om1)
+    !print *,'om0 ',om0
+    !print *,'om1 ',om1
     !d = 1.d-3
     !lab = dcmplx(1.d0,2.d0)
     !labv(1) = lab
