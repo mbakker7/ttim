@@ -414,11 +414,10 @@ def test_bessellsuniv():
     z2 = 5. + 5.j
     lab = np.array([100.])
     nlab = 1
-    omega = np.zeros(nlab, dtype=np.complex_)
-    bessel.bessellsuniv(x, y, z1, z2, lab, omega)
+    a = bessel.bessellsuniv(x, y, z1, z2, lab)
     b = besselnumba.bessellsuniv(x, y, z1, z2, lab, nlab)
-    assert np.allclose(omega, b), "not equal"
-    return omega, b
+    assert np.allclose(a, b), "not equal"
+    return a, b
 
 
 def test_lapld_int_ho():
