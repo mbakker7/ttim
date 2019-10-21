@@ -4,6 +4,7 @@ import inspect # Used for storing the input
 from .element import Element
 from .bessel import *
 from .equation import HeadEquation, HeadEquationNores, MscreenEquation, MscreenDitchEquation
+#import besselnumba
 
 class LineSinkBase(Element):
     '''LineSink Base Class. All LineSink elements are derived from this class'''
