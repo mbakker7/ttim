@@ -49,11 +49,11 @@ setup(
         'License :: OSI Approved :: MIT License',
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 3.6'
+        'Programming Language :: Python :: 3.7'
         ],
     platforms='Windows, Mac OS-X',
     install_requires=['numpy>=1.12', 'matplotlib>=2.0', 'lmfit>=0.9'],
     packages=['ttim'],
     include_package_data = True,
-    package_data = {'ttim': ['bessel.f95', 'invlap.f90', 'invlap.cpython-36m-darwin.so', 'bessel.cpython-36m-darwin.so', 'invlap.cp36-win_amd64.pyd', 'bessel.cp36-win_amd64.pyd']}
+    package_data = {'ttim': ['bessel.f95', 'invlap.f90', 'invlap.cpython-37m-darwin.so', 'bessel.cpython-37m-darwin.so', 'invlap.cp37-win_amd64.pyd', 'bessel.cp37-win_amd64.pyd']}
     )
