@@ -98,3 +98,5 @@ ENV/
 
 #f2py
 Info.plist
+
+.pytest_cache
