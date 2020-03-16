@@ -99,4 +99,10 @@ ENV/
 #f2py
 Info.plist
 
-.pytest_cache
+# vscode
+.vscode
+
+*.mod
+
+# pytest
+.pytest_cache/
