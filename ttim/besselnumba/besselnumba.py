@@ -418,10 +418,8 @@ def circle_line_intersection(z1, z2, zc, R):
     N = 0
     za = np.complex(0, 0)
     zb = np.complex(0, 0)
-
     Lover2 = np.abs(z2-z1) / 2
     bigz = (2*zc - (z1+z2)) * Lover2 / (z2-z1)
-
     if (abs(bigz.imag) < R):
         d = np.sqrt(R ** 2 - bigz.imag ** 2)
         xa = bigz.real - d
@@ -436,8 +434,288 @@ def circle_line_intersection(z1, z2, zc, R):
                 zb = z2
             else:
                 zb = (xb * (z2-z1) / Lover2 + (z1+z2)) / 2.0
-
     return za, zb, N
+
+@numba.njit(nogil=True)
+def bessellsv2(x, y, z1, z2, lab, order, R):
+    """
+    implicit none
+    integer, intent(in) :: order
+    real(kind=8), intent(in) :: x,y,R
+    complex(kind=8), intent(in) :: z1,z2
+    integer, intent(in) :: nlab
+    real(kind=8) :: d1, d2
+    complex(kind=8), dimension(nlab), intent(in) :: lab
+    complex(kind=8), dimension(order+1,nlab) :: omega
+    integer :: n, nterms
+    """
+    nlab = len(lab)
+    nterms = order+1
+    omega = np.zeros((order+1, nlab), dtype=np.complex_)
+    # Check if endpoints need to be adjusted using the largest lambda (the first one)
+    d1, d2 = find_d1d2(z1, z2, np.complex(x, y), R*np.abs(lab[0]))
+    for n in range(nlab):
+        omega[:nterms+1, n] = bessells(x, y, z1, z2, lab[n], order, d1, d2)
+    return omega
+
+@numba.njit(nogil=True)
+def find_d1d2(z1, z2, zc, R):
+    """
+    implicit none
+    complex(kind=8), intent(in) :: z1, z2, zc
+    real(kind=8), intent(in) :: R
+    real(kind=8), intent(inout) :: d1, d2
+    real(kind=8) :: Lover2, d, xa, xb
+    complex(kind=8) :: bigz
+    """
+    d1 = -1.
+    d2 = 1.
+    Lover2 = np.abs(z2-z1) / 2
+    bigz = (2*zc - (z1+z2)) * Lover2 / (z2-z1)
+    if (np.abs((bigz.imag)) < R):
+        d = np.sqrt(R**2 - bigz.imag**2)
+        xa = bigz.real - d
+        xb = bigz.real + d
+        if ((xa < Lover2) and (xb > -Lover2)):
+            if (xa < -Lover2):
+                d1 = -1.
+            else:
+                d1 = xa / Lover2
+            if (xb > Lover2):
+                d2 = 1.
+            else:
+                d2 = xb / Lover2
+    return d1, d2
+
+@numba.njit(nogil=True)
+def bessells(x, y, z1, z2, lab, order, d1in, d2in):
+    """
+    implicit none
+    integer, intent(in) :: order
+    real(kind=8), intent(in) :: x,y,d1in,d2in
+    complex(kind=8), intent(in) :: z1,z2
+    complex(kind=8), intent(in) :: lab
+    complex(kind=8), dimension(0:order) :: omega
+
+    integer :: Nls, n
+    real(kind=8) :: Lnear, L, d1, d2, delta
+    complex(kind=8) :: z, delz, za, zb
+    """
+    omega = np.zeros(order + 1, dtype=np.complex_)
+    Lnear = 3
+    z = np.complex(x, y)
+    L = np.abs(z2-z1)
+    if (L < Lnear*np.abs(lab)):  # No need to break integral up
+        if (np.abs(z - 0.5*(z1+z2)) < 0.5 * Lnear * L):  # Do integration
+            omega = bessells_int_ho(x, y, z1, z2, lab, order, d1in, d2in)
+        else:
+            omega = bessells_gauss_ho_d1d2(
+                x, y, z1, z2, lab, order, d1in, d2in)
+    else:  # Break integral up in parts
+        Nls = np.ceil(L / (Lnear*np.abs(lab)))
+        delta = 2 / Nls
+        delz = (z2-z1)/Nls
+        L = np.abs(delz)
+        for n in range(1, Nls+1):
+            d1 = -1 + (n-1) * delta
+            d2 = -1 + n * delta
+            if ((d2 < d1in) or (d1 > d2in)):
+                continue
+            d1 = np.max(np.array([d1, d1in]))
+            d2 = np.min(np.array([d2, d2in]))
+            za = z1 + (n-1) * delz
+            zb = z1 + n * delz
+            if (np.abs(z - 0.5*(za+zb)) < 0.5 * Lnear * L):  # Do integration
+                omega = omega + \
+                    bessells_int_ho(x, y, z1, z2, lab, order, d1, d2)
+            else:
+                omega = omega + \
+                    bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2)
+    return omega
+
+@numba.njit(nogil=True)
+def bessells_int_ho(x, y, z1, z2, lab, order, d1, d2):
+    """
+    implicit none
+    integer, intent(in) :: order
+    real(kind=8), intent(in) :: x,y,d1,d2
+    complex(kind=8), intent(in) :: z1,z2,lab
+    complex(kind=8), dimension(0:order) :: omega
+    real(kind=8) :: biglab, biga, L, ang, tol
+    complex(kind=8) :: zeta, zetabar, log1, log2, term1, term2, d1minzeta, d2minzeta, cm
+    complex(kind=8), dimension(0:20) :: zminzbar, anew, bnew, exprange
+    complex(kind=8), dimension(0:20,0:20) :: gamnew, gam2
+    complex(kind=8), dimension(0:40) :: alpha, beta, alpha2
+    complex(kind=8), dimension(0:50) :: alphanew, betanew, alphanew2 ! Order fixed to 10
+    integer :: m, n, p
+    """
+    L = np.abs(z2-z1)
+    biga = np.abs(lab)
+    ang = np.arctan2(lab.imag, lab.real)
+    biglab = 2 * biga / L
+
+    tol = 1e-12
+
+    exprange = np.exp(-np.complex(0, 2) * ang * nrange)
+    anew = a * exprange
+    bnew = (b - a * np.complex(0, 2) * ang) * exprange
+
+    zeta = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1) / biglab
+    zetabar = np.conj(zeta)
+
+    # #for n in range(21):
+    # #    zminzbar[n] = (zeta-zetabar)**(20-n)  # Ordered from high power to low power
+    #
+    zminzbar = np.zeros(21, dtype=np.complex_)
+    zminzbar[20] = 1
+
+    for n in range(1, 21):
+        # Ordered from high power to low power
+        zminzbar[20-n] = zminzbar[21-n] * (zeta-zetabar)
+
+    gamnew = np.zeros((21, 21), dtype=np.complex_)
+    gam2 = np.zeros((21, 21), dtype=np.complex_)
+    for n in range(21):
+        gamnew[n, 0:n+1] = gam[n, 0:n+1] * zminzbar[20-n:20+1]
+        gam2[n, 0:n+1] = np.conj(gamnew[n, 0:n+1])
+
+    alpha = np.zeros(41, dtype=np.complex_)
+    beta = np.zeros(41, dtype=np.complex_)
+    alpha2 = np.zeros(41, dtype=np.complex_)
+    alpha[0] = anew[0]
+    beta[0] = bnew[0]
+    alpha2[0] = anew[0]
+    for n in range(1, 21):
+        alpha[n:2*n+1] = alpha[n:2*n+1] + anew[n] * gamnew[n, 0:n+1]
+        beta[n:2*n+1] = beta[n:2*n+1] + bnew[n] * gamnew[n, 0:n+1]
+        alpha2[n:2*n+1] = alpha2[n:2*n+1] + anew[n] * gam2[n, 0:n+1]
+
+    d1minzeta = d1/biglab - zeta
+    d2minzeta = d2/biglab - zeta
+    # #d1minzeta = -1/biglab - zeta
+    # #d2minzeta = 1/biglab - zeta
+    if (np.abs(d1minzeta) < tol):
+        d1minzeta = d1minzeta + np.complex(tol, 0)
+    if (np.abs(d2minzeta) < tol):
+        d2minzeta = d2minzeta + np.complex(tol, 0)
+    log1 = np.log(d1minzeta)
+    log2 = np.log(d2minzeta)
+
+    alphanew = np.zeros(51, dtype=np.complex_)
+    alphanew2 = np.zeros(51, dtype=np.complex_)
+    betanew = np.zeros(51, dtype=np.complex_)
+
+    omega = np.zeros(order+1, dtype=np.complex_)
+
+    for p in range(order+1):
+        alphanew[0:40+p+1] = 0
+        betanew[0:40+p+1] = 0
+        alphanew2[0:40+p+1] = 0
+
+        for m in range(0, p+1):
+            cm = biglab**p * gam[p, m] * zeta**(p-m)
+            alphanew[m:40+m+1] = alphanew[m:40+m+1] + cm * alpha[0:40+1]
+            betanew[m:40+m+1] = betanew[m:40+m+1] + cm * beta[0:40+1]
+            cm = biglab**p * gam[p, m] * zetabar**(p-m)
+            alphanew2[m:40+m+1] = alphanew2[m:40+m+1] + cm * alpha2[0:40+1]
+
+        omega[p] = 0
+        term1 = 1
+        term2 = 1
+        for n in range(41):
+            term1 = term1 * d1minzeta
+            term2 = term2 * d2minzeta
+            omega[p] = omega[p] + (alphanew[n] * log2 -
+                                   alphanew[n] / (n+1) + betanew[n]) * term2 / (n+1)
+            omega[p] = omega[p] - (alphanew[n] * log1 -
+                                   alphanew[n] / (n+1) + betanew[n]) * term1 / (n+1)
+            omega[p] = omega[p] + (alphanew2[n] * np.conj(log2) -
+                                   alphanew2[n] / (n+1)) * np.conj(term2) / (n+1)
+            omega[p] = omega[p] - (alphanew2[n] * np.conj(log1) -
+                                   alphanew2[n] / (n+1)) * np.conj(term1) / (n+1)
+
+    omega = -biga / (2*np.pi) * omega
+    return omega
+
+@numba.njit(nogil=True)
+def bessells_gauss_ho(x, y, z1, z2, lab, order):
+    """
+    implicit none
+    integer, intent(in) :: order
+    real(kind=8), intent(in) :: x,y
+    complex(kind=8), intent(in) :: z1,z2
+    complex(kind=8), intent(in) :: lab
+    complex(kind=8), dimension(0:order) :: omega
+    integer :: n, p
+    real(kind=8) :: L, x0
+    complex(kind=8) :: bigz, biglab
+    complex(kind=8), dimension(8) :: k0
+    """
+    L = np.abs(z2-z1)
+    biglab = 2 * lab / L
+    bigz = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1)
+
+    k0 = np.zeros(8, dtype=np.complex_)
+    for n in range(8):
+        x0 = bigz.real - xg[n]
+        k0[n] = besselk0(x0, bigz.imag, biglab)
+
+    omega = np.zeros(order+1, dtype=np.complex_)
+    for p in range(order+1):
+        omega[p] = np.complex(0, 0)
+        for n in range(8):
+            omega[p] = omega[p] + wg[n] * xg[n]**p * k0[n]
+        omega[p] = -L/(4*np.pi) * omega[p]
+
+    return omega
+
+@numba.njit(nogil=True)
+def bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
+    """
+    Returns integral from d1 to d2 along real axis while strength is still Delta^order from -1 to +1
+
+    implicit none
+    integer, intent(in) :: order
+    real(kind=8), intent(in) :: x,y,d1,d2
+    complex(kind=8), intent(in) :: z1,z2,lab
+    complex(kind=8), dimension(0:order) :: omega, omegac
+    integer :: n, m
+    real(kind=8) :: xp, yp, dc, fac
+    complex(kind=8) :: z1p,z2p,bigz1,bigz2
+    """
+    omega = np.zeros(order+1, dtype=np.complex_)
+    bigz1 = np.complex(d1, 0)
+    bigz2 = np.complex(d2, 0)
+    z1p = 0.5 * (z2-z1) * bigz1 + 0.5 * (z1+z2)
+    z2p = 0.5 * (z2-z1) * bigz2 + 0.5 * (z1+z2)
+    omegac = bessells_gauss_ho(x, y, z1p, z2p, lab, order)
+    dc = (d1+d2) / (d2-d1)
+    for n in range(order+1):
+        for m in range(n+1):
+            omega[n] = omega[n] + gam[n, m] * dc**(n-m) * omegac[m]
+        omega[n] = (0.5 * (d2-d1))**n * omega[n]
+    return omega
+
+@numba.njit(nogil=True)
+def isinside(z1, z2, zc, R):
+    """ Checks whether point zc is within oval with 'radius' R from line element
+    implicit none
+    complex(kind=8), intent(in) :: z1, z2, zc
+    real(kind=8), intent(in) :: R
+    integer :: irv
+    real(kind=8) :: Lover2, d, xa, xb
+    complex(kind=8) :: bigz
+    """
+    irv = 0
+    Lover2 = np.abs(z2 - z1) / 2
+    bigz = (2 * zc - (z1 + z2)) * np.abs(z2 - z1) / (2 * (z2 - z1))
+    if (np.abs(bigz.imag) < R):
+        d = np.sqrt(R ** 2 - bigz.imag ** 2)
+        xa = bigz.real - d
+        xb = bigz.real + d
+        if ((xa < Lover2) and (xb > - Lover2)):
+            irv = 1
+    return irv
 
 
 

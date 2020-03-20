@@ -544,11 +544,19 @@ class LineSinkHoBase(Element):
             pot = np.zeros((self.order + 1, self.model.npint), 'D')
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    if bessel.isinside(self.z1, self.z2, x + y * 1j, self.rzero * self.aq.lababs[i, j]):
-                        pot[:,:] = bessel.bessellsv2(x, y, self.z1, self.z2, self.aq.lab2[i, j, :], \
-                                                     self.order, self.rzero * self.aq.lababs[i, j]) / self.L  # Divide by L as the parameter is now total discharge
-                        for k in range(self.nlayers):
-                            rv[k::self.nlayers, i, j, :] = self.term2[k, i, j, :] * pot
+                    if self.model.f2py:
+                        if bessel.isinside(self.z1, self.z2, x + y * 1j, self.rzero * self.aq.lababs[i, j]):
+                            pot[:,:] = bessel.bessellsv2(x, y, self.z1, self.z2, self.aq.lab2[i, j, :], \
+                                                     self.order, self.rzero * self.aq.lababs[i, j]) / self.L  
+                            for k in range(self.nlayers):
+                                rv[k::self.nlayers, i, j, :] = self.term2[k, i, j, :] * pot
+                    else:
+                        if besselnumba.isinside(self.z1, self.z2, x + y * 1j, self.rzero * self.aq.lababs[i, j]):
+                            pot[:,:] = besselnumba.bessellsv2(x, y, self.z1, self.z2, self.aq.lab2[i, j, :], \
+                                                     self.order, self.rzero * self.aq.lababs[i, j]) / self.L  
+                            for k in range(self.nlayers):
+                                rv[k::self.nlayers, i, j, :] = self.term2[k, i, j, :] * pot
+                        
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
 
