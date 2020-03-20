@@ -99,7 +99,7 @@ def besselk0near(z, Nt):
     complex(kind=8) :: rsq, log1, term
     integer :: n
     """
-    rsq = z**2
+    rsq = z ** 2
     term = 1.0 + 0.0j
     log1 = np.log(rsq)
     omega = a[0] * log1 + b[0]
@@ -310,7 +310,7 @@ def bessells_int(x, y, z1, z2, lab):
         term1 = term1 * d1minzeta
         term2 = term2 * d2minzeta
         omega = omega + (alpha[n] * log2 - alpha[n] /
-                         (n+1) + beta[n]) * term2 / (n+1)
+                         (n + 1) + beta[n]) * term2 / (n+1)
         omega = omega - (alpha[n] * log1 - alpha[n] /
                          (n+1) + beta[n]) * term1 / (n+1)
         omega = omega + (alpha2[n] * np.conj(log2) -
@@ -365,19 +365,19 @@ def bessellsuni(x, y, z1, z2, lab):
     z = np.complex(x, y)
     omega = np.complex(0., 0.)
     L = np.abs(z2-z1)
-    if (L < Lnear*np.abs(lab)):  # No need to break integral up
-        if (np.abs(z - 0.5*(z1+z2)) < 0.5 * Lnear * L):  # Do integration
+    if (L < Lnear * np.abs(lab)):  # No need to break integral up
+        if (np.abs(z - 0.5 * (z1 + z2)) < 0.5 * Lnear * L):  # Do integration
             omega = bessells_int(x, y, z1, z2, lab)
         else:
             omega = bessells_gauss(x, y, z1, z2, lab)
     else:  # Break integral up in parts
         Nls = np.ceil(L / (Lnear*np.abs(lab)))
-        delz = (z2-z1)/Nls
+        delz = (z2 - z1) / Nls
         L = np.abs(delz)
-        for n in range(1, Nls+1):
-            za = z1 + (n-1) * delz
+        for n in range(1, Nls + 1):
+            za = z1 + (n - 1) * delz
             zb = z1 + n * delz
-            if (np.abs(z - 0.5*(za+zb)) < 0.5 * Lnear * L):  # Do integration
+            if (np.abs(z - 0.5 * (za + zb)) < 0.5 * Lnear * L):  # integration
                 omega = omega + bessells_int(x, y, za, zb, lab)
             else:
                 omega = omega + bessells_gauss(x, y, za, zb, lab)
@@ -385,7 +385,7 @@ def bessellsuni(x, y, z1, z2, lab):
 
 
 @numba.njit(nogil=True)
-def bessellsuniv(x, y, z1, z2, lab, nlab):
+def bessellsuniv(x, y, z1, z2, lab, rzero):
     """
     # Uniform strength
     implicit none
@@ -396,10 +396,48 @@ def bessellsuniv(x, y, z1, z2, lab, nlab):
     complex(kind=8), dimension(nlab), intent(inout) :: omega
     integer :: n
     """
+    nlab = len(lab)
     omega = np.zeros(nlab, dtype=np.complex_)
-    for n in range(nlab):
-        omega[n] = bessellsuni(x, y, z1, z2, lab[n])
+    za, zb, N = circle_line_intersection(z1, z2, x + y * 1j, rzero * abs(lab[0]))
+    if N > 0:
+        for n in range(nlab):
+            omega[n] = bessellsuni(x, y, z1, z2, lab[n])
     return omega
+
+@numba.njit(nogil=True)
+def circle_line_intersection(z1, z2, zc, R):
+    """
+    implicit none
+    complex(kind=8), intent(in) :: z1, z2, zc
+    real(kind=8), intent(in) :: R
+    real(kind=8), intent(inout) :: xouta, youta, xoutb, youtb
+    integer, intent(inout) :: N
+    real(kind=8) :: Lover2, d, xa, xb
+    complex(kind=8) :: bigz, za, zb
+    """
+    N = 0
+    za = np.complex(0, 0)
+    zb = np.complex(0, 0)
+
+    Lover2 = np.abs(z2-z1) / 2
+    bigz = (2*zc - (z1+z2)) * Lover2 / (z2-z1)
+
+    if (abs(bigz.imag) < R):
+        d = np.sqrt(R ** 2 - bigz.imag ** 2)
+        xa = bigz.real - d
+        xb = bigz.real + d
+        if ((xa < Lover2) and (xb > -Lover2)):
+            N = 2
+            if (xa < -Lover2):
+                za = z1
+            else:
+                za = (xa * (z2-z1) / Lover2 + (z1+z2)) / 2.0
+            if (xb > Lover2):
+                zb = z2
+            else:
+                zb = (xb * (z2-z1) / Lover2 + (z1+z2)) / 2.0
+
+    return za, zb, N
 
 
 

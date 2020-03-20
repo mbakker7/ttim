@@ -4,7 +4,7 @@ import inspect # Used for storing the input
 from .element import Element
 from .bessel import *
 from .equation import HeadEquation, HeadEquationNores, MscreenEquation, MscreenDitchEquation
-#import besselnumba
+from . import besselnumba
 
 class LineSinkBase(Element):
     '''LineSink Base Class. All LineSink elements are derived from this class'''
@@ -63,11 +63,15 @@ class LineSinkBase(Element):
             pot = np.zeros(self.model.npint, 'D')
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    bessel.circle_line_intersection(self.z1, self.z2, x + y * 1j, self.rzero * abs(self.model.aq.lab2[i, j, 0]), self.xa, self.ya, self.xb, self.yb, self.np)
-                    if self.np > 0:
-                        za = complex(self.xa,self.ya); zb = complex(self.xb,self.yb) # f2py has problem returning complex arrays -> fixed in new numpy
-                        pot[:] = bessel.bessellsuniv(x, y, za, zb, self.aq.lab2[i, j, :])
-                        rv[:,i,j,:] = self.term2[:,i,j,:] * pot / self.L  # Divide by L as the parameter is now total discharge
+                    if self.model.f2py:
+                        bessel.circle_line_intersection(self.z1, self.z2, x + y * 1j, self.rzero * abs(self.model.aq.lab2[i, j, 0]), self.xa, self.ya, self.xb, self.yb, self.np)
+                        if self.np > 0:
+                            za = complex(self.xa,self.ya); zb = complex(self.xb,self.yb) # f2py has problem returning complex arrays -> fixed in new numpy
+                            pot[:] = bessel.bessellsuniv(x, y, za, zb, self.aq.lab2[i, j, :])
+                            rv[:,i,j,:] = self.term2[:,i,j,:] * pot / self.L  # Divide by L as the parameter is now total discharge
+                    else:
+                        pot[:] = besselnumba.bessellsuniv(x, y, self.z1, self.z2, self.aq.lab2[i, j, :], self.rzero)
+                        rv[:,i,j,:] = self.term2[:, i, j, :] * pot / self.L  # Divide by L as the parameter is now total discharge
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
 
