@@ -69,14 +69,14 @@ def invlap(t, tmax, fp, M, alpha=1e-10):
     # would it be useful to try re-using
     # space between e&q and A&B?
     # Kris programmed this as np.complex64
-    e = np.empty((2 * M + 1, M+1), dtype=np.complex128)
-    q = np.empty((2 * M, M), dtype=np.complex128)
-    d = np.empty(2 * M + 1, dtype=np.complex128)
-    A = np.empty((2 * M + 2, Nt), dtype=np.complex128)
-    B = np.empty((2 * M + 2, Nt), dtype=np.complex128)
+    e = np.empty((NP, M+1), dtype=np.complex128)
+    q = np.empty((NP, M), dtype=np.complex128)
+    d = np.empty(NP, dtype=np.complex128)
+    A = np.empty((NP + 2, Nt), dtype=np.complex128)
+    B = np.empty((NP + 2, Nt), dtype=np.complex128)
 
     # initialize Q-D table
-    e[:, 0] = 0.0
+    e[0:2 * M, 0] = 0.0
     q[0, 0] = fp[1] / (fp[0] / 2.0)
     for i in range(1, 2 * M):
         q[i, 0] = fp[i + 1] / fp[i]
@@ -84,11 +84,11 @@ def invlap(t, tmax, fp, M, alpha=1e-10):
     # rhombus rule for filling triangular Q-D table (e & q)
     for r in range(1, M + 1):
         # start with e, column 1, 0:2*M-2
-        mr = 2 * (M - r) + 1
+        mr = 2 * (M - r)
         e[0:mr, r] = q[1:mr + 1, r - 1] - q[0:mr, r - 1] + e[1:mr + 1, r - 1]
         if not r == M:
             rq = r + 1
-            mr = 2 * (M - rq) + 2
+            mr = 2 * (M - rq) + 1
             for i in range(mr):
                 q[i, rq - 1] = q[i + 1, rq - 2] * e[i + 1, rq - 1] / \
                                                   e[i, rq - 1]
@@ -102,7 +102,7 @@ def invlap(t, tmax, fp, M, alpha=1e-10):
     # seed A and B for recurrence
     A[0] = 0.0 
     A[1] = d[0]
-    B[0:2] = 1.0 + 0j
+    B[0:2] = 1.0 
 
     # base of the power series
     z = np.exp(1j * np.pi * t / T) 
@@ -124,9 +124,9 @@ def invlap(t, tmax, fp, M, alpha=1e-10):
     # diagonal Pade approximation
     # F=A/B represents accelerated trapezoid rule
     result = np.exp(gamma * t) / T * (A[NP] / B[NP]).real
-    #print('results:', result)
-    #print('A', A)
-    #print('B', B)
+    print('results:', result)
+    print('A', A)
+    print('B', B)
 
     return result
 

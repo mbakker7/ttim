@@ -13,7 +13,7 @@ class TimModel(PlotTtim):
     def __init__(self, kaq=[1, 1], Haq=[1, 1], Hll=[0], c=[1e100, 100], 
                  Saq=[1e-4, 1e-4], Sll=[0], topboundary='conf', 
                  phreatictop=False, tmin=1, tmax=10, tstart=0, M=20,
-                 f2py=True):
+                 f2py=False):
         self.elementlist = []
         self.elementdict = {}
         self.vbclist = []  # variable boundary condition 'v' elements
@@ -112,8 +112,10 @@ class TimModel(PlotTtim):
             self.p = np.ravel(self.p)
         self.aq.initialize()
         
-    def potential(self, x, y, t, layers=None, aq=None, derivative=0, returnphi=0):
-        '''Returns pot[naq, ntimes] if layers=None, otherwise pot[len(layers,Ntimes)]
+    def potential(self, x, y, t, layers=None, aq=None, derivative=0, 
+                  returnphi=0):
+        '''Returns pot[naq, ntimes] if layers=None, 
+        otherwise pot[len(layers,Ntimes)]
         t must be ordered '''
         if aq is None: aq = self.aq.find_aquifer_data(x, y)
         if layers is None:
@@ -134,7 +136,8 @@ class TimModel(PlotTtim):
             return pot
         rv = np.zeros((nlayers, len(time)))
         if (time[0] < self.tintervals[0]) or (time[-1] > self.tintervals[-1]):
-            print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
+            print('Warning, some of the times are smaller than tmin or \
+                   larger than tmax; zeros are substituted')
         #
         for k in range(self.ngvbc):
             e = self.gvbclist[k]
@@ -216,17 +219,35 @@ class TimModel(PlotTtim):
                 it = 0
                 if t[-1] >= self.tintervals[0]:  # Otherwise all zero
                     if (t[0] < self.tintervals[0]):
-                        it = np.argmax( t >= self.tintervals[0])  # clever call that should be replaced with find_first function when included in numpy
+                        # clever call that should be replaced with find_first 
+                        # function when included in numpy
+                        it = np.argmax( t >= self.tintervals[0])  
                     for n in range(self.nint):
                         tp = t[ (t >= self.tintervals[n]) & (t < self.tintervals[n+1]) ]
                         Nt = len(tp)
                         if Nt > 0:  # if all values zero, don't do the inverse transform
                             for i in range(Nlayers):
-                                if not np.any(disx[k, i, n*self.npint:(n+1)*self.npint] == 0.0) : # If there is a zero item, zero should be returned; funky enough this can be done with a straight equal comparison
-                                    rvx[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap(tp, self.tintervals[n], self.tintervals[n+1], disx[k, i,n*self.npint:(n + 1) * self.npint], self.gamma[n], self.M, Nt)
-                                    rvy[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap(tp, self.tintervals[n], self.tintervals[n+1], disy[k, i,n*self.npint:(n + 1) * self.npint], self.gamma[n], self.M, Nt)
+                                if not np.any(disx[k, i, n*self.npint:(n+1)*self.npint] == 0.0) :
+                                    if self.f2py:
+                                        rvx[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap(tp, 
+                                            self.tintervals[n], self.tintervals[n+1], 
+                                            disx[k, i, n * self.npint:(n + 1) * self.npint], 
+                                            self.gamma[n], self.M, Nt)
+                                        rvy[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap(tp, 
+                                            self.tintervals[n], self.tintervals[n+1], 
+                                            disy[k, i, n * self.npint:(n + 1) * self.npint], 
+                                            self.gamma[n], self.M, Nt)
+                                    else:
+                                        rvx[i, it: it + Nt] += e.bc[itime] * \
+                                            invlap(tp, self.tintervals[n + 1], 
+                                            disx[k, i , n * self.npint:(n + 1) * self.npint],
+                                            self.M)
+                                        rvy[i, it: it + Nt] += e.bc[itime] * \
+                                            invlap(tp, self.tintervals[n + 1], 
+                                            disy[k, i , n * self.npint:(n + 1) * self.npint],
+                                            self.M)
                             it = it + Nt
-        return rvx,rvy
+        return rvx, rvy
     
     def head(self, x, y, t, layers=None, aq=None, derivative=0):
         """Head at x, y, t where t can be multiple times
@@ -509,7 +530,7 @@ class ModelMaq(TimModel):
     
     def __init__(self, kaq=[1], z=[1,0], c=[], Saq=[0.001], Sll=[0], \
                  topboundary='conf', phreatictop=False, \
-                 tmin=1, tmax=10, tstart=0, M=20, f2py=True):
+                 tmin=1, tmax=10, tstart=0, M=20, f2py=False):
         self.storeinput(inspect.currentframe())
         kaq, Haq, Hll, c, Saq, Sll = param_maq(kaq, z, c, Saq, Sll, topboundary,
                                                phreatictop)
@@ -572,7 +593,7 @@ class Model3D(TimModel):
     
     def __init__(self, kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, \
                  topboundary='conf', phreatictop=True, topres=0, topthick=0, 
-                 topSll=0, tmin=1, tmax=10, tstart=0, M=20, f2py=True):
+                 topSll=0, tmin=1, tmax=10, tstart=0, M=20, f2py=False):
         '''z must have the length of the number of layers + 1'''
         self.storeinput(inspect.currentframe())
         kaq, Haq, Hll, c, Saq, Sll = param_3d(kaq, z, Saq, kzoverkh, 
