@@ -397,7 +397,7 @@ class TimModel(PlotTtim):
         rv = np.zeros(len(t))
         it = 0
         if t[-1] >= self.tmin:  # Otherwise all zero
-            if (t[0] < self.tmin): it = np.argmax( t >= self.tmin )  # clever call that should be replaced with find_first function when included in numpy
+            if (t[0] < self.tmin): it = np.argmax( t >= self.tmin )  
             for n in range(self.nint):
                 if n == self.nint-1:
                     tp = t[ (t >= self.tintervals[n]) & (t <= self.tintervals[n+1]) ]
@@ -406,8 +406,19 @@ class TimModel(PlotTtim):
                 nt = len(tp)
                 if nt > 0:  # if all values zero, don't do the inverse transform
                     # Not needed anymore: if np.abs( pot[n*self.npint] ) > 1e-20:
-                    if not np.any( pot[n*self.npint:(n+1)*self.npint] == 0.0) : # If there is a zero item, zero should be returned; funky enough this can be done with a straight equal comparison
-                        rv[it:it+nt] = invlaptrans.invlap( tp, self.tintervals[n], self.tintervals[n+1], pot[n*self.npint:(n+1)*self.npint], self.gamma[n], self.M, nt)
+                    # If there is a zero item, zero should be returned; funky enough 
+                    # this can be done with a straight equal comparison
+                    if not np.any(pot[n*self.npint:(n+1)*self.npint] == 0.0):
+                        if self.f2py:
+                            rv[it : it + nt] = invlaptrans.invlap(tp,
+                                self.tintervals[n], self.tintervals[n+1], 
+                                pot[n * self.npint: (n + 1) * self.npint], 
+                                self.gamma[n], self.M, nt)
+                        else:
+                            rv[it : it + nt] = invlap(tp, 
+                                self.tintervals[n + 1], 
+                                pot[n * self.npint: (n + 1) * self.npint],
+                                self.M)
                     it = it + nt
         return rv
     
