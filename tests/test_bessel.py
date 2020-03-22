@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(1, "C:/github/ttim_db")
-from ttim import besselnumba
+from ttim.besselnumba import besselnumba
 from ttim.bessel import bessel
 import numpy as np
 
