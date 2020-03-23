@@ -2,39 +2,41 @@ import numpy as np
 import matplotlib.pyplot as plt
 from ttim import *
 
+xls = 100 * np.cos(np.linspace(np.pi, 0, 7))
+yls = 50 * np.ones(len(xls))
 
-#xls = np.linspace(-100, 100, 7)
-#xls = 100 * np.cos(np.linspace(np.pi, 0, 7))
-#yls = 50 * np.ones(len(xls))
-xls = [-100, 100]
-yls = [0, 0]
-
-#ml1 = ModelMaq(kaq=[1, 20, 2], z=[25, 20, 18, 10, 8, 0], c=[100, 200],
-#              Saq=[0.1, 1e-4, 1e-4], Sll=[0, 0], phreatictop=True,
-#              tmin=0.1, tmax=10, M=1, f2py=False)
-ml1 = ModelMaq(kaq=[10], z=[10, 0],
-              Saq=[0.1], phreatictop=True,
-              tmin=0.1, tmax=10, M=1, f2py=False)
+ml1 = ModelMaq(kaq=[1, 20, 2], z=[25, 20, 18, 10, 8, 0], c=[100, 200],
+              Saq=[0.1, 1e-4, 1e-4], Sll=[0, 0], phreatictop=True,
+              tmin=0.1, tmax=10, M=20, f2py=False)
 ls1 = HeadLineSinkString(ml1, list(zip(xls, yls)), tsandh=[(0, 2)], layers=0, label='river')
 ml1.solve()
 
-ml2 = ModelMaq(kaq=[10], z=[10, 0],
-              Saq=[0.1], phreatictop=True,
-              tmin=0.1, tmax=10, M=1, f2py=True)
+ml2 = ModelMaq(kaq=[1, 20, 2], z=[25, 20, 18, 10, 8, 0], c=[100, 200],
+              Saq=[0.1, 1e-4, 1e-4], Sll=[0, 0], phreatictop=True,
+              tmin=0.1, tmax=10, M=20, f2py=True)
 ls2 = HeadLineSinkString(ml2, list(zip(xls, yls)), tsandh=[(0, 2)], layers=0, label='river')
 ml2.solve()
 
-# ml2 = ModelMaq(kaq=[1, 20, 2], z=[25, 20, 18, 10, 8, 0], c=[100, 200],
-#               Saq=[0.1, 1e-4, 1e-4], Sll=[0, 0], phreatictop=True,
-#               tmin=0.1, tmax=10, M=1, f2py=True)
-# ls2 = HeadLineSinkString(ml2, list(zip(xls, yls)), tsandh=[(0, 2)], layers=0, label='river')
-# ml2.solve()
+print('ml1:', ml1.disvec(40, 20, 10))
+print('ml2:', ml2.disvec(40, 20, 10))
 
-# print('ml2:', ml2.disvec(40, 20, 10))
-# print('ml1:', ml1.disvec(40, 20, 10))
+ml3 = ModelMaq(kaq=[1, 20, 2], z=[25, 20, 18, 10, 8, 0], c=[100, 200],
+              Saq=[0.1, 1e-4, 1e-4], Sll=[0, 0], phreatictop=True,
+              tmin=0.1, tmax=10, M=20, f2py=False)
+ls3 = HeadLineSinkHo(ml3, -100, 0, 100, 0, tsandh=[(0, 2)], layers=0, order=5, label='river')
+ml3.solve()
 
-# #x = np.linspace(-200, 200, 101)
-# #h1 = ml1.headalongline(x, 50, t=100)
+ml4 = ModelMaq(kaq=[1, 20, 2], z=[25, 20, 18, 10, 8, 0], c=[100, 200],
+              Saq=[0.1, 1e-4, 1e-4], Sll=[0, 0], phreatictop=True,
+              tmin=0.1, tmax=10, M=20, f2py=True)
+ls4 = HeadLineSinkHo(ml4, -100, 0, 100, 0, tsandh=[(0, 2)], layers=0, order=5, label='river')
+ml4.solve()
+
+print('ml3:', ml3.disvec(40, 20, 10))
+print('ml4:', ml4.disvec(40, 20, 10))
+
+#x = np.linspace(-200, 200, 101)
+#h1 = ml1.headalongline(x, 50, t=100)
 
 # ml2 = ModelMaq(kaq=[1, 20, 2], z=[25, 20, 18, 10, 8, 0], c=[100, 200],
 #               Saq=[0.1, 1e-4, 1e-4], Sll=[0, 0], phreatictop=True,

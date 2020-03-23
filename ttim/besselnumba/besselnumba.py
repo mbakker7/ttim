@@ -737,9 +737,9 @@ def bessellsqxqyv2(x, y, z1, z2, lab, order, R):
     nhalf = nlab*(order+1)
     d1, d2 = find_d1d2(z1, z2, np.complex(x, y), R*np.abs(lab[0]))
     for n in range(nlab):
-        qxqylab = bessellsqxqy(x, y, z1, z2, lab[n-1], order, d1, d2)
-        qxqy[:nterms, n] = qxqylab[0:order+1]
-        qxqy[nterms:2*nterms, n] = qxqylab[order+1:2*order+1+1]
+        qxqylab = bessellsqxqy(x, y, z1, z2, lab[n], order, d1, d2)
+        qxqy[:nterms, n] = qxqylab[0:order + 1]
+        qxqy[nterms:2 * nterms, n] = qxqylab[order + 1:2 * (order + 1)]
     return qxqy
 
 @numba.njit(nogil=True)
@@ -758,7 +758,7 @@ def bessellsqxqy(x, y, z1, z2, lab, order, d1in, d2in):
     """
     Lnear = 3.
     z = np.complex(x, y)
-    qxqy = np.zeros(2*order+2, dtype=np.complex_)
+    qxqy = np.zeros(2 * order + 2, dtype=np.complex_)
     L = np.abs(z2-z1)
     # print *,'Lnear*np.abs(lab) ',Lnear*np.abs(lab)
     if (L < Lnear*np.abs(lab)):  # No need to break integral up

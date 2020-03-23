@@ -581,16 +581,20 @@ class LineSinkHoBase(Element):
                 for j in range(self.model.nint):
                     if self.model.f2py:
                         if bessel.isinside(self.z1, self.z2, x + y * 1j, self.rzero * self.aq.lababs[i, j]):
-                            pot[:,:] = bessel.bessellsv2(x, y, self.z1, self.z2, self.aq.lab2[i, j, :], \
-                                                     self.order, self.rzero * self.aq.lababs[i, j]) / self.L  
-                            for k in range(self.nlayers):
-                                rv[k::self.nlayers, i, j, :] = self.term2[k, i, j, :] * pot
+                            pot[:,:] = bessel.bessellsv2(x, y, 
+                                self.z1, self.z2, self.aq.lab2[i, j, :], 
+                                self.order, self.rzero * self.aq.lababs[i, j]
+                                ) / self.L  
                     else:
-                        if besselnumba.isinside(self.z1, self.z2, x + y * 1j, self.rzero * self.aq.lababs[i, j]):
-                            pot[:,:] = besselnumba.bessellsv2(x, y, self.z1, self.z2, self.aq.lab2[i, j, :], \
-                                                     self.order, self.rzero * self.aq.lababs[i, j]) / self.L  
-                            for k in range(self.nlayers):
-                                rv[k::self.nlayers, i, j, :] = self.term2[k, i, j, :] * pot
+                        if besselnumba.isinside(self.z1, self.z2, x + y * 1j, 
+                                self.rzero * self.aq.lababs[i, j]):
+                            pot[:,:] = besselnumba.bessellsv2(x, y, 
+                                self.z1, self.z2, self.aq.lab2[i, j, :],
+                                self.order, self.rzero * self.aq.lababs[i, j]
+                                ) / self.L  
+                    for k in range(self.nlayers):
+                        rv[k::self.nlayers, i, j, :] = \
+                            self.term2[k, i, j, :] * pot
                         
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
@@ -599,18 +603,33 @@ class LineSinkHoBase(Element):
         '''Can be called with only one x,y value'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
-        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
+        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, 
+                        self.model.npint), 'D')
+        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, 
+                        self.model.npint), 'D')
         if aq == self.aq:
             qxqy = np.zeros((2 * (self.order + 1), self.model.npint), 'D')
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    if bessel.isinside(self.z1, self.z2, x + y * 1j, self.rzero * self.aq.lababs[i, j]):
-                        qxqy[:, :] = bessel.bessellsqxqyv2(x, y, self.z1, self.z2, self.aq.lab2[i, j, :], \
-                                                           self.order, self.rzero * self.aq.lababs[i, j]) / self.L  # Divide by L as the parameter is now total discharge
-                        for k in range(self.nlayers):
-                            rvx[k::self.nlayers, i, j, :] = self.term2[k, i, j, :] * qxqy[:self.order + 1, :]
-                            rvy[k::self.nlayers, i, j, :] = self.term2[k, i, j, :] * qxqy[self.order + 1:, :]
+                    if self.model.f2py:
+                        if bessel.isinside(self.z1, self.z2, x + y * 1j, 
+                                           self.rzero * self.aq.lababs[i, j]):
+                            qxqy[:, :] = bessel.bessellsqxqyv2(x, y, 
+                                self.z1, self.z2, self.aq.lab2[i, j, :], 
+                                self.order, 
+                                self.rzero * self.aq.lababs[i, j]) / self.L 
+                    else:
+                        if besselnumba.isinside(self.z1, self.z2, x + y * 1j, 
+                                           self.rzero * self.aq.lababs[i, j]):
+                            qxqy[:, :] = besselnumba.bessellsqxqyv2(x, y, 
+                                self.z1, self.z2, self.aq.lab2[i, j, :], 
+                                self.order, 
+                                self.rzero * self.aq.lababs[i, j]) / self.L
+                    for k in range(self.nlayers):
+                        rvx[k::self.nlayers, i, j, :] = \
+                            self.term2[k, i, j, :] * qxqy[:self.order + 1, :]
+                        rvy[k::self.nlayers, i, j, :] = \
+                            self.term2[k, i, j, :] * qxqy[self.order + 1:, :]
         rvx.shape = (self.nparam, aq.naq, self.model.npval)
         rvy.shape = (self.nparam, aq.naq, self.model.npval)
         return rvx, rvy
@@ -625,13 +644,16 @@ class LineSinkHoBase(Element):
             
         """
         
-        return self.model.head(self.xc, self.yc, t)[self.layers] - self.resfach[:, np.newaxis] * self.discharge(t)
+        return self.model.head(self.xc, self.yc, t)[self.layers] - \
+               self.resfach[:, np.newaxis] * self.discharge(t)
 
     def plot(self):
         plt.plot([self.x1, self.x2], [self.y1, self.y2], 'k')
     
 class HeadLineSinkHo(LineSinkHoBase, HeadEquationNores):
-    '''HeadLineSink of which the head varies through time. May be screened in multiple layers but all with the same head'''
+    '''HeadLineSink of which the head varies through time.
+    May be screened in multiple layers but all with the same head'''
+    
     def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandh=[(0.0,1.0)],\
                  order=0, layers=0, label=None, addtomodel=True):
         self.storeinput(inspect.currentframe())
