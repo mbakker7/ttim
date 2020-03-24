@@ -82,7 +82,7 @@ class WellBase(Element):
     
     def headinside(self, t, derivative=0):
         '''Returns head inside the well for the layers that the well is screened in'''
-        return self.model.head(self.xc, self.yc, t, derivative=derivative)[self.layers] - \
+        return self.model.head(self.xc[0], self.yc[0], t, derivative=derivative)[self.layers] - \
                self.resfach[:, np.newaxis] * self.discharge(t, derivative=derivative)
             
     def plot(self):
