@@ -11,7 +11,9 @@ class WellBase(Element):
                  layers=0, type='', name='WellBase', label=None):
         Element.__init__(self, model, nparam=1, nunknowns=0, layers=layers, \
                          tsandbc=tsandbc, type=type, name=name, label=label)
-        self.nparam = len(self.layers)  # Defined here and not in Element as other elements can have multiple parameters per layers
+        # Defined here and not in Element as other elements can have multiple 
+        # parameters per layers
+        self.nparam = len(self.layers)  
         self.xw = float(xw)
         self.yw = float(yw)
         self.rw = float(rw)
