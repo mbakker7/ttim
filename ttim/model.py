@@ -5,14 +5,14 @@ import inspect # Used for storing the input
 import sys
 from .aquifer_parameters import param_3d, param_maq
 from .aquifer import Aquifer
-from .bessel import *
+#from .bessel import *
 from .invlapnumba import compute_laplace_parameters_numba, invlap
 from .util import PlotTtim
 
 class TimModel(PlotTtim):
     def __init__(self, kaq=[1, 1], Haq=[1, 1], Hll=[0], c=[1e100, 100], 
                  Saq=[1e-4, 1e-4], Sll=[0], topboundary='conf', 
-                 phreatictop=False, tmin=1, tmax=10, tstart=0, M=20,
+                 phreatictop=False, tmin=1, tmax=10, tstart=0, M=10,
                  f2py=False):
         self.elementlist = []
         self.elementdict = {}
@@ -26,11 +26,20 @@ class TimModel(PlotTtim):
         self.M = M
         self.aq = Aquifer(self, kaq, Haq, Hll, c, Saq, Sll, topboundary, 
                           phreatictop)
-        self.f2py = f2py
+        self.f2py = False
+        if f2py:
+            try:
+                from .bessel import bessel
+                from .invlapnumba import compute_laplace_parameters_numba, invlap 
+                bessel.initialize()
+                self.f2py = True
+            except:
+                print('FORTRAN extension not found while f2py=True')
+                print('Using Numba instead')
+                self.f2py = False
         self.compute_laplace_parameters()
         self.name = 'TimModel'
         self.modelname = 'ml' # Used for writing out input
-        bessel.initialize()
         
     def __repr__(self):
         return 'Model'
@@ -150,28 +159,23 @@ class TimModel(PlotTtim):
                         # function when included in numpy
                         it = np.argmax(t >= self.tintervals[0])  
                     for n in range(self.nint):
-                        tp = t[(t >= self.tintervals[n]) & (t < self.tintervals[n + 1])]
-                        ## I think these lines are not needed anymore as I modified 
-                        ## tintervals[0] and tintervals[-1] by eps
-                        #if n == self.nint-1:
-                        #    tp = t[ (t >= self.tintervals[n]) & (t <= self.tintervals[n+1]) ]
-                        #else:
-                        #    tp = t[ (t >= self.tintervals[n]) & (t < self.tintervals[n+1]) ]
+                        tp = t[(t >= self.tintervals[n]) & \
+                               (t < self.tintervals[n + 1])]
                         nt = len(tp)
-                        if nt > 0:  # if all values zero, don't do the inverse transform
+                        if nt > 0:  # if all zero, don't do the inv transform
                             for i in range(nlayers):
-                                # I used to check the first value only, but it seems that
-                                # checking that nothing is zero is needed and should be sufficient
-                                #if np.abs( pot[k,i,n*self.npint] ) > 1e-20:  # First value very small
-                                # If there is a zero item, zero should be returned; funky enough 
-                                # this can be done with a straight equal comparison
-                                if not np.any(pot[k, i, n * self.npint: (n + 1) * self.npint] == 0) : 
+                                # I used to check the first value only, 
+                                # but it seems that checking that nothing is 
+                                # zero is needed 
+                                if not np.any(pot[k, i, n * self.npint: 
+                                              (n + 1) * self.npint] == 0) : 
                                     if self.f2py:
                                         rv[i, it:it + nt] += e.bc[itime] * \
-                                        invlaptrans.invlap(tp, self.tintervals[n],
-                                                           self.tintervals[n + 1],
-                                                           pot[k, i , n * self.npint:(n + 1) * self.npint],
-                                                           self.gamma[n], self.M, nt)
+                                        invlaptrans.invlap(tp, 
+                                            self.tintervals[n],
+                                            self.tintervals[n + 1],
+                                            pot[k, i , n * self.npint:(n + 1) * self.npint],
+                                            self.gamma[n], self.M, nt)
                                     else:
                                         rv[i, it:it + nt] += e.bc[itime] * \
                                         invlap(tp, self.tintervals[n + 1], 
@@ -534,14 +538,17 @@ class ModelMaq(TimModel):
         time at start of simulation (default 0)
     M : integer
         the number of terms to be used in the numerical inversion algorithm.
-        20 is usually sufficient. If drawdown curves appear to oscillate,
+        10 is usually sufficient. If drawdown curves appear to oscillate,
         more terms may be needed, but this seldom happens. 
+    f2py : boolean
+        flag to indicate if the compiled FORTRAN extension should be used.
+        only recommended for testing.
     
     """
     
     def __init__(self, kaq=[1], z=[1,0], c=[], Saq=[0.001], Sll=[0], \
                  topboundary='conf', phreatictop=False, \
-                 tmin=1, tmax=10, tstart=0, M=20, f2py=False):
+                 tmin=1, tmax=10, tstart=0, M=10, f2py=False):
         self.storeinput(inspect.currentframe())
         kaq, Haq, Hll, c, Saq, Sll = param_maq(kaq, z, c, Saq, Sll, topboundary,
                                                phreatictop)
@@ -595,16 +602,19 @@ class Model3D(TimModel):
         the maximum time for which heads can be computed.
     tstart : scalar
         time at start of simulation (default 0)
-    M : integer
+    M : integer (default 10)
         the number of terms to be used in the numerical inversion algorithm.
-        20 is usually sufficient. If drawdown curves appear to oscillate,
+        10 is usually sufficient. If drawdown curves appear to oscillate,
         more terms may be needed, but this seldom happens. 
-    
+    f2py : boolean
+        flag to indicate if the compiled FORTRAN extension should be used.
+        only recommended for testing.
+        
     """
     
     def __init__(self, kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, \
                  topboundary='conf', phreatictop=True, topres=0, topthick=0, 
-                 topSll=0, tmin=1, tmax=10, tstart=0, M=20, f2py=False):
+                 topSll=0, tmin=1, tmax=10, tstart=0, M=10, f2py=False):
         '''z must have the length of the number of layers + 1'''
         self.storeinput(inspect.currentframe())
         kaq, Haq, Hll, c, Saq, Sll = param_3d(kaq, z, Saq, kzoverkh, 

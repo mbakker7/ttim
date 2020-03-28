@@ -2,7 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import inspect # Used for storing the input
 from .element import Element
-from .bessel import *
+try:
+    from .bessel import *
+    bessel.initialize()
+    #print('succes on f2py')
+except:
+    pass
 from .equation import HeadEquation, HeadEquationNores, \
                       MscreenEquation, MscreenDitchEquation
 from . import besselnumba
@@ -22,8 +27,8 @@ class LineSinkBase(Element):
         self.res = np.atleast_1d(res).astype(float)
         self.wh = wh
         if addtomodel: self.model.addelement(self)
-        # needed to call bessel.circle_line_intersection
-        self.xa,self.ya,self.xb,self.yb,self.np = \
+        # needed to call bessel.circle_line_intersection in f2py
+        self.xa, self.ya, self.xb, self.yb, self.np = \
             np.zeros(1), np.zeros(1), np.zeros(1), np.zeros(1), np.zeros(1,'i')  
 
     def __repr__(self):
@@ -139,11 +144,13 @@ class LineSinkBase(Element):
         Returns
         -------
         array (length number of layers)
-            Head inside the line-sink for each layer that the line-sink is screened in
+            Head inside the line-sink for each layer that 
+            the line-sink is screened in
             
         """
         
-        return self.model.head(self.xc,self.yc,t)[self.layers] - self.resfach[:, np.newaxis] * self.discharge(t)
+        return self.model.head(self.xc,self.yc,t)[self.layers] - \
+                   self.resfach[:, np.newaxis] * self.discharge(t)
 
     def plot(self):
         plt.plot([self.x1, self.x2], [self.y1, self.y2], 'k')
