@@ -1,3 +1,6 @@
+[![Linux+/+macOS](https://travis-ci.org/mbakker7/ttim.svg?branch=master)](https://travis-ci.org/mbakker7/ttim)
+[![Coverage Status](https://coveralls.io/repos/github/mbakker7/ttim/badge.svg?branch=master)](https://coveralls.io/github/mbakker7/ttim?branch=master)
+
 # TTim, A Multi-Layer, Transient, Analytic Element Model
 
 ## Introduction
