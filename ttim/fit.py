@@ -45,7 +45,7 @@ class Calibrate:
         name can be be 'kaq', 'Saq' or 'c'. A number after the parameter name
         denotes the layer number, i.e. 'kaq0' refers to the hydraulic conductivity 
         of layer 0. name also supports layer ranges, entered by adding a '-' and a
-        layer number, i.e. 'kaq0-3' denotes conductivity for layers 0 up to and
+        layer number, i.e. 'kaq0_3' denotes conductivity for layers 0 up to and
         including 3.
 
         If name is of the form 'kaq#' or 'Saq#-#', no parameter or layer needs 

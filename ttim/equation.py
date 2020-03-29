@@ -39,11 +39,13 @@ class WellBoreStorageEquation:
         ieq = 0
         for e in self.model.elementlist:
             if e.nunknowns > 0:
-                head = e.potinflayers(self.xc,self.yc,self.layers) / self.aq.T[self.layers][:,np.newaxis,np.newaxis]
+                head = e.potinflayers(self.xc[0], self.yc[0], self.layers) \
+                       / self.aq.T[self.layers][:,np.newaxis,np.newaxis]
                 mat[:-1,ieq:ieq+e.nunknowns,:] = head[:-1,:] - head[1:,:]
                 mat[-1,ieq:ieq+e.nunknowns,:] -= np.pi * self.rc**2 * self.model.p * head[0,:]
                 if e == self:
-                    disterm = self.dischargeinflayers * self.res / ( 2 * np.pi * self.rw * self.aq.Haq[self.layers][:,np.newaxis] )
+                    disterm = self.dischargeinflayers * self.res / (2 * np.pi 
+                        * self.rw * self.aq.Haq[self.layers][:,np.newaxis])
                     if self.nunknowns > 1:  # Multiple layers
                         for i in range(self.nunknowns-1):
                             mat[i,ieq+i,:] -= disterm[i]
@@ -52,14 +54,18 @@ class WellBoreStorageEquation:
                     mat[-1,ieq,:] += np.pi * self.rc**2 * self.model.p * disterm[0]
                 ieq += e.nunknowns
         for i in range(self.model.ngbc):
-            head = self.model.gbclist[i].unitpotentiallayers(self.xc,self.yc,self.layers) / self.aq.T[self.layers][:,np.newaxis]
-            rhs[:-1,i,:] -= head[:-1,:] - head[1:,:]
-            rhs[-1,i,:] += np.pi * self.rc**2 * self.model.p * head[0,:]
+            head = self.model.gbclist[i].unitpotentiallayers(
+                self.xc[0], self.yc[0], self.layers) \
+                / self.aq.T[self.layers][:, np.newaxis]
+            rhs[:-1, i, :] -= head[:-1, :] - head[1:, :]
+            rhs[-1, i, :] += np.pi * self.rc ** 2 * self.model.p * head[0, :]
         if self.type == 'v':
             iself = self.model.vbclist.index(self)
             rhs[-1,self.model.ngbc+iself,:] += self.flowcoef
             if self.hdiff is not None:
-                rhs[:-1,self.model.ngbc+iself,:] += self.hdiff[:,np.newaxis] / self.model.p  # head[0] - head[1] = hdiff
+                # head[0] - head[1] = hdiff
+                rhs[:-1,self.model.ngbc+iself,:] += \
+                    self.hdiff[:,np.newaxis] / self.model.p  
         return mat, rhs
     
 class HeadEquationNores:

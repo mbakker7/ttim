@@ -2,8 +2,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import inspect # Used for storing the input
 from .element import Element
-from .bessel import *
-from .equation import HeadEquation, HeadEquationNores, MscreenEquation, MscreenDitchEquation
+try:
+    from .bessel import *
+    bessel.initialize()
+    #print('succes on f2py')
+except:
+    pass
+from .equation import HeadEquation, HeadEquationNores, \
+                      MscreenEquation, MscreenDitchEquation
+from . import besselnumba
 
 class LineSinkBase(Element):
     '''LineSink Base Class. All LineSink elements are derived from this class'''
@@ -20,13 +27,17 @@ class LineSinkBase(Element):
         self.res = np.atleast_1d(res).astype(float)
         self.wh = wh
         if addtomodel: self.model.addelement(self)
-        self.xa,self.ya,self.xb,self.yb,self.np = np.zeros(1),np.zeros(1),np.zeros(1),np.zeros(1),np.zeros(1,'i')  # needed to call bessel.circle_line_intersection
+        # needed to call bessel.circle_line_intersection in f2py
+        self.xa, self.ya, self.xb, self.yb, self.np = \
+            np.zeros(1), np.zeros(1), np.zeros(1), np.zeros(1), np.zeros(1,'i')  
 
     def __repr__(self):
-        return self.name + ' from ' + str((self.x1,self.y1)) +' to '+str((self.x2,self.y2))
+        return self.name + ' from ' + str((self.x1, self.y1)) + \
+                           ' to ' + str((self.x2,self.y2))
 
     def initialize(self):
-        self.xc = np.array([0.5*(self.x1+self.x2)]); self.yc = np.array([0.5*(self.y1+self.y2)])
+        self.xc = np.array([0.5 * (self.x1 + self.x2)])
+        self.yc = np.array([0.5 * (self.y1 + self.y2)])
         self.ncp = 1
         self.z1 = self.x1 + 1j*self.y1; self.z2 = self.x2 + 1j*self.y2
         self.L = np.abs(self.z1-self.z2)
@@ -35,10 +46,13 @@ class LineSinkBase(Element):
         self.setbc()
         coef = self.aq.coef[self.layers, :]
         self.setflowcoef()
-        self.term = self.flowcoef * coef  # shape (self.nparam,self.aq.naq,self.model.npval)
-        self.term2 = self.term.reshape(self.nparam, self.aq.naq, self.model.nint, self.model.npint)
+        # self.term shape (self.nparam,self.aq.naq,self.model.npval)
+        self.term = self.flowcoef * coef  
+        self.term2 = self.term.reshape(
+            self.nparam, self.aq.naq, self.model.nint, self.model.npint)
         self.dischargeinf = self.flowcoef * coef
-        self.dischargeinflayers = np.sum(self.dischargeinf * self.aq.eigvec[self.layers, :, :], 1)
+        self.dischargeinflayers = np.sum(
+            self.dischargeinf * self.aq.eigvec[self.layers, :, :], 1)
         if type(self.wh) is str:
             if self.wh == 'H':
                 self.wh = self.aq.Haq[self.layers]
@@ -46,8 +60,10 @@ class LineSinkBase(Element):
                 self.wh = 2.0 * self.aq.Haq[self.layers]
         else:
             self.wh = np.atleast_1d(self.wh) * np.ones(self.nlayers)
-        self.resfach = self.res / (self.wh * self.L)  # Q = (h - hls) / resfach
-        self.resfacp = self.resfach * self.aq.T[self.layers]  # Q = (Phi - Phils) / resfacp
+        # Q = (h - hls) / resfach
+        self.resfach = self.res / (self.wh * self.L)  
+        # Q = (Phi - Phils) / resfacp
+        self.resfacp = self.resfach * self.aq.T[self.layers]  
 
     def setflowcoef(self):
         '''Separate function so that this can be overloaded for other types'''
@@ -57,16 +73,31 @@ class LineSinkBase(Element):
         '''Can be called with only one x,y value'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
+        rv = np.zeros(
+            (self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
         if aq == self.aq:
             pot = np.zeros(self.model.npint, 'D')
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    bessel.circle_line_intersection(self.z1, self.z2, x + y * 1j, self.rzero * abs(self.model.aq.lab2[i, j, 0]), self.xa, self.ya, self.xb, self.yb, self.np)
-                    if self.np > 0:
-                        za = complex(self.xa,self.ya); zb = complex(self.xb,self.yb) # f2py has problem returning complex arrays -> fixed in new numpy
-                        bessel.bessellsuniv(x,y,za,zb,self.aq.lab2[i,j,:],pot)
-                        rv[:,i,j,:] = self.term2[:,i,j,:] * pot / self.L  # Divide by L as the parameter is now total discharge
+                    if self.model.f2py:
+                        bessel.circle_line_intersection(self.z1, self.z2, 
+                            x + y * 1j, 
+                            self.rzero * abs(self.model.aq.lab2[i, j, 0]), 
+                            self.xa, self.ya, self.xb, self.yb, self.np)
+                        if self.np > 0:
+                            # f2py has problem returning complex arrays
+                            # fixed in new numpy
+                            za = complex(self.xa,self.ya)
+                            zb = complex(self.xb,self.yb) 
+                            pot[:] = bessel.bessellsuniv(x, y, 
+                                za, zb, self.aq.lab2[i, j, :])
+                            # Divide by L as the parameter is total discharge
+                            rv[:,i,j,:] = self.term2[:,i,j,:] * pot / self.L  
+                    else:
+                        pot[:] = besselnumba.bessellsuniv(x, y, 
+                            self.z1, self.z2, self.aq.lab2[i, j, :], self.rzero)
+                        # Divide by L as the parameter is total discharge
+                        rv[:,i,j,:] = self.term2[:, i, j, :] * pot / self.L  
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
 
@@ -74,16 +105,30 @@ class LineSinkBase(Element):
         '''Can be called with only one x,y value'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
-        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
+        rvx = np.zeros(
+            (self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
+        rvy = np.zeros(
+            (self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
         if aq == self.aq:
-            qxqy = np.zeros((2,self.model.npint),'D')
+            qxqy = np.zeros((2,self.model.npint), 'D')
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    if bessel.isinside(self.z1, self.z2, x+y*1j, self.rzero*self.aq.lababs[i, j]):
-                        qxqy[:,:] = bessel.bessellsqxqyv2(x, y, self.z1, self.z2,self.aq.lab2[i,j,:], self.order, self.rzero * self.aq.lababs[i, j]) / self.L  # Divide by L as the parameter is now total discharge
-                        rvx[:,i,j,:] = self.term2[:,i,j,:] * qxqy[0]
-                        rvy[:,i,j,:] = self.term2[:,i,j,:] * qxqy[1]
+                    if self.model.f2py:
+                        if bessel.isinside(self.z1, self.z2, x + y * 1j, 
+                                           self.rzero * self.aq.lababs[i, j]):
+                            qxqy[:,:] = bessel.bessellsqxqyv2(x, y, 
+                                self.z1, self.z2, self.aq.lab2[i, j, :], 
+                                self.order, 
+                                self.rzero * self.aq.lababs[i, j]) / self.L  
+                    else:
+                        if besselnumba.isinside(self.z1, self.z2, x + y * 1j, 
+                                           self.rzero * self.aq.lababs[i, j]):
+                            qxqy[:,:] = besselnumba.bessellsqxqyv2(x, y, 
+                                self.z1, self.z2, self.aq.lab2[i, j, :], 
+                                self.order, 
+                                self.rzero * self.aq.lababs[i, j]) / self.L
+                    rvx[:,i,j,:] = self.term2[:,i,j,:] * qxqy[0]
+                    rvy[:,i,j,:] = self.term2[:,i,j,:] * qxqy[1]
         rvx.shape = (self.nparam, aq.naq, self.model.npval)
         rvy.shape = (self.nparam, aq.naq, self.model.npval)
         return rvx, rvy
@@ -99,11 +144,13 @@ class LineSinkBase(Element):
         Returns
         -------
         array (length number of layers)
-            Head inside the line-sink for each layer that the line-sink is screened in
+            Head inside the line-sink for each layer that 
+            the line-sink is screened in
             
         """
         
-        return self.model.head(self.xc,self.yc,t)[self.layers] - self.resfach[:, np.newaxis] * self.discharge(t)
+        return self.model.head(self.xc,self.yc,t)[self.layers] - \
+                   self.resfach[:, np.newaxis] * self.discharge(t)
 
     def plot(self):
         plt.plot([self.x1, self.x2], [self.y1, self.y2], 'k')
@@ -539,11 +586,23 @@ class LineSinkHoBase(Element):
             pot = np.zeros((self.order + 1, self.model.npint), 'D')
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    if bessel.isinside(self.z1, self.z2, x + y * 1j, self.rzero * self.aq.lababs[i, j]):
-                        pot[:,:] = bessel.bessellsv2(x, y, self.z1, self.z2, self.aq.lab2[i, j, :], \
-                                                     self.order, self.rzero * self.aq.lababs[i, j]) / self.L  # Divide by L as the parameter is now total discharge
-                        for k in range(self.nlayers):
-                            rv[k::self.nlayers, i, j, :] = self.term2[k, i, j, :] * pot
+                    if self.model.f2py:
+                        if bessel.isinside(self.z1, self.z2, x + y * 1j, self.rzero * self.aq.lababs[i, j]):
+                            pot[:,:] = bessel.bessellsv2(x, y, 
+                                self.z1, self.z2, self.aq.lab2[i, j, :], 
+                                self.order, self.rzero * self.aq.lababs[i, j]
+                                ) / self.L  
+                    else:
+                        if besselnumba.isinside(self.z1, self.z2, x + y * 1j, 
+                                self.rzero * self.aq.lababs[i, j]):
+                            pot[:,:] = besselnumba.bessellsv2(x, y, 
+                                self.z1, self.z2, self.aq.lab2[i, j, :],
+                                self.order, self.rzero * self.aq.lababs[i, j]
+                                ) / self.L  
+                    for k in range(self.nlayers):
+                        rv[k::self.nlayers, i, j, :] = \
+                            self.term2[k, i, j, :] * pot
+                        
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
 
@@ -551,18 +610,33 @@ class LineSinkHoBase(Element):
         '''Can be called with only one x,y value'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
-        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
+        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, 
+                        self.model.npint), 'D')
+        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, 
+                        self.model.npint), 'D')
         if aq == self.aq:
             qxqy = np.zeros((2 * (self.order + 1), self.model.npint), 'D')
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    if bessel.isinside(self.z1, self.z2, x + y * 1j, self.rzero * self.aq.lababs[i, j]):
-                        qxqy[:, :] = bessel.bessellsqxqyv2(x, y, self.z1, self.z2, self.aq.lab2[i, j, :], \
-                                                           self.order, self.rzero * self.aq.lababs[i, j]) / self.L  # Divide by L as the parameter is now total discharge
-                        for k in range(self.nlayers):
-                            rvx[k::self.nlayers, i, j, :] = self.term2[k, i, j, :] * qxqy[:self.order + 1, :]
-                            rvy[k::self.nlayers, i, j, :] = self.term2[k, i, j, :] * qxqy[self.order + 1:, :]
+                    if self.model.f2py:
+                        if bessel.isinside(self.z1, self.z2, x + y * 1j, 
+                                           self.rzero * self.aq.lababs[i, j]):
+                            qxqy[:, :] = bessel.bessellsqxqyv2(x, y, 
+                                self.z1, self.z2, self.aq.lab2[i, j, :], 
+                                self.order, 
+                                self.rzero * self.aq.lababs[i, j]) / self.L 
+                    else:
+                        if besselnumba.isinside(self.z1, self.z2, x + y * 1j, 
+                                           self.rzero * self.aq.lababs[i, j]):
+                            qxqy[:, :] = besselnumba.bessellsqxqyv2(x, y, 
+                                self.z1, self.z2, self.aq.lab2[i, j, :], 
+                                self.order, 
+                                self.rzero * self.aq.lababs[i, j]) / self.L
+                    for k in range(self.nlayers):
+                        rvx[k::self.nlayers, i, j, :] = \
+                            self.term2[k, i, j, :] * qxqy[:self.order + 1, :]
+                        rvy[k::self.nlayers, i, j, :] = \
+                            self.term2[k, i, j, :] * qxqy[self.order + 1:, :]
         rvx.shape = (self.nparam, aq.naq, self.model.npval)
         rvy.shape = (self.nparam, aq.naq, self.model.npval)
         return rvx, rvy
@@ -577,13 +651,16 @@ class LineSinkHoBase(Element):
             
         """
         
-        return self.model.head(self.xc, self.yc, t)[self.layers] - self.resfach[:, np.newaxis] * self.discharge(t)
+        return self.model.head(self.xc, self.yc, t)[self.layers] - \
+               self.resfach[:, np.newaxis] * self.discharge(t)
 
     def plot(self):
         plt.plot([self.x1, self.x2], [self.y1, self.y2], 'k')
     
 class HeadLineSinkHo(LineSinkHoBase, HeadEquationNores):
-    '''HeadLineSink of which the head varies through time. May be screened in multiple layers but all with the same head'''
+    '''HeadLineSink of which the head varies through time.
+    May be screened in multiple layers but all with the same head'''
+    
     def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandh=[(0.0,1.0)],\
                  order=0, layers=0, label=None, addtomodel=True):
         self.storeinput(inspect.currentframe())
