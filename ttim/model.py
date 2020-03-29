@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from .invlap import *
+#from .invlap import *
 import inspect # Used for storing the input
 import sys
 from .aquifer_parameters import param_3d, param_maq
@@ -8,12 +8,19 @@ from .aquifer import Aquifer
 #from .bessel import *
 from .invlapnumba import compute_laplace_parameters_numba, invlap
 from .util import PlotTtim
+try:
+    from .src.bessel import bessel
+    from .src.invlap import invlaptrans
+    bessel.initialize()
+except:
+    print('FORTRAN extension not found while f2py=True')
+    print('Using Numba instead')
 
 class TimModel(PlotTtim):
     def __init__(self, kaq=[1, 1], Haq=[1, 1], Hll=[0], c=[1e100, 100], 
                  Saq=[1e-4, 1e-4], Sll=[0], topboundary='conf', 
-                 phreatictop=False, tmin=1, tmax=10, tstart=0, M=10,
-                 f2py=False):
+                 phreatictop=False, tmin=1, tmax=10, tstart=0, M=10, 
+                 kzoverkh=None, model3d=False, f2py=False):
         self.elementlist = []
         self.elementdict = {}
         self.vbclist = []  # variable boundary condition 'v' elements
@@ -25,13 +32,10 @@ class TimModel(PlotTtim):
         self.tstart = tstart
         self.M = M
         self.aq = Aquifer(self, kaq, Haq, Hll, c, Saq, Sll, topboundary, 
-                          phreatictop)
+                          phreatictop, kzoverkh, model3d)
         self.f2py = False
         if f2py:
             try:
-                from .bessel import bessel
-                from .invlapnumba import compute_laplace_parameters_numba, invlap 
-                bessel.initialize()
                 self.f2py = True
             except:
                 print('FORTRAN extension not found while f2py=True')
@@ -145,8 +149,8 @@ class TimModel(PlotTtim):
             return pot
         rv = np.zeros((nlayers, len(time)))
         if (time[0] < self.tintervals[0]) or (time[-1] > self.tintervals[-1]):
-            print('Warning, some of the times are smaller than tmin or \
-                   larger than tmax; zeros are substituted')
+            print('Warning, some of the times are smaller than tmin or', 
+                  'larger than tmax; zeros are substituted')
         #
         for k in range(self.ngvbc):
             e = self.gvbclist[k]
@@ -621,5 +625,6 @@ class Model3D(TimModel):
                                               phreatictop, topboundary, topres, 
                                               topthick, topSll)
         TimModel.__init__(self, kaq, Haq, Hll, c, Saq, Sll, topboundary, 
-                          phreatictop, tmin, tmax, tstart, M, f2py)
+                          phreatictop, tmin, tmax, tstart, M, 
+                          kzoverkh, model3d=True, f2py=f2py)
         self.name = 'Model3D'

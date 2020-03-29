@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import inspect # Used for storing the input
 
 class AquiferData:
-    def __init__(self, model, kaq, Haq, Hll, c, Saq, Sll, topboundary, phreatictop):
+    def __init__(self, model, kaq, Haq, Hll, c, Saq, Sll, topboundary, 
+                 phreatictop, kzoverkh=None, model3d=False):
         self.model = model
         self.kaq = np.atleast_1d(kaq).astype('d')
         self.naq = len(self.kaq)
@@ -18,6 +19,15 @@ class AquiferData:
         self.Sll[self.Sll < 1e-20] = 1e-20 # Cannot be zero
         self.topboundary = topboundary[:3]
         self.phreatictop = phreatictop
+        self.kzoverkh = kzoverkh
+        if self.kzoverkh is not None:
+            self.kzoverkh = np.atleast_1d(self.kzoverkh).astype('d')
+            if len(self.kzoverkh) == 1: 
+                self.kzoverkh = self.kzoverkh * np.ones(self.naq)
+        self.model3d = model3d
+        if self.model3d:
+            assert self.kzoverkh is not None, \
+                    "model3d specified without kzoverkh"
         #self.D = self.T / self.Saq
         self.area = 1e200 # Smaller than default of ml.aq so that inhom is found
     
@@ -35,7 +45,7 @@ class AquiferData:
         coef[ilayers, :, np] are the coefficients if the element is in
         ilayers belonging to Laplace parameter number np
         '''
-        # Recompute T for when kaq is changed manually
+        # Recompute T for when kaq is changed
         self.T = self.kaq * self.Haq
         self.Tcol = self.T.reshape(self.naq, 1)
         # Compute Saq and Sll
@@ -46,6 +56,11 @@ class AquiferData:
         elif (self.topboundary == 'lea') and self.phreatictop:
             self.Scoefll[0] = self.Scoefll[0] / self.Hll[0]
         self.D = self.T / self.Scoefaq
+        # Compute c if model3d for when kaq is changed
+        if self.model3d:
+            self.c[1:] = \
+                0.5 * self.Haq[:-1] / (self.kzoverkh[:-1] * self.kaq[:-1]) + \
+                0.5 * self.Haq[1:] /  (self.kzoverkh[1:] * self.kaq[1:])
         #
         self.eigval = np.zeros((self.naq, self.model.npval), 'D')
         self.lab = np.zeros((self.naq, self.model.npval), 'D')
@@ -122,9 +137,10 @@ class AquiferData:
         return +9999
     
 class Aquifer(AquiferData):
-    def __init__(self, model, kaq, Haq, Hll, c, Saq, Sll, topboundary, phreatictop):
+    def __init__(self, model, kaq, Haq, Hll, c, Saq, Sll, topboundary, 
+                 phreatictop, kzoverkh=None, model3d=False):
         AquiferData.__init__(self, model, kaq, Haq, Hll, c, Saq, Sll, \
-                             topboundary, phreatictop)
+                             topboundary, phreatictop, kzoverkh, model3d)
         self.inhomlist = []
         self.area = 1e300 # Needed to find smallest inhomogeneity
     
