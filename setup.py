@@ -23,6 +23,6 @@ setup(
     license="MIT",
     packages=["ttim"],
     python_requires='>3.6',
-    install_requires=["numpy>=1.12", "scipy>=0.19", "numba>=0.39", "matplotlib>=2.0", "lmfit>=1.0"],
+    install_requires=["numpy>=1.12", "scipy>=0.19", "numba>=0.39", "matplotlib>=2.0", "lmfit>=1.0", "pandas>=0.25"],
     classifiers=['Topic :: Scientific/Engineering :: Hydrology'],
 )
