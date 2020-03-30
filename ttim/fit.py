@@ -20,19 +20,67 @@ class Calibrate:
         self.parameters = pd.DataFrame(columns=['optimal', 'std', 'perc_std', 'pmin', 'pmax', 'initial', 'parray'])
         self.seriesdict = {}
         
-    def set_parameter(self, name=None, parameter=None, layer=0, initial=0, pmin=-np.inf, pmax=np.inf):
+    def set_parameter(self, name=None, initial=0, pmin=-np.inf, pmax=np.inf):
         """set parameter to be optimized
         
         Parameters
         ----------
-        name : str, optional
+        name : str
             parameter name, kan include layer information. 
-            See Usage below.
-        parameter : np.array, optional
-            array containing the parameter to be optimized (only 
-            used when name is None)
-        layer : int, optional
-            0-indexed layer, only used if name is None (the default is 0)
+            name can be be 'kaq', 'Saq' or 'c'. A number after the parameter 
+            name denotes the layer number, i.e. 'kaq0' refers to the hydraulic 
+            conductivity of layer 0. 
+            name also supports layer ranges, entered by adding a '_' and a
+            layer number, i.e. 'kaq0_3' denotes conductivity for layers 0 up to 
+            and including 3.
+        initial : np.float, optional
+            initial value for the parameter (the default is 0)
+        pmin : np.float, optional
+            lower bound for parameter value (the default is -np.inf)
+        pmax : np.float, optional
+            upper bound for paramater value (the default is np.inf)
+        
+        """
+
+        assert type(name) == str, "Error: name must be string"
+        # find numbers in name str for support layer ranges
+        layers_from_name = re.findall(r'\d+', name)
+        p = None
+        if "_" in name:
+            fromlay, tolay = [np.int(i) for i in layers_from_name]
+            if name[:3] == 'kaq':
+                p = self.model.aq.kaq[fromlay:tolay+1]
+            elif name[:3] == 'Saq':
+                p = self.model.aq.Saq[fromlay:tolay+1]
+            elif name[0] == 'c':
+                p = self.model.aq.c[fromlay:tolay+1]
+            # TODO: set Sll
+        else:
+            layer = np.int(layers_from_name[0])
+            # Set, kaq, Saq, c
+            if name[:3] == 'kaq':
+                p = self.model.aq.kaq[layer:layer + 1]
+            elif name[:3] == 'Saq':
+                p = self.model.aq.Saq[layer:layer + 1]
+            elif name[0] == 'c':
+                p = self.model.aq.c[layer:layer + 1]
+            # TODO: set Sll
+        if p is None:  # no parameter set
+            print('parameter name not recognized or no parameter reference supplied')
+            return
+        self.parameters.loc[name] = {'optimal':initial, 'std':None, 'perc_std':None, 
+                                     'pmin':pmin, 'pmax':pmax, 'initial':initial, 'parray':p[:]}
+        
+    def set_parameter_by_reference(self, name=None, parameter=None, initial=0, pmin=-np.inf, pmax=np.inf):
+        """set parameter to be optimized
+        
+        Parameters
+        ----------
+        name : str
+            parameter name
+        parameter : np.array
+            array reference containing the parameter to be optimized. must be 
+            specified as reference, i.e. w.rc[0:]  
         initial : np.float, optional
             initial value for the parameter (the default is 0)
         pmin : np.float, optional
@@ -53,38 +101,12 @@ class Calibrate:
         needs to be specified.
         
         """
-
+        assert type(name) == str, "Error: name must be string"
         if parameter is not None:
             assert isinstance(parameter, np.ndarray), "Error: parameter needs to be numpy array"
-            p = parameter[layer:layer+1]
-        elif isinstance(name, str):
-            # find numbers in name str for support layer ranges
-            layers_from_name = re.findall(r'\d+', name)
-            if "_" in name:
-                fromlay, tolay = [np.int(i) for i in layers_from_name]
-                if name[:3] == 'kaq':
-                    p = self.model.aq.kaq[fromlay:tolay+1]
-                elif name[:3] == 'Saq':
-                    p = self.model.aq.Saq[fromlay:tolay+1]
-                elif name[0] == 'c':
-                    p = self.model.aq.c[fromlay:tolay+1]
-                # TODO: set Sll
-            else:
-                layer = np.int(layers_from_name[0])
-                # Set, kaq, Saq, c
-                if name[:3] == 'kaq':
-                    p = self.model.aq.kaq[layer:layer + 1]
-                elif name[:3] == 'Saq':
-                    p = self.model.aq.Saq[layer:layer + 1]
-                elif name[0] == 'c':
-                    p = self.model.aq.c[layer:layer + 1]
-                # TODO: set Sll
-        else:
-            print('parameter name not recognized or no parameter reference supplied')
-            return
+            p = parameter
         self.parameters.loc[name] = {'optimal':initial, 'std':None, 'perc_std':None, 
                                      'pmin':pmin, 'pmax':pmax, 'initial':initial, 'parray':p[:]}
-        #self.parametersdict[name] = p
         
     def series(self, name, x, y, layer, t, h):
         """method to add observations to Calibration object
