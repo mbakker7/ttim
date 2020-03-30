@@ -14,15 +14,20 @@ The design of TTim is object-oriented and has been kept simple and flexible.
 New analytic elements may be added to the code without making any changes in the existing part of the code.
 TTim is coded in Python and uses numba to speed up evaluation of the line elements and inverse laplace transforms.
 
+## Latest version
+New in version 0.5:
+* FORTRAN extension has been ported to Python and numba (many thanks to Davíd Brakenhoff)
+* Python invlap routine (again with numba) ported from routine by Kris Kuhlman
+* New invlap routine requires fewer terms in inverse Laplace transform (M=10 is usually enough)
+* Calibrate now works on ranges of parameters.
+* Calibrate now adjusts c values between layers when calibrating for hydraulic conductivity in Model3D
+
 ## Installation
 
-**Python versions:**
+**Python versions and dependencies**
 
 TTim requires **Python** >= 3.6 and can be installed from PyPI.
-
-**Dependencies:**
-
-TTim requires **NumPy** >=1.12, **Scipy** >=0.19 and **matplotlib** >=2.0, **numba>=0.4**, **lmfit>=1.0**
+Required packages: **NumPy** >=1.12, **Scipy** >=0.19 and **matplotlib** >=2.0, **numba>=0.4**, **lmfit>=1.0**
 
 **Installation:**
 
@@ -42,18 +47,10 @@ To uninstall TTi type:
 
 * The manual is available from the docs directory or can be viewed [here](http://mbakker7.github.io/ttim/docs/builddocs/html/index.html).
 * Example Notebooks are available from the notebooks directory on github, of from [here](https://github.com/mbakker7/ttim/tree/master/notebooks).
-    
-##Testing installation:
-
-    ipython
-    import ttim.ttimtest
-    
-An example model is imported and two graphs are shown. When this is run from the regular Python prompt (not IPython), the
-model is created and solved but the figure is probably not shown (depending on your default settings of matplotlib). 
 
 ## Citation
 
-Some of the papers that you may want to cite when using TTim are
+Some of the papers that you may want to cite when using TTim are:
 
 * M. Bakker. 2013. Semi-analytic modeling of transient multi-layer flow with TTim. Hydrogeology Journal, 21: 935Ð943.
 * M .Bakker. 2013. Analytic modeling of transient multi-layer flow. In: Advances in Hydrogeology, edited by P Mishra and K Kuhlman, Springer, Heidelberg, 95-114.
