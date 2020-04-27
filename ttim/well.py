@@ -17,7 +17,7 @@ class WellBase(Element):
         self.xw = float(xw)
         self.yw = float(yw)
         self.rw = float(rw)
-        self.res = res
+        self.res = np.atleast_1d(res).astype(np.float64)
         self.model.addelement(self)
         
     def __repr__(self):

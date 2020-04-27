@@ -19,6 +19,7 @@ class Calibrate:
         self.model = model
         self.parameters = pd.DataFrame(columns=['optimal', 'std', 'perc_std', 'pmin', 'pmax', 'initial', 'parray'])
         self.seriesdict = {}
+        self.seriesinwelldict = {}
         
     def set_parameter(self, name=None, initial=0, pmin=-np.inf, pmax=np.inf):
         """set parameter to be optimized
@@ -131,6 +132,24 @@ class Calibrate:
         s = Series(x, y, layer, t, h)
         self.seriesdict[name] = s
         
+    def seriesinwell(self, name, element, t, h):
+        """method to add observations to Calibration object
+        
+        Parameters
+        ----------
+        name : str
+            name of series
+        element: element object with headinside function
+        t : np.array
+            array containing timestamps of timeseries
+        h : np.array
+            array containing timeseries values, i.e. head observations
+        
+        """
+
+        e = SeriesInWell(element, t, h)
+        self.seriesinwelldict[name] = e
+        
     def residuals(self, p, printdot=False):
         """method to calculate residuals given certain parameters
         
@@ -161,6 +180,10 @@ class Calibrate:
         for key in self.seriesdict:
             s = self.seriesdict[key]
             h = self.model.head(s.x, s.y, s.t, layers=s.layer)
+            rv = np.append(rv, s.h - h)
+        for key in self.seriesinwelldict:
+            s = self.seriesinwelldict[key]
+            h = s.element.headinside(s.t)[0]
             rv = np.append(rv, s.h - h)
         return rv
     
@@ -296,6 +319,12 @@ class Series:
         self.x = x
         self.y = y
         self.layer = layer
+        self.t = t
+        self.h = h
+        
+class SeriesInWell:
+    def __init__(self, element, t, h):
+        self.element = element
         self.t = t
         self.h = h
 
