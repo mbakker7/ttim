@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Well with specified discharge &#8212; ttim 0.4.a1 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -13,7 +11,8 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Well with specified head" href="headwell.html" />
@@ -38,7 +37,7 @@
 <h1>Well with specified discharge<a class="headerlink" href="#well-with-specified-discharge" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="ttim.well.Well">
-<em class="property">class </em><code class="descclassname">ttim.well.</code><code class="descname">Well</code><span class="sig-paren">(</span><em>model, xw=0, yw=0, rw=0.1, tsandQ=[(0, 1)], res=0, rc=None, layers=0, wbstype='pumping', label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/well.html#Well"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.well.Well" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ttim.well.</code><code class="sig-name descname">Well</code><span class="sig-paren">(</span><em class="sig-param">model, xw=0, yw=0, rw=0.1, tsandQ=[(0, 1)], res=0, rc=None, layers=0, wbstype='pumping', label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/well.html#Well"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.well.Well" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a well with a specified discharge.
 The well may be screened in multiple layers. The discharge is
 distributed across the layers such that the head inside the well
@@ -50,51 +49,46 @@ in layer <span class="math notranslate nohighlight">\(i\)</span> is computed as<
 \[Q_i = 2\pi r_w(h_i - h_w)/c\]</div>
 <p>where <span class="math notranslate nohighlight">\(c\)</span> is the resistance of the well screen and <span class="math notranslate nohighlight">\(h_w\)</span> is
 the head inside the well.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>model</strong> (<em>Model object</em>) – model to which the element is added</li>
-<li><strong>xw</strong> (<em>float</em>) – x-coordinate of the well</li>
-<li><strong>yw</strong> (<em>float</em>) – y-coordinate of the well</li>
-<li><strong>rw</strong> (<em>float</em>) – radius of the well</li>
-<li><strong>tsandQ</strong> (<em>list of tuples</em>) – tuples of starting time and discharge after starting time</li>
-<li><strong>res</strong> (<em>float</em>) – resistance of the well screen</li>
-<li><strong>rc</strong> (<em>float</em>) – radius of the caisson, the pipe where the water table inside
-the well flucuates, which accounts for the wellbore storage</li>
-<li><strong>layers</strong> (<em>int</em><em>, </em><em>array</em><em> or </em><em>list</em>) – layer (int) or layers (list or array) where well is screened</li>
-<li><strong>wbstype</strong> (<em>string</em>) – ‘pumping’: Q is the discharge of the well
-‘slug’: volume of water instantaneously taken out of the well</li>
-<li><strong>label</strong> (<em>string</em><em> (</em><em>default: None</em><em>)</em>) – label of the well</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>Model object</em>) – model to which the element is added</p></li>
+<li><p><strong>xw</strong> (<em>float</em>) – x-coordinate of the well</p></li>
+<li><p><strong>yw</strong> (<em>float</em>) – y-coordinate of the well</p></li>
+<li><p><strong>rw</strong> (<em>float</em>) – radius of the well</p></li>
+<li><p><strong>tsandQ</strong> (<em>list of tuples</em>) – tuples of starting time and discharge after starting time</p></li>
+<li><p><strong>res</strong> (<em>float</em>) – resistance of the well screen</p></li>
+<li><p><strong>rc</strong> (<em>float</em>) – radius of the caisson, the pipe where the water table inside
+the well flucuates, which accounts for the wellbore storage</p></li>
+<li><p><strong>layers</strong> (<em>int</em><em>, </em><em>array</em><em> or </em><em>list</em>) – layer (int) or layers (list or array) where well is screened</p></li>
+<li><p><strong>wbstype</strong> (<em>string</em>) – ‘pumping’: Q is the discharge of the well
+‘slug’: volume of water instantaneously taken out of the well</p></li>
+<li><p><strong>label</strong> (<em>string</em><em> (</em><em>default: None</em><em>)</em>) – label of the well</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="method">
 <dt id="ttim.well.Well.discharge">
-<code class="descname">discharge</code><span class="sig-paren">(</span><em>t</em>, <em>derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.well.Well.discharge" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">discharge</code><span class="sig-paren">(</span><em class="sig-param">t</em>, <em class="sig-param">derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.well.Well.discharge" title="Permalink to this definition">¶</a></dt>
 <dd><p>The discharge in each layer</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>t</strong> (<em>scalar</em><em>, </em><em>list</em><em> or </em><em>array</em>) – times at which discharge is computed.
-t must be ordered and tmin &lt;= t &lt;= tmax</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Discharge in each screen with zeros for layers that are not
-screened</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array of discharges (nlayers,len(t))</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>t</strong> (<em>scalar</em><em>, </em><em>list</em><em> or </em><em>array</em>) – times at which discharge is computed.
+t must be ordered and tmin &lt;= t &lt;= tmax</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Discharge in each screen with zeros for layers that are not
+screened</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array of discharges (nlayers,len(t))</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="ttim.well.Well.headinside">
-<code class="descname">headinside</code><span class="sig-paren">(</span><em>t</em>, <em>derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.well.Well.headinside" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">headinside</code><span class="sig-paren">(</span><em class="sig-param">t</em>, <em class="sig-param">derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.well.Well.headinside" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns head inside the well for the layers that the well is screened in</p>
 </dd></dl>
 
@@ -157,13 +151,11 @@ screened</td>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -176,8 +168,8 @@ screened</td>
       &copy;2017, Mark Bakker.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/wells/well.rst.txt"

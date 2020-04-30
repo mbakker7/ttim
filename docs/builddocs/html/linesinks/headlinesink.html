@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Line-sink with specified head &#8212; ttim 0.4.a1 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -13,7 +11,8 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="String of head-specified line-sinks" href="headlinesinkstring.html" />
@@ -38,7 +37,7 @@
 <h1>Line-sink with specified head<a class="headerlink" href="#line-sink-with-specified-head" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="ttim.linesink.HeadLineSink">
-<em class="property">class </em><code class="descclassname">ttim.linesink.</code><code class="descname">HeadLineSink</code><span class="sig-paren">(</span><em>model, x1=-1, y1=0, x2=1, y2=0, tsandh=[(0, 1)], res=0, wh='H', layers=0, label=None, addtomodel=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/linesink.html#HeadLineSink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.linesink.HeadLineSink" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ttim.linesink.</code><code class="sig-name descname">HeadLineSink</code><span class="sig-paren">(</span><em class="sig-param">model, x1=-1, y1=0, x2=1, y2=0, tsandh=[(0, 1)], res=0, wh='H', layers=0, label=None, addtomodel=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/linesink.html#HeadLineSink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.linesink.HeadLineSink" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a head-specified line-sink
 which may optionally have a width and resistance
 Inflow per unit length of line-sink is computed as</p>
@@ -50,72 +49,67 @@ Inflow per unit length of line-sink is computed as</p>
 <span class="math notranslate nohighlight">\(h_{ls}\)</span> is the specified head inside the line-sink
 Note that all that matters is the conductance term <span class="math notranslate nohighlight">\(w/c\)</span> but
 both are specified separately</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>model</strong> (<em>Model object</em>) – Model to which the element is added</li>
-<li><strong>x1</strong> (<em>scalar</em>) – x-coordinate of fist point of line-sink</li>
-<li><strong>y1</strong> (<em>scalar</em>) – y-coordinate of fist point of line-sink</li>
-<li><strong>x2</strong> (<em>scalar</em>) – x-coordinate of second point of line-sink</li>
-<li><strong>y2</strong> (<em>scalar</em>) – y-coordinate of second point of line-sink</li>
-<li><strong>tsandh</strong> (<em>list</em><em> or </em><em>2D array of</em><em> (</em><em>time</em><em>, </em><em>head</em><em>) </em><em>values</em><em> or </em><em>string</em>) – if list or 2D array: pairs of time and head after that time
-if ‘fixed’: head is fixed (no change in head) during entire simulation</li>
-<li><strong>res</strong> (<em>scalar</em><em> (</em><em>default is 0</em><em>)</em>) – resistance of line-sink</li>
-<li><strong>wh</strong> (<em>scalar</em><em> or </em><em>str</em>) – distance over which water enters line-sink
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>Model object</em>) – Model to which the element is added</p></li>
+<li><p><strong>x1</strong> (<em>scalar</em>) – x-coordinate of fist point of line-sink</p></li>
+<li><p><strong>y1</strong> (<em>scalar</em>) – y-coordinate of fist point of line-sink</p></li>
+<li><p><strong>x2</strong> (<em>scalar</em>) – x-coordinate of second point of line-sink</p></li>
+<li><p><strong>y2</strong> (<em>scalar</em>) – y-coordinate of second point of line-sink</p></li>
+<li><p><strong>tsandh</strong> (<em>list</em><em> or </em><em>2D array of</em><em> (</em><em>time</em><em>, </em><em>head</em><em>) </em><em>values</em><em> or </em><em>string</em>) – if list or 2D array: pairs of time and head after that time
+if ‘fixed’: head is fixed (no change in head) during entire simulation</p></li>
+<li><p><strong>res</strong> (<em>scalar</em><em> (</em><em>default is 0</em><em>)</em>) – resistance of line-sink</p></li>
+<li><p><strong>wh</strong> (<em>scalar</em><em> or </em><em>str</em>) – distance over which water enters line-sink
 if ‘H’: (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)
 if ‘2H’: distance is twice the thickness of the aquifer layer (when flow comes from both sides)
-if scalar: the width of the stream that partially penetrates the aquifer layer</li>
-<li><strong>layers</strong> (<em>scalar</em><em>, </em><em>list</em><em> or </em><em>array</em>) – layer(s) in which element is placed
+if scalar: the width of the stream that partially penetrates the aquifer layer</p></li>
+<li><p><strong>layers</strong> (<em>scalar</em><em>, </em><em>list</em><em> or </em><em>array</em>) – layer(s) in which element is placed
 if scalar: element is placed in this layer
-if list or array: element is placed in all these layers</li>
-<li><strong>label</strong> (<em>str</em><em> or </em><em>None</em>) – label of element</li>
+if list or array: element is placed in all these layers</p></li>
+<li><p><strong>label</strong> (<em>str</em><em> or </em><em>None</em>) – label of element</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="headlinesinkstring.html#ttim.linesink.HeadLineSinkString" title="ttim.linesink.HeadLineSinkString"><code class="xref py py-class docutils literal notranslate"><span class="pre">HeadLineSinkString</span></code></a></p>
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="headlinesinkstring.html#ttim.linesink.HeadLineSinkString" title="ttim.linesink.HeadLineSinkString"><code class="xref py py-class docutils literal notranslate"><span class="pre">HeadLineSinkString</span></code></a></p>
 </div>
 <dl class="method">
 <dt id="ttim.linesink.HeadLineSink.discharge">
-<code class="descname">discharge</code><span class="sig-paren">(</span><em>t</em>, <em>derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.linesink.HeadLineSink.discharge" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">discharge</code><span class="sig-paren">(</span><em class="sig-param">t</em>, <em class="sig-param">derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.linesink.HeadLineSink.discharge" title="Permalink to this definition">¶</a></dt>
 <dd><p>The discharge in each layer</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>t</strong> (<em>scalar</em><em>, </em><em>list</em><em> or </em><em>array</em>) – times at which discharge is computed.
-t must be ordered and tmin &lt;= t &lt;= tmax</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Discharge in each screen with zeros for layers that are not
-screened</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array of discharges (nlayers,len(t))</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>t</strong> (<em>scalar</em><em>, </em><em>list</em><em> or </em><em>array</em>) – times at which discharge is computed.
+t must be ordered and tmin &lt;= t &lt;= tmax</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Discharge in each screen with zeros for layers that are not
+screened</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array of discharges (nlayers,len(t))</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="ttim.linesink.HeadLineSink.headinside">
-<code class="descname">headinside</code><span class="sig-paren">(</span><em>t</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.linesink.HeadLineSink.headinside" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">headinside</code><span class="sig-paren">(</span><em class="sig-param">t</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.linesink.HeadLineSink.headinside" title="Permalink to this definition">¶</a></dt>
 <dd><p>The head inside the line-sink</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>t</strong> (<em>array</em><em> or </em><em>float</em>) – time(s) for whih head is computed</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Head inside the line-sink for each layer that the line-sink is screened in</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array (length number of layers)</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>t</strong> (<em>array</em><em> or </em><em>float</em>) – time(s) for whih head is computed</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Head inside the line-sink for each layer that
+the line-sink is screened in</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array (length number of layers)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -178,13 +172,11 @@ screened</td>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -197,8 +189,8 @@ screened</td>
       &copy;2017, Mark Bakker.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/linesinks/headlinesink.rst.txt"

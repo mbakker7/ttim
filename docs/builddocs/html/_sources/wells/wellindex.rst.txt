@@ -3,10 +3,10 @@ Wells
 
 Wells may be defined by specifying the discharge of the well or by specifying the (desired) head inside the well. 
 Wells may have an entry resistance (skin effect) defined by the resistance :math:`c` (dimension: time). The discharge :math:`Q_i` in layer :math:`i` is a function of the head
-:math:`h_i` in layer :math:`i` just outside the well and the head :math:`h_w` inside the well:
+:math:`h_i` in layer :math:`i` just outside the well and the head :math:`h_w` inside the well, and the aquifer thicknes :math:`H_i` of layer :math:`i`:
 
     .. math::
-        Q_i = 2\pi r_w(h_i - h_w)/c
+        Q_i = 2\pi r_wH_i(h_i - h_w)/c
         
 The following types of wells are implemented:
 
