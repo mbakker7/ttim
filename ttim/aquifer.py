@@ -68,15 +68,16 @@ class AquiferData:
         self.coef = np.zeros((self.naq, self.naq, self.model.npval), 'D')
         b = np.diag(np.ones(self.naq))
         for i in range(self.model.npval):
-            w,v = self.compute_lab_eigvec(self.model.p[i]) # Eigenvectors are columns of v
+            w, v = self.compute_lab_eigvec(self.model.p[i]) # Eigenvectors are columns of v
             ## moved to compute_lab_eigvec routine
             #index = np.argsort( abs(w) )[::-1]
             #w = w[index]; v = v[:,index]
-            self.eigval[:,i] = w; self.eigvec[:,:,i] = v
-            self.coef[:,:,i] = np.linalg.solve( v, b ).T
+            self.eigval[:, i] = w; self.eigvec[:, :, i] = v
+            self.coef[:, :, i] = np.linalg.solve(v, b).T
         self.lab = 1.0 / np.sqrt(self.eigval)
-        self.lab2 = self.lab.copy(); self.lab2.shape = (self.naq, self.model.nint, self.model.npint)
-        self.lababs = np.abs(self.lab2[:,:,0]) # used to check distances
+        self.lab2 = self.lab.copy() 
+        self.lab2.shape = (self.naq, self.model.nint, self.model.npint)
+        self.lababs = np.abs(self.lab2[:, :, 0]) # used to check distances
     
     def compute_lab_eigvec(self, p, returnA = False, B = None):
         sqrtpSc = np.sqrt( p * self.Scoefll * self.c )
@@ -84,13 +85,15 @@ class AquiferData:
         small = np.abs(sqrtpSc) < 200
         a[small] = sqrtpSc[small] / np.tanh(sqrtpSc[small])
         b[small] = sqrtpSc[small] / np.sinh(sqrtpSc[small])
-        a[~small] = sqrtpSc[~small] / ( (1.0 - np.exp(-2.0*sqrtpSc[~small])) / (1.0 + np.exp(-2.0*sqrtpSc[~small])) )
-        b[~small] = sqrtpSc[~small] * 2.0 * np.exp(-sqrtpSc[~small]) / (1.0 - np.exp(-2.0*sqrtpSc[~small]))
+        a[~small] = sqrtpSc[~small] / ((1.0 - np.exp(-2.0*sqrtpSc[~small])) / 
+                                       (1.0 + np.exp(-2.0*sqrtpSc[~small])))
+        b[~small] = sqrtpSc[~small] * 2.0 * np.exp(-sqrtpSc[~small]) / \
+                    (1.0 - np.exp(-2.0*sqrtpSc[~small]))
         if (self.topboundary[:3] == 'sem') or (self.topboundary[:3] == 'lea'):
             if abs(sqrtpSc[0]) < 200:
-                dzero = sqrtpSc[0] * np.tanh( sqrtpSc[0] )
+                dzero = sqrtpSc[0] * np.tanh(sqrtpSc[0])
             else:
-                dzero = sqrtpSc[0] * cmath_tanh( sqrtpSc[0] )  # Bug in complex tanh in numpy
+                dzero = sqrtpSc[0] * cmath_tanh(sqrtpSc[0])  # Bug in complex tanh in numpy
         d0 = p / self.D
         if B is not None:
             d0 = d0 * B  # B is vector of load efficiency paramters
