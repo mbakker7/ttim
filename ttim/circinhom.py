@@ -125,14 +125,17 @@ class CircInhomRadial(Element, InhomEquation):
         self.xc = np.array([self.x0 + self.R]); self.yc = np.array([self.y0])
         self.thetacp = np.zeros(1)
         self.ncp = 1
-        self.aqin = self.model.aq.findAquiferData(self.x0 + (1.0 - 1e-8) * self.R, self.y0)
+        self.aqin = self.model.aq.findAquiferData(
+            self.x0 + (1 - 1e-8) * self.R, self.y0)
         assert self.aqin.R == self.R, 'TTim Input Error: Radius of CircInhom and CircInhomData must be equal'
-        self.aqout = self.model.aq.findAquiferData(self.x0+(1.0+1e-8)*self.R,self.y0)
+        self.aqout = self.model.aq.findAquiferData(
+            self.x0 + (1 + 1e-8) * self.R, self.y0)
         self.setbc()
         self.facin = np.ones_like(self.aqin.lab2)
         self.facout = np.ones_like(self.aqout.lab2)
-        self.circ_in_small = np.ones((self.aqin.Naq,self.model.Nin),dtype='i') # To keep track which circles are small
-        self.circ_out_small = np.ones((self.aqout.Naq,self.model.Nin),dtype='i')
+         # To keep track which circles are small
+        self.circ_in_small = np.ones((self.aqin.naq, self.model.nin), dtype='i')
+        self.circ_out_small = np.ones((self.aqout.naq,self.model.nin),dtype='i')
         self.Rbig = 700
         #for i in range(self.aqin.Naq):
         #    for j in range(self.model.Nin):
@@ -150,49 +153,66 @@ class CircInhomRadial(Element, InhomEquation):
         #        assert self.R / abs(self.aqout.lab2[i,j,0]) < 900, 'radius too large compared to aqin lab2[i,j,0] '+str((i,j))
         #self.facin = 1.0 / iv(0, self.R / self.aqin.lab2)
         #self.facout = 1.0 / kv(0, self.R / self.aqout.lab2)
-        self.parameters = np.zeros( (self.model.Ngvbc, self.Nparam, self.model.Np), 'D' )
-    def potinf(self,x,y,aq=None):
+        self.parameters = np.zeros((self.model.Ngvbc, self.Nparam, 
+                                    self.model.Np), 'D')
+    def potinf(self, x, y, aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
-        rv = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
+        if aq is None: aq = self.model.aq.findAquiferData(x, y)
+        rv = np.zeros((self.nparam, aq.naq, self.model.nin, 
+                       self.model.npin), 'D')
         if aq == self.aqin:
-            r = np.sqrt( (x-self.x0)**2 + (y-self.y0)**2 )
+            r = np.sqrt((x - self.x0) ** 2 + (y - self.y0) ** 2)
             for i in range(self.aqin.Naq):
                 for j in range(self.model.Nin):
-                    if abs(r-self.R) / abs(self.aqin.lab2[i,j,0]) < self.Rzero:
-                        if self.circ_in_small[i,j]:
-                            rv[i,i,j,:] = self.facin[i,j,:] * iv( 0, r / self.aqin.lab2[i,j,:] )
+                    if abs(r - self.R) / abs(self.aqin.lab2[i, j, 0]) < self.Rzero:
+                        if self.circ_in_small[i, j]:
+                            rv[i, i, j, :] = self.facin[i, j, :] * \
+                                iv(0, r / self.aqin.lab2[i, j, :])
                         else:
                             print 'using approx'
-                            rv[i,i,j,:] = self.approx.ivratio(r,self.R,self.aqin.lab2[i,j,:])
+                            rv[i, i, j, :] = self.approx.ivratio(
+                                r, self.R, self.aqin.lab2[i, j, :])
         if aq == self.aqout:
-            r = np.sqrt( (x-self.x0)**2 + (y-self.y0)**2 )
+            r = np.sqrt( (x - self.x0) ** 2 + (y - self.y0) ** 2)
             for i in range(self.aqout.Naq):
                 for j in range(self.model.Nin):
-                    if abs(r-self.R) / abs(self.aqout.lab2[i,j,0]) < self.Rzero:
-                        if self.circ_out_small[i,j]:
-                            rv[self.aqin.Naq+i,i,j,:] = self.facin[i,j,:] * kv( 0, r / self.aqout.lab2[i,j,:] )
+                    if abs(r - self.R) / abs(self.aqout.lab2[i, j, 0]) < self.Rzero:
+                        if self.circ_out_small[i, j]:
+                            rv[self.aqin.Naq + i, i, j, :] = \
+                                self.facin[i, j, :] * \
+                                kv(0, r / self.aqout.lab2[i, j, :])
                         else:
                             print 'using approx'
-                            rv[self.aqin.Naq+i,i,j,:] = self.approx.kvratio(r,self.R,self.aqout.lab2[i,j,:])
-        rv.shape = (self.Nparam,aq.Naq,self.model.Np)
+                            rv[self.aqin.Naq + i, i, j, :] = \ 
+                                self.approx.kvratio(r, self.R, 
+                                                    self.aqout.lab2[i, j, :])
+        rv.shape = (self.Nparam, aq.Naq, self.model.Np)
         return rv
+    
     def disinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.findAquiferData( x, y )
-        qx,qy = np.zeros((self.Nparam,aq.Naq,self.model.Np),'D'), np.zeros((self.Nparam,aq.Naq,self.model.Np),'D')
+        if aq is None: 
+            aq = self.model.aq.findAquiferData(x, y)
+        qx = np.zeros((self.nparam, aq.naq, self.model.np), 'D')
+        qy = np.zeros((self.nparam, aq.naq, self.model.np), 'D')
         if aq == self.aqin:
-            qr = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
-            r = np.sqrt( (x-self.x0)**2 + (y-self.y0)**2 )
-            if r < 1e-20: r = 1e-20  # As we divide by that on the return
+            qr = np.zeros((self.nparam, aq.naq, self.model.nin, 
+                           self.model.npin), 'D')
+            r = np.sqrt((x - self.x0) ** 2 + (y - self.y0) ** 2)
+            if r < 1e-20: 
+                r = 1e-20  # As we divide by that on the return
             for i in range(self.aqin.Naq):
                 for j in range(self.model.Nin):
-                    if abs(r-self.R) / abs(self.aqin.lab2[i,j,0]) < self.Rzero:
-                        if self.circ_in_small[i,j]:
-                            qr[i,i,j,:] = -self.facin[i,j,:] * iv( 1, r / self.aqin.lab2[i,j,:] ) / self.aqin.lab2[i,j,:]
+                    if abs(r - self.R) / abs(self.aqin.lab2[i, j, 0]) < self.Rzero:
+                        if self.circ_in_small[i, j]:
+                            qr[i, i, j, :] = -self.facin[i, j, :] * \
+                                iv(1, r / self.aqin.lab2[i, j, :] ) / \
+                                self.aqin.lab2[i, j, :]
                         else:
-                            qr[i,i,j,:] = -self.approx.ivratiop(r,self.R,self.aqin.lab2[i,j,:]) / self.aqin.lab2[i,j,:]
-            qr.shape = (self.Nparam,aq.Naq,self.model.Np)
+                            qr[i, i, j, :] = -self.approx.ivratiop(r, self.R,
+                                             self.aqin.lab2[i, j, :]) / \
+                                             self.aqin.lab2[i, j, :]
+            qr.shape = (self.nparam, aq.naq, self.model.np)
             qx[:] = qr * (x-self.x0) / r; qy[:] = qr * (y-self.y0) / r
         if aq == self.aqout:
             qr = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
