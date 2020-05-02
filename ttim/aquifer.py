@@ -68,10 +68,8 @@ class AquiferData:
         self.coef = np.zeros((self.naq, self.naq, self.model.npval), 'D')
         b = np.diag(np.ones(self.naq))
         for i in range(self.model.npval):
-            w, v = self.compute_lab_eigvec(self.model.p[i]) # Eigenvectors are columns of v
-            ## moved to compute_lab_eigvec routine
-            #index = np.argsort( abs(w) )[::-1]
-            #w = w[index]; v = v[:,index]
+            w, v = self.compute_lab_eigvec(self.model.p[i]) 
+            # Eigenvectors are columns of v
             self.eigval[:, i] = w; self.eigvec[:, :, i] = v
             self.coef[:, :, i] = np.linalg.solve(v, b).T
         self.lab = 1.0 / np.sqrt(self.eigval)
@@ -93,7 +91,8 @@ class AquiferData:
             if abs(sqrtpSc[0]) < 200:
                 dzero = sqrtpSc[0] * np.tanh(sqrtpSc[0])
             else:
-                dzero = sqrtpSc[0] * cmath_tanh(sqrtpSc[0])  # Bug in complex tanh in numpy
+                # Bug in complex tanh in numpy
+                dzero = sqrtpSc[0] * cmath_tanh(sqrtpSc[0])  
         d0 = p / self.D
         if B is not None:
             d0 = d0 * B  # B is vector of load efficiency paramters
@@ -126,7 +125,9 @@ class AquiferData:
         return True
     
     def inWhichLayer(self, z):
-        '''Returns -9999 if above top of system, +9999 if below bottom of system, negative for in leaky layer.
+        '''Returns -9999 if above top of system, 
+        +9999 if below bottom of system, 
+        negative for in leaky layer.
         leaky layer -n is on top of aquifer n'''
         if z > self.zt[0]:
             return -9999

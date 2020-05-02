@@ -167,7 +167,7 @@ class Well(WellBase, WellBoreStorageEquation):
     in layer :math:`i` is computed as
     
     .. math::
-        Q_i = 2\pi r_w(h_i - h_w)/c
+        Q_i = 2\pi r_wH_i(h_i - h_w)/c
         
     where :math:`c` is the resistance of the well screen and :math:`h_w` is
     the head inside the well.
@@ -212,7 +212,8 @@ class Well(WellBase, WellBoreStorageEquation):
         self.hdiff = None
         #if hdiff is not None:
         #    self.hdiff = np.atleast_1d(hdiff)
-        #    assert len(self.hdiff) == self.nlayers - 1, 'hdiff needs to have length len(layers) -1'
+        #    assert len(self.hdiff) == self.nlayers - 1, 'hdiff needs to 
+        # have length len(layers) -1'
         #else:
         #    self.hdiff = hdiff
         self.nunknowns = self.nparam
@@ -238,7 +239,7 @@ class HeadWell(WellBase,HeadEquation):
     in layer :math:`i` is computed as
     
     .. math::
-        Q_i = 2\pi r_w(h_i - h_w)/c
+        Q_i = 2\pi r_wH_i(h_i - h_w)/c
         
     where :math:`c` is the resistance of the well screen and :math:`h_w` is
     the head inside the well.
@@ -264,21 +265,26 @@ class HeadWell(WellBase,HeadEquation):
         
     """
     
-    def __init__(self, model, xw=0, yw=0, rw=0.1, tsandh=[(0, 1)], res=0, layers=0, label=None):
+    def __init__(self, model, xw=0, yw=0, rw=0.1, tsandh=[(0, 1)], res=0, 
+                 layers=0, label=None):
         self.storeinput(inspect.currentframe())
         WellBase.__init__(self, model, xw, yw, rw, tsandbc=tsandh, res=res,
                           layers=layers, type='v', name='HeadWell', label=label)
         self.nunknowns = self.nparam
     def initialize(self):
         WellBase.initialize(self)
-        self.parameters = np.zeros((self.model.ngvbc, self.nparam, self.model.npval), 'D')
-        self.pc = self.aq.T[self.layers] # Needed in solving; We solve for a unit head
+        self.parameters = np.zeros((self.model.ngvbc, self.nparam, 
+                                    self.model.npval), 'D')
+        # Needed in solving for a unit head
+        self.pc = self.aq.T[self.layers] 
         
 class TestWell(WellBase):
-    def __init__(self, model, xw=0, yw=0, tsandQ=[(0, 1)], rw=0.1, res=0, layers=0, label=None, fp=None):
+    def __init__(self, model, xw=0, yw=0, tsandQ=[(0, 1)], rw=0.1, res=0, 
+                 layers=0, label=None, fp=None):
         self.storeinput(inspect.currentframe())
-        WellBase.__init__(self, model, xw, yw, rw, tsandbc=tsandQ, res=res, \
-                          layers=layers, type='g', name='DischargeWell', label=label)
+        WellBase.__init__(self, model, xw, yw, rw, tsandbc=tsandQ, res=res,
+                          layers=layers, type='g', name='DischargeWell', 
+                          label=label)
         self.fp = fp
         
     def setflowcoef(self):
