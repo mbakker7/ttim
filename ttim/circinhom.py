@@ -1,28 +1,39 @@
 import numpy as np
 from scipy.special import kv, iv # Needed for K1 in Well class, and in CircInhom
-from cmath import tanh as cmath_tanh
+from .aquifer import AquiferData
+from .element import Element
+from .equation import InhomEquation
   
 class CircInhomData(AquiferData):
-    def __init__(self,model,x0=0,y0=0,R=1,kaq=[1],Haq=[1],c=[1],Saq=[.1],Sll=[.1],topboundary='imp'):
-        AquiferData.__init__(self,model,kaq,Haq,c,Saq,Sll,topboundary)
-        self.x0, self.y0, self.R = float(x0), float(y0), float(R)
-        self.Rsq = self.R**2
+    def __init__(self, model, x0=0, y0=0, R=1, kaq=[1], Haq=[1], c=[1], 
+                 Saq=[.1], Sll=[.1], topboundary='imp'):
+        AquiferData.__init__(self, model, kaq, Haq, c, Saq, Sll, topboundary)
+        self.x0 = float(x0)
+        self.y0 = float(y0)
+        self.R = float(R)
+        self.Rsq = self.R ** 2
         self.area = np.pi * self.Rsq
         self.model.addInhom(self)
-    def isInside(self,x,y):
+    def isInside(self, x, y):
         rv = False
-        if (x-self.x0)**2 + (y-self.y0)**2 < self.Rsq: rv = True
+        if (x - self.x0) ** 2 + (y - self.y0) ** 2 < self.Rsq: 
+            rv = True
         return rv
 
 class CircInhomDataMaq(CircInhomData):
-    def __init__(self,model,x0=0,y0=0,R=1,kaq=[1],z=[1,0],c=[],Saq=[0.001],Sll=[0],topboundary='imp',phreatictop=False):
-        kaq,Haq,c,Saq,Sll = param_maq(kaq,z,c,Saq,Sll,topboundary,phreatictop)
-        CircInhomData.__init__(self,model,x0,y0,R,kaq,Haq,c,Saq,Sll,topboundary)
+    def __init__(self, model, x0=0, y0=0, R=1, kaq=[1], z=[1, 0], c=[],
+                 Saq=[0.001], Sll=[0], topboundary='imp', phreatictop=False):
+        kaq, Haq, c, Saq, Sll = param_maq(kaq, z, c, Saq, Sll, topboundary, 
+                                          phreatictop)
+        CircInhomData.__init__(self, model, x0, y0, R, kaq, Haq, c, Saq, Sll, 
+                               topboundary)
     
 class CircInhomData3D(CircInhomData):
-    def __init__(self,model,x0=0,y0=0,R=1,kaq=[1,1,1],z=[4,3,2,1],Saq=[0.3,0.001,0.001],kzoverkh=[.1,.1,.1],phreatictop=True):
-        kaq,Haq,c,Saq,Sll = param_3d(kaq,z,Saq,kzoverkh,phreatictop)
-        CircInhomData.__init__(self,model,x0,y0,R,kaq,Haq,c,Saq,Sll,'imp')
+    def __init__(self, model, x0=0, y0=0, R=1, kaq=1, z=[4, 3, 2, 1],
+                 Saq=[0.3, 0.001, 0.001], kzoverkh=0.1, phreatictop=True):
+        kaq, Haq, c, Saq, Sll = param_3d(kaq, z, Saq, kzoverkh, phreatictop)
+        CircInhomData.__init__(self, model, x0, y0, R, kaq, Haq, c, Saq, Sll, 
+                               'imp')
     
 class InhomEquation:
     def equation(self):
@@ -127,7 +138,8 @@ class CircInhomRadial(Element, InhomEquation):
         self.ncp = 1
         self.aqin = self.model.aq.findAquiferData(
             self.x0 + (1 - 1e-8) * self.R, self.y0)
-        assert self.aqin.R == self.R, 'TTim Input Error: Radius of CircInhom and CircInhomData must be equal'
+        assert self.aqin.R == self.R, (
+            'Radius of CircInhom and CircInhomData must be equal')
         self.aqout = self.model.aq.findAquiferData(
             self.x0 + (1 + 1e-8) * self.R, self.y0)
         self.setbc()
@@ -169,7 +181,7 @@ class CircInhomRadial(Element, InhomEquation):
                             rv[i, i, j, :] = self.facin[i, j, :] * \
                                 iv(0, r / self.aqin.lab2[i, j, :])
                         else:
-                            print 'using approx'
+                            print('using approx')
                             rv[i, i, j, :] = self.approx.ivratio(
                                 r, self.R, self.aqin.lab2[i, j, :])
         if aq == self.aqout:
@@ -182,8 +194,8 @@ class CircInhomRadial(Element, InhomEquation):
                                 self.facin[i, j, :] * \
                                 kv(0, r / self.aqout.lab2[i, j, :])
                         else:
-                            print 'using approx'
-                            rv[self.aqin.Naq + i, i, j, :] = \ 
+                            print('using approx')
+                            rv[self.aqin.Naq + i, i, j, :] = \
                                 self.approx.kvratio(r, self.R, 
                                                     self.aqout.lab2[i, j, :])
         rv.shape = (self.Nparam, aq.Naq, self.model.Np)
@@ -215,20 +227,31 @@ class CircInhomRadial(Element, InhomEquation):
             qr.shape = (self.nparam, aq.naq, self.model.np)
             qx[:] = qr * (x-self.x0) / r; qy[:] = qr * (y-self.y0) / r
         if aq == self.aqout:
-            qr = np.zeros((self.Nparam,aq.Naq,self.model.Nin,self.model.Npin),'D')
-            r = np.sqrt( (x-self.x0)**2 + (y-self.y0)**2 )
+            qr = np.zeros((self.Nparam, aq.Naq,
+                           self.model.Nin, self.model.Npin), 'D')
+            r = np.sqrt((x-self.x0) ** 2 + (y - self.y0) ** 2)
             for i in range(self.aqout.Naq):
                 for j in range(self.model.Nin):
-                    if abs(r-self.R) / abs(self.aqout.lab2[i,j,0]) < self.Rzero:
+                    if abs(r - self.R) / abs(self.aqout.lab2[i, j, 0]) < self.Rzero:
                         if self.circ_out_small[i,j]:
-                            qr[self.aqin.Naq+i,i,j,:] = self.facin[i,j,:] * kv( 1, r / self.aqout.lab2[i,j,:] ) / self.aqout.lab2[i,j,:]
+                            qr[self.aqin.Naq + i, i, j, :] = \
+                                self.facin[i, j, :] * \
+                                kv(1, r / self.aqout.lab2[i, j, :]) / \
+                                self.aqout.lab2[i, j, :]
                         else:
-                            qr[self.aqin.Naq+i,i,j,:] = self.approx.kvratiop(r,self.R,self.aqout.lab2[i,j,:]) / self.aqout.lab2[i,j,:]
-            qr.shape = (self.Nparam,aq.Naq,self.model.Np)
-            qx[:] = qr * (x-self.x0) / r; qy[:] = qr * (y-self.y0) / r
-        return qx,qy
+                            qr[self.aqin.Naq + i, i, j, :] = \
+                                self.approx.kvratiop(r, self.R,
+                                self.aqout.lab2[i, j, :]) / \
+                                self.aqout.lab2[i, j, :]
+            qr.shape = (self.Nparam, aq.Naq, self.model.Np)
+            qx[:] = qr * (x - self.x0) / r
+            qy[:] = qr * (y - self.y0) / r
+        return qx, qy
+    
     def layout(self):
-        return 'line', self.x0 + self.R * np.cos(np.linspace(0,2*np.pi,100)), self.y0 + self.R * np.sin(np.linspace(0,2*np.pi,100))
+        alpha = np.linspace(0, 2 * np.pi, 100)
+        return 'line', self.x0 + self.R * np.cos(alpha), \
+                       self.y0 + self.R * np.sin(alpha)
                 
 class CircInhom(Element,InhomEquation):
     def __init__(self,model,x0=0,y0=0,R=1.0,order=0,label=None,test=False):
@@ -262,8 +285,8 @@ class CircInhom(Element,InhomEquation):
                 # When the circle is too big, an assertion is thrown. In the future, the approximation of the ratio of bessel functions needs to be completed
                 # For now, the logic is there, but not used
                 if self.test:
-                    print 'inside  relative radius: ',self.R / abs(self.aqin.lab2[i,j,0])
-                    print 'outside relative radius: ',self.R / abs(self.aqout.lab2[i,j,0])
+                    print('inside  relative radius: ',self.R / abs(self.aqin.lab2[i,j,0]))
+                    print('outside relative radius: ',self.R / abs(self.aqout.lab2[i,j,0]))
                 #assert self.R / abs(self.aqin.lab2[i,j,0]) < self.Rbig, 'TTim input error, Radius too big'
                 #assert self.R / abs(self.aqout.lab2[i,j,0]) < self.Rbig, 'TTim input error, Radius too big'
                 if self.R / abs(self.aqin.lab2[i,j,0]) < self.Rbig:
