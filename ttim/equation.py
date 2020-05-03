@@ -2,7 +2,8 @@ import numpy as np
 
 class HeadEquation:
     def equation(self):
-        '''Mix-in class that returns matrix rows for head-specified conditions. (really written as constant potential element)
+        '''Mix-in class that returns matrix rows for head-specified conditions. 
+        (really written as constant potential element)
         Works for nunknowns = 1
         Returns matrix part nunknowns,neq,npval, complex
         Returns rhs part nunknowns,nvbc,npval, complex
@@ -10,85 +11,110 @@ class HeadEquation:
         Well: q_s = Q / (2*pi*r_w*H)
         LineSink: q_s = sigma / H = Q / (L*H)
         '''
-        mat = np.empty( (self.nunknowns,self.model.neq,self.model.npval), 'D' )
-        rhs = np.zeros( (self.nunknowns,self.model.ngvbc,self.model.npval), 'D' )  # Needs to be initialized to zero
+        mat = np.empty((self.nunknowns, self.model.neq, 
+                        self.model.npval), 'D')
+        # rhs needs be initialized zero
+        rhs = np.zeros((self.nunknowns, self.model.ngvbc, 
+                        self.model.npval), 'D')
         for icp in range(self.ncp):
             istart = icp*self.nlayers
             ieq = 0  
             for e in self.model.elementlist:
                 if e.nunknowns > 0:
-                    mat[istart:istart+self.nlayers,ieq:ieq+e.nunknowns,:] = e.potinflayers(self.xc[icp],self.yc[icp],self.layers)
+                    mat[istart: istart + self.nlayers, 
+                        ieq: ieq + e.nunknowns, :] = e.potinflayers(
+                            self.xc[icp], self.yc[icp], self.layers)
                     if e == self:
-                        for i in range(self.nlayers): mat[istart+i,ieq+istart+i,:] -= self.resfacp[istart+i] * e.dischargeinflayers[istart+i]
+                        for i in range(self.nlayers): 
+                            mat[istart + i, ieq + istart + i, :] -= \
+                                self.resfacp[istart + i] * \
+                                e.dischargeinflayers[istart + i]
                     ieq += e.nunknowns
             for i in range(self.model.ngbc):
-                rhs[istart:istart+self.nlayers,i,:] -= self.model.gbclist[i].unitpotentiallayers(self.xc[icp],self.yc[icp],self.layers)  # Pretty cool that this works, really
+                rhs[istart: istart + self.nlayers, i, :] -= \
+                self.model.gbclist[i].unitpotentiallayers(
+                    self.xc[icp], self.yc[icp], self.layers)
             if self.type == 'v':
                 iself = self.model.vbclist.index(self)
                 for i in range(self.nlayers):
-                    rhs[istart+i,self.model.ngbc+iself,:] = self.pc[istart+i] / self.model.p
+                    rhs[istart + i, self.model.ngbc + iself, :] = \
+                        self.pc[istart + i] / self.model.p
         return mat, rhs
     
 class WellBoreStorageEquation:
     def equation(self):
         '''Mix-in class that returns matrix rows for multi-aquifer element with
-        total given discharge, uniform but unknown head and InternalStorageEquation
+        total given discharge, uniform but unknown head and 
+        InternalStorageEquation
         '''
-        mat = np.zeros( (self.nunknowns,self.model.neq,self.model.npval), 'D' ) # Important to set to zero for some of the equations
-        rhs = np.zeros( (self.nunknowns,self.model.ngvbc,self.model.npval), 'D' )  # Needs to be initialized to zero
+        mat = np.zeros((self.nunknowns, self.model.neq, 
+                        self.model.npval), 'D')
+        rhs = np.zeros((self.nunknowns, self.model.ngvbc,
+                        self.model.npval), 'D')
         ieq = 0
         for e in self.model.elementlist:
             if e.nunknowns > 0:
-                head = e.potinflayers(self.xc[0], self.yc[0], self.layers) \
-                       / self.aq.T[self.layers][:,np.newaxis,np.newaxis]
-                mat[:-1,ieq:ieq+e.nunknowns,:] = head[:-1,:] - head[1:,:]
-                mat[-1,ieq:ieq+e.nunknowns,:] -= np.pi * self.rc**2 * self.model.p * head[0,:]
+                head = e.potinflayers(self.xc[0], self.yc[0], self.layers) / \
+                       self.aq.T[self.layers][:, np.newaxis, np.newaxis]
+                mat[:-1, ieq: ieq + e.nunknowns, :] = head[:-1, :] - head[1:, :]
+                mat[-1, ieq: ieq + e.nunknowns, :] -= np.pi * self.rc**2 * \
+                                                      self.model.p * head[0, :]
                 if e == self:
-                    disterm = self.dischargeinflayers * self.res / (2 * np.pi 
-                        * self.rw * self.aq.Haq[self.layers][:,np.newaxis])
+                    disterm = self.dischargeinflayers * self.res / (2 * np.pi * 
+                        self.rw * self.aq.Haq[self.layers][:, np.newaxis])
                     if self.nunknowns > 1:  # Multiple layers
                         for i in range(self.nunknowns-1):
-                            mat[i,ieq+i,:] -= disterm[i]
-                            mat[i,ieq+i+1,:] += disterm[i+1]
-                    mat[-1,ieq:ieq+self.nunknowns,:] += self.dischargeinflayers
-                    mat[-1,ieq,:] += np.pi * self.rc**2 * self.model.p * disterm[0]
+                            mat[i, ieq + i, :] -= disterm[i]
+                            mat[i, ieq + i + 1, :] += disterm[i + 1]
+                    mat[-1, ieq: ieq + self.nunknowns, :] += \
+                        self.dischargeinflayers
+                    mat[-1, ieq, :] += \
+                        np.pi * self.rc ** 2 * self.model.p * disterm[0]
                 ieq += e.nunknowns
         for i in range(self.model.ngbc):
             head = self.model.gbclist[i].unitpotentiallayers(
-                self.xc[0], self.yc[0], self.layers) \
-                / self.aq.T[self.layers][:, np.newaxis]
+                self.xc[0], self.yc[0], self.layers) / \
+                self.aq.T[self.layers][:, np.newaxis]
             rhs[:-1, i, :] -= head[:-1, :] - head[1:, :]
             rhs[-1, i, :] += np.pi * self.rc ** 2 * self.model.p * head[0, :]
         if self.type == 'v':
             iself = self.model.vbclist.index(self)
-            rhs[-1,self.model.ngbc+iself,:] += self.flowcoef
+            rhs[-1, self.model.ngbc + iself, :] += self.flowcoef
             if self.hdiff is not None:
                 # head[0] - head[1] = hdiff
-                rhs[:-1,self.model.ngbc+iself,:] += \
-                    self.hdiff[:,np.newaxis] / self.model.p  
+                rhs[:-1, self.model.ngbc + iself, :] += \
+                    self.hdiff[:, np.newaxis] / self.model.p  
         return mat, rhs
     
 class HeadEquationNores:
     def equation(self):
-        '''Mix-in class that returns matrix rows for head-specified conditions. (really written as constant potential element)
-        Returns matrix part nunknowns,neq,npval, complex
-        Returns rhs part nunknowns,nvbc,npval, complex
+        '''Mix-in class that returns matrix rows for head-specified conditions. 
+        (really written as constant potential element)
+        Returns matrix part nunknowns, neq, npval, complex
+        Returns rhs part nunknowns, nvbc, npval, complex
         '''
-        mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), 'D')
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), 'D')  # Needs to be initialized to zero
+        mat = np.empty((self.nunknowns, self.model.neq, 
+                        self.model.npval), 'D')
+        rhs = np.zeros((self.nunknowns, self.model.ngvbc, 
+                        self.model.npval), 'D')
         for icp in range(self.ncp):
             istart = icp * self.nlayers
             ieq = 0  
             for e in self.model.elementlist:
                 if e.nunknowns > 0:
-                    mat[istart:istart+self.nlayers, ieq:ieq+e.nunknowns,:] = e.potinflayers(self.xc[icp], self.yc[icp], self.layers)
+                    mat[istart: istart + self.nlayers, 
+                        ieq: ieq + e.nunknowns, :] = e.potinflayers(
+                        self.xc[icp], self.yc[icp], self.layers)
                     ieq += e.nunknowns
             for i in range(self.model.ngbc):
-                rhs[istart:istart+self.nlayers,i,:] -= self.model.gbclist[i].unitpotentiallayers(self.xc[icp],self.yc[icp],self.layers)  # Pretty cool that this works, really
+                rhs[istart: istart + self.nlayers, i, :] -= \
+                    self.model.gbclist[i].unitpotentiallayers(
+                    self.xc[icp], self.yc[icp], self.layers)
             if self.type == 'v':
                 iself = self.model.vbclist.index(self)
                 for i in range(self.nlayers):
-                    rhs[istart+i,self.model.ngbc+iself,:] = self.pc[istart+i] / self.model.p
+                    rhs[istart + i, self.model.ngbc + iself, :] = \
+                        self.pc[istart + i] / self.model.p
         return mat, rhs
     
 class LeakyWallEquation:
@@ -97,23 +123,37 @@ class LeakyWallEquation:
         Returns matrix part nunknowns,neq,npval, complex
         Returns rhs part nunknowns,nvbc,npval, complex
         '''
-        mat = np.empty( (self.nunknowns,self.model.neq,self.model.npval), 'D' )
-        rhs = np.zeros( (self.nunknowns,self.model.ngvbc,self.model.npval), 'D' )  # Needs to be initialized to zero
+        mat = np.empty((self.nunknowns, self.model.neq,
+                        self.model.npval), 'D')
+        rhs = np.zeros((self.nunknowns, self.model.ngvbc,
+                        self.model.npval), 'D')
         for icp in range(self.ncp):
-            istart = icp*self.nlayers
+            istart = icp * self.nlayers
             ieq = 0  
             for e in self.model.elementlist:
                 if e.nunknowns > 0:
-                    qx,qy = e.disvecinflayers(self.xc[icp],self.yc[icp],self.layers)
-                    mat[istart:istart+self.nlayers,ieq:ieq+e.nunknowns,:] = qx * self.cosout[icp] + qy * self.sinout[icp]
+                    qx, qy = e.disvecinflayers(self.xc[icp], self.yc[icp], 
+                                               self.layers)
+                    mat[istart: istart + self.nlayers, 
+                        ieq: ieq + e.nunknowns, :] = \
+                        qx * self.cosout[icp] + qy * self.sinout[icp]
                     if e == self:
-                        hmin = e.potinflayers(self.xcneg[icp],self.ycneg[icp],self.layers) / self.aq.T[self.layers][:,np.newaxis,np.newaxis]
-                        hplus = e.potinflayers(self.xc[icp],self.yc[icp],self.layers) / self.aq.T[self.layers][:,np.newaxis,np.newaxis]
-                        mat[istart:istart+self.nlayers,ieq:ieq+e.nunknowns,:] -= self.resfac[:,np.newaxis,np.newaxis] * (hplus-hmin)
+                        hmin = e.potinflayers(
+                            self.xcneg[icp], self.ycneg[icp], self.layers) / \
+                            self.aq.T[self.layers][: ,np.newaxis, np.newaxis]
+                        hplus = e.potinflayers(
+                            self.xc[icp], self.yc[icp], self.layers) / \
+                            self.aq.T[self.layers][:, np.newaxis, np.newaxis]
+                        mat[istart:istart + self.nlayers, 
+                            ieq: ieq + e.nunknowns, :] -= \
+                            self.resfac[:, np.newaxis, np.newaxis] * \
+                            (hplus - hmin)
                     ieq += e.nunknowns
             for i in range(self.model.ngbc):
-                qx,qy = self.model.gbclist[i].unitdisveclayers(self.xc[icp],self.yc[icp],self.layers)
-                rhs[istart:istart+self.nlayers,i,:] -=  qx * self.cosout[icp] + qy * self.sinout[icp]
+                qx, qy = self.model.gbclist[i].unitdisveclayers(
+                    self.xc[icp], self.yc[icp], self.layers)
+                rhs[istart: istart + self.nlayers, i, :] -=  \
+                    qx * self.cosout[icp] + qy * self.sinout[icp]
             #if self.type == 'v':
             #    iself = self.model.vbclist.index(self)
             #    for i in range(self.nlayers):
