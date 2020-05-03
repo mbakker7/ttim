@@ -24,8 +24,7 @@ class Element:
         #
         tsandbc = np.atleast_2d(tsandbc).astype('d')
         tsandbc_error = "tsandQ or tsandh need to be 2D lists" + \
-                        " or arrays like"
-        [(0,1),(2,5),(8,0)] "
+                        " or arrays, like [(0, 1), (2, 5), (8, 0)] "
         assert tsandbc.shape[1] == 2, tsandbc_error
         self.tstart, self.bcin = tsandbc[:,0] - self.model.tstart, tsandbc[:,1]
         if self.tstart[0] > 0:
