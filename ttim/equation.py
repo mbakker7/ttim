@@ -157,7 +157,8 @@ class LeakyWallEquation:
             #if self.type == 'v':
             #    iself = self.model.vbclist.index(self)
             #    for i in range(self.nlayers):
-            #        rhs[istart+i,self.model.ngbc+iself,:] = self.pc[istart+i] / self.model.p
+            #        rhs[istart+i,self.model.ngbc+iself,:] = \
+            #             self.pc[istart+i] / self.model.p
         return mat, rhs
     
 class MscreenEquation:
@@ -318,4 +319,50 @@ class MscreenDitchEquation:
             # value of rhs
             if self.Astorage is not None: 
                 rhs[-1, self.model.ngbc + iself, :] += rhslast
+        return mat, rhs
+    
+class InhomEquation:
+    def equation(self):
+        '''Mix-in class that returns matrix rows for inhomogeneity conditions'''
+        mat = np.zeros((self.nunknowns, self.model.neq,
+                        self.model.np), 'D')
+        rhs = np.zeros((self.nunknowns, self.model.ngvbc,
+                        self.model.np), 'D')
+        for icp in range(self.ncp):
+            istart = icp * 2 * self.nlayers
+            ieq = 0  
+            for e in self.model.elementList:
+                if e.nunknowns > 0:
+                    mat[istart: istart + self.nlayers,
+                        ieq: ieq + e.nunknowns, :] = \
+                    e.potinflayers(self.xc[icp], self.yc[icp], 
+                                   self.layers, self.aqin) / \
+                    self.aqin.T[self.layers][:, np.newaxis, np.newaxis] - \
+                    e.potinflayers(self.xc[icp], self.yc[icp], 
+                                   self.layers, self.aqout) / \
+                    self.aqout.T[self.layers][:, np.newaxis, np.newaxis]
+                    qxin, qyin = e.disinflayers(
+                        self.xc[icp], self.yc[icp], self.layers, self.aqin)
+                    qxout, qyout = e.disinflayers(
+                        self.xc[icp], self.yc[icp], self.layers, self.aqout)
+                    mat[istart + self.nlayers: istart + 2 * self.nlayers,
+                        ieq: ieq + e.nunknowns, :] = \
+                        (qxin - qxout) * np.cos(self.thetacp[icp]) + \
+                        (qyin - qyout) * np.sin(self.thetacp[icp])
+                    ieq += e.nunknowns
+            for i in range(self.model.ngbc):
+                rhs[istart: istart + self.nlayers, i, :] -= (
+                    self.model.gbclist[i].unitpotentiallayers(
+                    self.xc[icp], self.yc[icp], self.layers, self.aqin) /
+                    self.aqin.T[self.layers][:, np.newaxis] - 
+                    self.model.gbclist[i].unitpotentiallayers(
+                    self.xc[icp], self.yc[icp], self.layers, self.aqout) /
+                    self.aqout.T[self.layers][:, np.newaxis])
+                qxin, qyin = self.model.gbclist[i].unitdischargelayers(
+                    self.xc[icp], self.yc[icp], self.layers, self.aqin)
+                qxout,qyout = self.model.gbclist[i].unitdischargelayers(
+                    self.xc[icp], self.yc[icp], self.layers, self.aqout)
+                rhs[istart + self.nlayers: istart + 2 * self.nlayers, i, :] -= \
+                    (qxin - qxout) * np.cos(self.thetacp[icp]) + \
+                    (qyin - qyout) * np.sin(self.thetacp[icp])
         return mat, rhs

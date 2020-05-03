@@ -158,12 +158,13 @@ class LineSinkBase(Element):
 class LineSink(LineSinkBase):
     '''LineSink with non-zero and potentially variable discharge through time
     really only used for testing'''
-    def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandQ=[(0, 1)], \
+    def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandQ=[(0, 1)],
                  res=0, wh='H', layers=0, label=None, addtomodel=True):
         self.storeinput(inspect.currentframe())
-        LineSinkBase.__init__(self, model, x1=x1, y1=y1, x2=x2, y2=y2, tsandbc=tsandQ, \
-                              res=res, wh=wh, layers=layers, type='g', name='LineSink', \
-                              label=label,addtomodel=addtomodel)
+        LineSinkBase.__init__(self, model, x1=x1, y1=y1, x2=x2, y2=y2, 
+                              tsandbc=tsandQ, res=res, wh=wh, layers=layers, 
+                              type='g', name='LineSink', label=label,
+                              addtomodel=addtomodel)
 
     
 #class ZeroHeadLineSink(LineSinkBase,HeadEquation):
@@ -179,7 +180,8 @@ class LineSink(LineSinkBase):
     #    
     #def initialize(self):
     #    LineSinkBase.initialize(self)
-    #    self.parameters = np.zeros( (self.model.ngvbc, self.nparam, self.model.npval), 'D' )
+    #    self.parameters = np.zeros((self.model.ngvbc, self.nparam, 
+    #                                self.model.npval), 'D')
         
 class HeadLineSink(LineSinkBase, HeadEquation):
     """
@@ -217,9 +219,12 @@ class HeadLineSink(LineSinkBase, HeadEquation):
         resistance of line-sink
     wh : scalar or str
         distance over which water enters line-sink
-        if 'H': (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)
-        if '2H': distance is twice the thickness of the aquifer layer (when flow comes from both sides)
-        if scalar: the width of the stream that partially penetrates the aquifer layer
+        if 'H': (default) distance is equal to the thickness of the aquifer 
+        layer (when flow comes mainly from one side)
+        if '2H': distance is twice the thickness of the aquifer layer (when 
+        flow comes from both sides)
+        if scalar: the width of the stream that partially penetrates the 
+        aquifer layer
     layers : scalar, list or array
         layer(s) in which element is placed
         if scalar: element is placed in this layer
@@ -234,7 +239,7 @@ class HeadLineSink(LineSinkBase, HeadEquation):
     
     """
     
-    def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandh=[(0, 1)], \
+    def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandh=[(0, 1)],
                  res=0, wh='H', layers=0, label=None, addtomodel=True):
         self.storeinput(inspect.currentframe())
         if tsandh == 'fixed':
@@ -242,21 +247,23 @@ class HeadLineSink(LineSinkBase, HeadEquation):
             etype = 'z'
         else:
             etype = 'v'
-        LineSinkBase.__init__(self, model, x1=x1, y1=y1, x2=x2, y2=y2, \
-                              tsandbc=tsandh, res=res, wh=wh, layers=layers, \
-                              type=etype, name='HeadLineSink', label=label, \
+        LineSinkBase.__init__(self, model, x1=x1, y1=y1, x2=x2, y2=y2,
+                              tsandbc=tsandh, res=res, wh=wh, layers=layers,
+                              type=etype, name='HeadLineSink', label=label,
                               addtomodel=addtomodel)
         self.nunknowns = self.nparam
 
     def initialize(self):
         LineSinkBase.initialize(self)
-        self.parameters = np.zeros((self.model.ngvbc, self.nparam, self.model.npval), 'D')
-        self.pc = self.aq.T[self.layers] # Needed in solving; We solve for a unit head
+        self.parameters = np.zeros((self.model.ngvbc, self.nparam, 
+                                    self.model.npval), 'D')
+        # Needed in solving, solve for a unit head
+        self.pc = self.aq.T[self.layers] 
         
 class LineSinkStringBase(Element):
     def __init__(self, model, tsandbc=[(0, 1)], layers=0, type='',
                  name='LineSinkStringBase', label=None):
-        Element.__init__(self, model, nparam=1, nunknowns=0, layers=layers, \
+        Element.__init__(self, model, nparam=1, nunknowns=0, layers=layers,
                          tsandbc=tsandbc, type=type, name=name, label=label)
         self.lslist = []
 
@@ -272,32 +279,45 @@ class LineSinkStringBase(Element):
             ls.initialize()
             self.xls[i,:] = [ls.x1,ls.x2]
             self.yls[i,:] = [ls.y1,ls.y2]
-        self.xlslayout = np.hstack((self.xls[:,0],self.xls[-1,1])) # Only used for layout when it is a continuous string
+        # Only used for layout when it is a continuous string
+        self.xlslayout = np.hstack((self.xls[:,0],self.xls[-1,1])) 
         self.ylslayout = np.hstack((self.yls[:,0],self.yls[-1,1]))
-        self.aq = self.model.aq.find_aquifer_data(self.lslist[0].xc, self.lslist[0].yc)
-        self.parameters = np.zeros((self.model.ngvbc, self.nparam, self.model.npval), 'D')
+        self.aq = self.model.aq.find_aquifer_data(
+            self.lslist[0].xc, self.lslist[0].yc)
+        self.parameters = np.zeros((self.model.ngvbc, self.nparam, 
+                                    self.model.npval), 'D')
         self.setbc()
-        # As parameters are only stored for the element not the list, we need to combine the following
+        # As parameters are only stored for the element not the list
+        # we need to combine the following
         self.resfach = []; self.resfacp = []
         for ls in self.lslist:
             ls.initialize()
             self.resfach.extend( ls.resfach.tolist() )  # Needed in solving
             self.resfacp.extend( ls.resfacp.tolist() )  # Needed in solving
-        self.resfach = np.array(self.resfach); self.resfacp = np.array(self.resfacp)
-        self.dischargeinf = np.zeros((self.nparam, self.aq.naq, self.model.npval), 'D')
+        self.resfach = np.array(self.resfach)
+        self.resfacp = np.array(self.resfacp)
+        self.dischargeinf = np.zeros((self.nparam, self.aq.naq, 
+                                      self.model.npval), 'D')
         self.dischargeinflayers = np.zeros((self.nparam, self.model.npval), 'D')
         self.xc, self.yc = np.zeros(self.nls), np.zeros(self.nls)
         for i in range(self.nls):
-            self.dischargeinf[i*self.nlayers:(i + 1) * self.nlayers, :] = self.lslist[i].dischargeinf[:]
-            self.dischargeinflayers[i*self.nlayers:(i + 1) * self.nlayers, :] = self.lslist[i].dischargeinflayers
-            self.xc[i], self.yc[i] = self.lslist[i].xc, self.lslist[i].yc
+            self.dischargeinf[
+                i * self.nlayers: (i + 1) * self.nlayers, :] = \
+                self.lslist[i].dischargeinf[:]
+            self.dischargeinflayers[
+                i * self.nlayers: (i + 1) * self.nlayers, :] = \
+                self.lslist[i].dischargeinflayers
+            self.xc[i] = self.lslist[i].xc
+            self.yc[i] = self.lslist[i].yc
 
-    def potinf(self,x,y,aq=None):
-        '''Returns array (nunknowns,Nperiods)'''
-        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
+    def potinf(self, x, y,aq=None):
+        '''Returns array (nunknowns, Nperiods)'''
+        if aq is None: 
+            aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
         for i in range(self.nls):
-            rv[i*self.nlayers:(i + 1) * self.nlayers, :] = self.lslist[i].potinf(x, y, aq)
+            rv[i * self.nlayers: (i + 1) * self.nlayers, :] = \
+                self.lslist[i].potinf(x, y, aq)
         return rv
 
     def disvecinf(self,x,y,aq=None):
@@ -306,9 +326,9 @@ class LineSinkStringBase(Element):
         rvx = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
         rvy = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
         for i in range(self.nls):
-            qx,qy = self.lslist[i].disvecinf(x,y,aq)
-            rvx[i*self.nlayers:(i + 1) * self.nlayers, :] = qx
-            rvy[i*self.nlayers:(i + 1) * self.nlayers, :] = qy
+            qx, qy = self.lslist[i].disvecinf(x, y, aq)
+            rvx[i * self.nlayers: (i + 1) * self.nlayers, :] = qx
+            rvy[i * self.nlayers: (i + 1) * self.nlayers, :] = qy
         return rvx,rvy
 
     def headinside(self, t, derivative=0):
@@ -328,9 +348,12 @@ class LineSinkStringBase(Element):
         """
         
         rv = np.zeros((self.nls, self.nlayers, np.size(t)))
-        Q = self.discharge_list(t,derivative=derivative)
+        Q = self.discharge_list(t, derivative=derivative)
         for i in range(self.nls):
-            rv[i,:,:] = self.model.head(self.xc[i],self.yc[i],t,derivative=derivative)[self.layers] - self.resfach[i * self.nlayers:(i + 1) * self.nlayers, np.newaxis] * Q[i]
+            rv[i, :, :] = self.model.head(self.xc[i], self.yc[i], t,
+                derivative=derivative)[self.layers] - \
+                self.resfach[i * self.nlayers: (i + 1) * self.nlayers,
+                             np.newaxis] * Q[i]
         return rv
     
     def plot(self):
@@ -338,7 +361,8 @@ class LineSinkStringBase(Element):
 
     def run_after_solve(self):
         for i in range(self.nls):
-            self.lslist[i].parameters[:] = self.parameters[:,i*self.nlayers:(i + 1) * self.nlayers, :]
+            self.lslist[i].parameters[:] = \
+                self.parameters[:, i * self.nlayers:(i + 1) * self.nlayers, :]
 
     def discharge_list(self,t,derivative=0):
         """The discharge of each line-sink in the string
@@ -391,9 +415,12 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
         resistance of line-sink
     wh : scalar or str
         distance over which water enters line-sink
-        if 'H': (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)
-        if '2H': distance is twice the thickness of the aquifer layer (when flow comes from both sides)
-        if scalar: the width of the stream that partially penetrates the aquifer layer
+        if 'H': (default) distance is equal to the thickness of the aquifer 
+        layer (when flow comes mainly from one side)
+        if '2H': distance is twice the thickness of the aquifer layer (when 
+        flow comes from both sides)
+        if scalar: the width of the stream that partially penetrates the 
+        aquifer layer
     layers : scalar, list or array
         layer(s) in which element is placed
         if scalar: element is placed in this layer
@@ -408,15 +435,16 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
     
     """
     
-    def __init__(self, model, xy=[(-1, 0), (1, 0)], tsandh=[(0, 1)], \
+    def __init__(self, model, xy=[(-1, 0), (1, 0)], tsandh=[(0, 1)],
                  res=0, wh='H', layers=0, label=None):
         if tsandh == 'fixed':
             tsandh = [(0, 0)]
             etype = 'z'
         else:
             etype = 'v'
-        LineSinkStringBase.__init__(self, model, tsandbc=tsandh, layers=layers, \
-                                    type=etype, name='HeadLineSinkString', label=label)
+        LineSinkStringBase.__init__(self, model, tsandbc=tsandh, layers=layers,
+                                    type=etype, name='HeadLineSinkString', 
+                                    label=label)
         xy = np.atleast_2d(xy).astype('d')
         self.x = xy[:, 0]
         self.y = xy[:, 1]
@@ -429,11 +457,10 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
     def initialize(self):
         self.lslist = []
         for i in range(self.nls):
-            self.lslist.append(HeadLineSink(self.model, x1=self.x[i], y1=self.y[i], \
-                                            x2=self.x[i + 1], y2=self.y[i + 1], \
-                                            tsandh=self.tsandh, res=self.res, wh=self.wh, \
-                                            layers=self.layers, label=None, \
-                                            addtomodel=False) )
+            self.lslist.append(HeadLineSink(
+                self.model, x1=self.x[i], y1=self.y[i], x2=self.x[i + 1], 
+                y2=self.y[i + 1], tsandh=self.tsandh, res=self.res, wh=self.wh,                 
+                layers=self.layers, label=None, addtomodel=False))
         LineSinkStringBase.initialize(self)
         self.pc = np.zeros(self.nls * self.nlayers)
         for i in range(self.nls):
