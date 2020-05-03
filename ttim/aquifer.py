@@ -143,7 +143,7 @@ class AquiferData:
 class Aquifer(AquiferData):
     def __init__(self, model, kaq, Haq, Hll, c, Saq, Sll, topboundary, 
                  phreatictop, kzoverkh=None, model3d=False):
-        AquiferData.__init__(self, model, kaq, Haq, Hll, c, Saq, Sll, \
+        AquiferData.__init__(self, model, kaq, Haq, Hll, c, Saq, Sll,
                              topboundary, phreatictop, kzoverkh, model3d)
         self.inhomlist = []
         self.area = 1e300 # Needed to find smallest inhomogeneity

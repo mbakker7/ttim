@@ -9,7 +9,8 @@ class Element:
         'v': boundary condition is variable through time
         'z': boundary condition is zero through time
         Definition of nlayers, Ncp, Npar, nunknowns:
-        nlayers: Number of layers that the element is screened in, set in Element
+        nlayers: Number of layers that the element is screened in, 
+        as set in Element
         Ncp: Number of control points along the element
         nparam: Number of parameters, commonly nlayers * Ncp
         nunknowns: Number of unknown parameters, commonly zero or Npar
@@ -22,13 +23,17 @@ class Element:
         self.nlayers = len(self.layers)
         #
         tsandbc = np.atleast_2d(tsandbc).astype('d')
-        assert tsandbc.shape[1] == 2, "TTim input error: tsandQ or tsandh need to be 2D lists or arrays like [(0,1),(2,5),(8,0)] "
+        tsandbc_error = "tsandQ or tsandh need to be 2D lists" + \
+                        " or arrays like" +
+        [(0,1),(2,5),(8,0)] "
+        assert tsandbc.shape[1] == 2, tsandbc_error
         self.tstart, self.bcin = tsandbc[:,0] - self.model.tstart, tsandbc[:,1]
         if self.tstart[0] > 0:
             self.tstart = np.hstack((np.zeros(1), self.tstart))
             self.bcin = np.hstack((np.zeros(1), self.bcin))
         #
-        self.type = type  # 'z' boundary condition through time or 'v' boundary condition through time
+        # 'z' boundary condition thru time or 'v' boundary condition thru time
+        self.type = type  
         self.name = name
         self.label = label
         if self.label is not None:
@@ -46,9 +51,12 @@ class Element:
         self.ntstart = len(self.tstart)
         
     def initialize(self):
-        '''Initialization of terms that cannot be initialized before other elements or the aquifer is defined.
-        As we don't want to require a certain order of entering elements, these terms are initialized when Model.solve is called 
-        The initialization class needs to be overloaded by all derived classes'''
+        '''Initialization of terms that cannot be initialized before other 
+        elements or the aquifer is defined.
+        As we don't want to require a certain order of entering elements, 
+        these terms are initialized when Model.solve is called 
+        The initialization class needs to be overloaded 
+        by all derived classes'''
         pass
     
     def potinf(self, x, y, aq=None):
@@ -91,13 +99,15 @@ class Element:
     
     # Functions used to build equations
     def potinflayers(self, x, y, layers=0, aq=None):
-        '''layers can be scalar, list, or array. returns array of size (len(layers),nparam,npval)
+        '''layers can be scalar, list, or array. 
+        returns array of size (len(layers),nparam,npval)
         only used in building equations'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         pot = self.potinf(x, y, aq)
         rv = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec, 2)
-        rv = rv.swapaxes(0, 1) # As the first axes needs to be the number of layers
+        # first axis needs to be the number of layers
+        rv = rv.swapaxes(0, 1) 
         return rv[layers, :]
     
     def potentiallayers(self, x, y, layers=0, aq=None):
@@ -119,15 +129,17 @@ class Element:
         return phi[layers, :]
     
     def disvecinflayers(self, x, y, layers=0, aq=None):
-        '''layers can be scalar, list, or array. returns 2 arrays of size (len(layers),nparam,npval)
+        '''layers can be scalar, list, or array. 
+        returns 2 arrays of size (len(layers),nparam,npval)
         only used in building equations'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.disvecinf(x, y, aq)
         rvx = np.sum(qx[:, np.newaxis, :, :] * aq.eigvec, 2)
         rvy = np.sum(qy[:, np.newaxis, :, :] * aq.eigvec, 2)
+        # first axis needs to be the number of layers
         rvx = rvx.swapaxes(0, 1)
-        rvy = rvy.swapaxes(0, 1) # As the first axes needs to be the number of layers
+        rvy = rvy.swapaxes(0, 1)
         return rvx[layers, :], rvy[layers, :]
     
     def disveclayers(self, x, y, layers=0, aq=None):
@@ -167,19 +179,23 @@ class Element:
             screened
             
         """
-        # Could potentially be more efficient if s is pre-computed for all elements, but I don't know if that is worthwhile to store as it is quick now
+        # Could potentially be more efficient if s is pre-computed for 
+        # all elements, but may not be worthwhile to store as it is quick now
         time = np.atleast_1d(t).astype('d')
         if (time[0] < self.model.tmin) or (time[-1] > self.model.tmax):
-            print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
+            print('Warning, some of the times are smaller than tmin or' + \
+                  'larger than tmax; zeros are substituted')
         rv = np.zeros((self.nlayers, np.size(time)))
         if self.type == 'g':
             s = self.dischargeinflayers * self.model.p ** derivative
             for itime in range(self.ntstart):
                 time -=  self.tstart[itime]
                 for i in range(self.nlayers):
-                    rv[i] += self.bc[itime] * self.model.inverseLapTran(s[i], time)
+                    rv[i] += self.bc[itime] * \
+                             self.model.inverseLapTran(s[i], time)
         else:
-            s = np.sum(self.parameters[:, :, np.newaxis, :] * self.dischargeinf, 1)
+            s = np.sum(self.parameters[:, :, np.newaxis, :] * 
+                       self.dischargeinf, 1)
             s = np.sum(s[:, np.newaxis, :, :] * self.aq.eigvec, 2)
             s = s[:, self.layers, :] * self.model.p ** derivative
             for k in range(self.model.ngvbc):
@@ -188,7 +204,8 @@ class Element:
                     t = time - e.tstart[itime]
                     if t[-1] >= self.model.tmin:  # Otherwise all zero
                         for i in range(self.nlayers):
-                            rv[i] += e.bc[itime] * self.model.inverseLapTran(s[k, i], t)
+                            rv[i] += e.bc[itime] * \
+                                     self.model.inverseLapTran(s[k, i], t)
         return rv
         
     def headinside(self, t):
@@ -202,7 +219,8 @@ class Element:
         rv = self.name + '(' + self.model.modelname + ',\n'
         for key in self.inputargs[2:]:  # The first two are ignored
             if isinstance(self.inputvalues[key],np.ndarray):
-                rv += key + ' = ' + np.array2string(self.inputvalues[key],separator=',') + ',\n'
+                rv += key + ' = ' + np.array2string(self.inputvalues[key],
+                                                    separator=',') + ',\n'
             elif isinstance(self.inputvalues[key],str):                
                 rv += key + " = '" + self.inputvalues[key] + "',\n"
             else:
