@@ -467,19 +467,30 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
             self.pc[i * self.nlayers:(i + 1) * self.nlayers] = self.lslist[i].pc
             
 class MscreenLineSink(LineSinkBase,MscreenEquation):
-    '''MscreenLineSink that varies through time. Must be screened in multiple layers but heads are same in all screened layers'''
-    def __init__(self,model,x1=-1,y1=0,x2=1,y2=0,tsandQ=[(0.0,1.0)],res=0.0,wh='H',layers=[0,1],vres=0.0,wv=1.0,label=None,addtomodel=True):
-        #assert len(layers) > 1, "TTim input error: number of layers for MscreenLineSink must be at least 2"
+    '''MscreenLineSink that varies through time. 
+    Must be screened in multiple layers but heads are same 
+    in all screened layers'''
+    def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandQ=[(0.0, 1.0)],
+                 res=0.0, wh='H', layers=[0, 1], vres=0.0, wv=1.0, label=None,
+                 addtomodel=True):
+        #assert len(layers) > 1, "number of layers must be at least 2"
         self.storeinput(inspect.currentframe())
-        LineSinkBase.__init__(self,model,x1=x1,y1=y1,x2=x2,y2=y2,tsandbc=tsandQ,res=res,wh=wh,layers=layers,type='v',name='MscreenLineSink',label=label,addtomodel=addtomodel)
+        LineSinkBase.__init__(self, model, x1=x1, y1=y1, x2=x2, y2=y2, 
+                              tsandbc=tsandQ, res=res, wh=wh, layers=layers, 
+                              type='v', name='MscreenLineSink', label=label, 
+                              addtomodel=addtomodel)
         self.nunknowns = self.nparam
-        self.vres = np.atleast_1d(vres)  # Vertical resistance inside line-sink
+        # Vertical resistance inside line-sink
+        self.vres = np.atleast_1d(vres)  
         self.wv = wv
-        if len(self.vres) == 1: self.vres = self.vres[0] * np.ones(self.nlayers - 1)
+        if len(self.vres) == 1: 
+            self.vres = self.vres[0] * np.ones(self.nlayers - 1)
     def initialize(self):
         LineSinkBase.initialize(self)
-        self.parameters = np.zeros((self.model.ngvbc, self.nparam, self.model.npval), 'D')
-        self.vresfac = self.vres / (self.wv * self.L)  # Qv = (hn - hn-1) / vresfac[n-1]
+        self.parameters = np.zeros((self.model.ngvbc, self.nparam, 
+                                    self.model.npval), 'D')
+        # Qv = (hn - hn-1) / vresfac[n - 1]
+        self.vresfac = self.vres / (self.wv * self.L)  
             
 class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
     """
@@ -513,9 +524,12 @@ class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
         resistance of line-sink
     wh : scalar or str
         distance over which water enters line-sink
-        if 'H': (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)
-        if '2H': distance is twice the thickness of the aquifer layer (when flow comes from both sides)
-        if scalar: the width of the stream that partially penetrates the aquifer layer
+        if 'H': (default) distance is equal to the thickness of the aquifer 
+        layer (when flow comes mainly from one side)
+        if '2H': distance is twice the thickness of the aquifer layer (when 
+        flow comes from both sides)
+        if scalar: the width of the stream that partially penetrates the 
+        aquifer layer
     layers : scalar, list or array
         layer(s) in which element is placed
         if scalar: element is placed in this layer
@@ -525,28 +539,31 @@ class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
     
     """
     
-    def __init__(self, model, xy=[(-1, 0), (1, 0)], tsandQ=[(0, 1)], res=0, \
+    def __init__(self, model, xy=[(-1, 0), (1, 0)], tsandQ=[(0, 1)], res=0,
                  wh='H', layers=0, Astorage=None, label=None):
         self.storeinput(inspect.currentframe())
-        LineSinkStringBase.__init__(self, model, tsandbc=tsandQ, layers=layers, \
-                                    type='v', name='LineSinkDitchString', \
+        LineSinkStringBase.__init__(self, model, tsandbc=tsandQ, layers=layers,
+                                    type='v', name='LineSinkDitchString',
                                     label=label)
         xy = np.atleast_2d(xy).astype('d')
         self.x,self.y = xy[:, 0], xy[:, 1]
         self.nls = len(self.x) - 1
         for i in range(self.nls):
-            self.lslist.append(MscreenLineSink(model, x1=self.x[i], y1=self.y[i], \
-                                               x2=self.x[i + 1], y2=self.y[i + 1], \
-                                               tsandQ=tsandQ, res=res, wh=wh,
-                                               layers=layers, label=None, addtomodel=False))
+            self.lslist.append(MscreenLineSink(
+                model, x1=self.x[i], y1=self.y[i], x2=self.x[i + 1], 
+                y2=self.y[i + 1], tsandQ=tsandQ, res=res, wh=wh, layers=layers, 
+                label=None, addtomodel=False))
         self.Astorage = Astorage
         self.model.addelement(self)
     def initialize(self):
         LineSinkStringBase.initialize(self)
-        self.vresfac = np.zeros_like(self.resfach)  # set to zero, as I don't quite know what it would mean if it is not zero
+        # set vresfac to zero, as I don't quite know what it would mean if 
+        # it is not zero
+        self.vresfac = np.zeros_like(self.resfach)  
 
 class LineSinkHoBase(Element):
-    '''Higher Order LineSink Base Class. All Higher Order Line Sink elements are derived from this class'''
+    '''Higher Order LineSink Base Class. All Higher Order Line Sink elements 
+    are derived from this class'''
     def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandbc=[(0.0,1.0)],
                  res=0.0, wh='H', order=0, layers=0, type='',
                  name='LineSinkBase', label=None, addtomodel=True):
@@ -561,7 +578,6 @@ class LineSinkHoBase(Element):
         self.res = res
         self.wh = wh
         if addtomodel: self.model.addelement(self)
-        #self.xa,self.ya,self.xb,self.yb,self.np = np.zeros(1),np.zeros(1),np.zeros(1),np.zeros(1),np.zeros(1,'i')  # needed to call bessel.circle_line_intersection
 
     def __repr__(self):
         return self.name + ' from ' + str((self.x1, self.y1)) + \
@@ -573,10 +589,12 @@ class LineSinkHoBase(Element):
         self.z2 = self.x2 + 1j * self.y2
         self.L = np.abs(self.z1 - self.z2)
         #
-        thetacp = np.arange(np.pi, 0, -np.pi / self.ncp) - 0.5 * np.pi / self.ncp
+        thetacp = np.arange(np.pi, 0, -np.pi / self.ncp) - \
+            0.5 * np.pi / self.ncp
         Zcp = np.zeros(self.ncp, 'D')
         Zcp.real = np.cos(thetacp)
-        Zcp.imag = 1e-6  # control point just on positive site (this is handy later on)
+        # control point just on positive site (this is handy later on)
+        Zcp.imag = 1e-6  
         zcp = Zcp * (self.z2 - self.z1) / 2 + 0.5 * (self.z1 + self.z2)
         self.xc = zcp.real
         self.yc = zcp.imag
@@ -585,21 +603,23 @@ class LineSinkHoBase(Element):
         self.setbc()
         coef = self.aq.coef[self.layers, :]
         self.setflowcoef()
-        self.term = self.flowcoef * coef  # shape (self.nlayers,self.aq.naq,self.model.npval)
-        self.term2 = self.term.reshape(self.nlayers, self.aq.naq, self.model.nint, self.model.npint)
-        #self.term2 = np.empty((self.nparam,self.aq.naq,self.model.nint,self.model.npint),'D')
-        #for i in range(self.nlayers):
-        #    self.term2[i*(self.order+1):(i+1)*(self.order+1),:,:,:] = self.term[i,:,:].reshape((1,self.aq.naq,self.model.nint,self.model.npint))
+        # shape of term (self.nlayers, self.aq.naq, self.model.npval)
+        self.term = self.flowcoef * coef 
+        self.term2 = self.term.reshape(self.nlayers, self.aq.naq, 
+                                       self.model.nint, self.model.npint)
         self.dischargeinf = self.flowcoef * coef
-        self.dischargeinflayers = np.sum(self.dischargeinf * self.aq.eigvec[self.layers, :, :], 1)
+        self.dischargeinflayers = np.sum(self.dischargeinf * 
+                                         self.aq.eigvec[self.layers, :, :], 1)
         if self.wh == 'H':
             self.wh = self.aq.Haq[self.layers]
         elif self.wh == '2H':
             self.wh = 2.0 * self.aq.Haq[self.layers]
         else:
             self.wh = np.atleast_1d(self.wh) * np.ones(self.nlayers)
-        self.resfach = self.res / (self.wh * self.L)  # Q = (h - hls) / resfach
-        self.resfacp = self.resfach * self.aq.T[self.layers]  # Q = (Phi - Phils) / resfacp
+        # Q = (h - hls) / resfach
+        self.resfach = self.res / (self.wh * self.L)  
+        # Q = (Phi - Phils) / resfacp
+        self.resfacp = self.resfach * self.aq.T[self.layers]  
 
     def setflowcoef(self):
         '''Separate function so that this can be overloaded for other types'''
@@ -608,13 +628,15 @@ class LineSinkHoBase(Element):
     def potinf(self,x,y,aq=None):
         '''Can be called with only one x,y value'''
         if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), 'D')
+        rv = np.zeros((self.nparam, aq.naq, self.model.nint, 
+                       self.model.npint), 'D')
         if aq == self.aq:
             pot = np.zeros((self.order + 1, self.model.npint), 'D')
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
                     if self.model.f2py:
-                        if bessel.isinside(self.z1, self.z2, x + y * 1j, self.rzero * self.aq.lababs[i, j]):
+                        if bessel.isinside(self.z1, self.z2, x + y * 1j, 
+                                           self.rzero * self.aq.lababs[i, j]):
                             pot[:,:] = bessel.bessellsv2(x, y, 
                                 self.z1, self.z2, self.aq.lab2[i, j, :], 
                                 self.order, self.rzero * self.aq.lababs[i, j]
@@ -696,14 +718,18 @@ class HeadLineSinkHo(LineSinkHoBase, HeadEquationNores):
             etype = 'z'
         else:
             etype = 'v'
-        LineSinkHoBase.__init__(self, model, x1=x1, y1=y1, x2=x2, y2=y2, tsandbc=tsandh,  \
-                                res=0.0, wh='H', order=order, layers=layers, type=etype,  \
-                                name='HeadLineSinkHo', label=label, addtomodel=addtomodel)
+        LineSinkHoBase.__init__(self, model, x1=x1, y1=y1, x2=x2, y2=y2, 
+                                tsandbc=tsandh,  res=0.0, wh='H', order=order, 
+                                layers=layers, type=etype,  
+                                name='HeadLineSinkHo', label=label, 
+                                addtomodel=addtomodel)
         self.nunknowns = self.nparam
 
     def initialize(self):
         LineSinkHoBase.initialize(self)
-        self.parameters = np.zeros((self.model.ngvbc, self.nparam, self.model.npval), 'D')
+        self.parameters = np.zeros((self.model.ngvbc, self.nparam, 
+                                    self.model.npval), 'D')
         self.pc = np.empty(self.nparam)
         for i, T in enumerate(self.aq.T[self.layers]):
-            self.pc[i::self.nlayers] =  T # Needed in solving; we solve for a unit head
+            # Needed in solving; solve for a unit head
+            self.pc[i::self.nlayers] =  T 
