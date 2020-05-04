@@ -130,9 +130,11 @@ class LineDoubletHoBase(Element):
                                 self.rzero * self.aq.lababs[i, j]) / self.L
                             for k in range(self.nlayers):
                                 rvx[k::self.nlayers, i, j, :] = \
-                                    self.term2[k, i, j, :] * qxqy[:self.order + 1,:]
+                                    self.term2[k, i, j, :] * \
+                                    qxqy[:self.order + 1,:]
                                 rvy[k::self.nlayers, i, j, :] = \
-                                    self.term2[k, i, j, :] * qxqy[self.order + 1:,:]
+                                    self.term2[k, i, j, :] * \
+                                    qxqy[self.order + 1:,:]
                     else:
                         if besselnumba.isinside(self.z1, self.z2, x+y*1j, 
                                            self.rzero*self.aq.lababs[i, j]):
@@ -142,9 +144,11 @@ class LineDoubletHoBase(Element):
                                 self.rzero * self.aq.lababs[i, j]) / self.L
                             for k in range(self.nlayers):
                                 rvx[k::self.nlayers, i, j, :] = \
-                                    self.term2[k, i, j, :] * qxqy[:self.order + 1,:]
+                                    self.term2[k, i, j, :] * \
+                                    qxqy[:self.order + 1,:]
                                 rvy[k::self.nlayers, i, j, :] = \
-                                    self.term2[k, i, j, :] * qxqy[self.order + 1:,:]
+                                    self.term2[k, i, j, :] * \
+                                    qxqy[self.order + 1:,:]
                             
         rvx.shape = (self.nparam, aq.naq, self.model.npval)
         rvy.shape = (self.nparam, aq.naq, self.model.npval)
