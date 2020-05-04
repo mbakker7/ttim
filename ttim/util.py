@@ -27,8 +27,8 @@ class PlotTtim:
             if win is not None:
                 plt.axis(win)
     
-    def xsection(self, x1=0, x2=1, y1=0, y2=0, npoints=100, t=1, layers=0, \
-                 sstart=0, color=None, lw=1, figsize=None, newfig=True, \
+    def xsection(self, x1=0, x2=1, y1=0, y2=0, npoints=100, t=1, layers=0,
+                 sstart=0, color=None, lw=1, figsize=None, newfig=True,
                  legend=True):
         layers = np.atleast_1d(layers)
         if newfig:
@@ -49,8 +49,9 @@ class PlotTtim:
             plt.legend(legendlist)
         #plt.draw()
         
-    def contour(self, win, ngr=20, t=1, layers=0, levels=20, layout=True, labels=False,
-                decimals=0, color=None, newfig=True, figsize=None, legend=True):
+    def contour(self, win, ngr=20, t=1, layers=0, levels=20, layout=True, 
+                labels=False, decimals=0, color=None, newfig=True, 
+                figsize=None, legend=True):
         """Contour plot
         
         Parameters
@@ -109,7 +110,8 @@ class PlotTtim:
         # contour
         cscollectionlist = []
         for i in range(len(layers)):
-            cs = plt.contour(xg, yg, h[i, 0], levels, colors=c[i], linestyles='-')
+            cs = plt.contour(xg, yg, h[i, 0], levels, colors=c[i], 
+                             linestyles='-')
             cscollectionlist.append(cs.collections[0])
             if labels:
                 fmt = '%1.' + str(decimals) + 'f'
