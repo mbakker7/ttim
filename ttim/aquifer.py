@@ -5,6 +5,8 @@ import inspect # Used for storing the input
 class AquiferData:
     def __init__(self, model, kaq, Haq, Hll, c, Saq, Sll, topboundary, 
                  phreatictop, kzoverkh=None, model3d=False):
+        '''kzoverkh and model3d only need to be specified when model
+        is model3d'''
         self.model = model
         self.kaq = np.atleast_1d(kaq).astype('d')
         self.naq = len(self.kaq)
@@ -27,7 +29,7 @@ class AquiferData:
         self.model3d = model3d
         if self.model3d:
             assert self.kzoverkh is not None, \
-                    "model3d specified without kzoverkh"
+                "model3d specified without kzoverkh"
         #self.D = self.T / self.Saq
         self.area = 1e200 # Smaller than default of ml.aq so that inhom is found
     
