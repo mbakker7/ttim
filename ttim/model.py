@@ -178,12 +178,14 @@ class TimModel(PlotTtim):
                                         invlaptrans.invlap(tp, 
                                             self.tintervals[n],
                                             self.tintervals[n + 1],
-                                            pot[k, i , n * self.npint:(n + 1) * self.npint],
+                                            pot[k, i , n * self.npint:
+                                                (n + 1) * self.npint],
                                             self.gamma[n], self.M, nt)
                                     else:
                                         rv[i, it:it + nt] += e.bc[itime] * \
                                         invlap(tp, self.tintervals[n + 1], 
-                                               pot[k, i , n * self.npint:(n + 1) * self.npint],
+                                               pot[k, i , n * self.npint:
+                                                   (n + 1) * self.npint],
                                                self.M)
                             it = it + nt
         return rv
@@ -218,7 +220,8 @@ class TimModel(PlotTtim):
             disy *= self.p ** derivative
         rvx,rvy = np.zeros((Nlayers,len(time))), np.zeros((Nlayers,len(time)))
         if (time[0] < self.tintervals[0]) or (time[-1] > self.tintervals[-1]):
-            print('Warning, some of the times are smaller than tmin or larger than tmax; zeros are substituted')
+            print('Warning, some of the times are smaller than tmin or' + 
+                  'larger than tmax; zeros are substituted')
         #
         for k in range(self.ngvbc):
             e = self.gvbclist[k]
@@ -231,28 +234,38 @@ class TimModel(PlotTtim):
                         # function when included in numpy
                         it = np.argmax( t >= self.tintervals[0])  
                     for n in range(self.nint):
-                        tp = t[ (t >= self.tintervals[n]) & (t < self.tintervals[n+1]) ]
+                        tp = t[(t >= self.tintervals[n]) & 
+                               (t < self.tintervals[n+1])]
                         Nt = len(tp)
-                        if Nt > 0:  # if all values zero, don't do the inverse transform
+                        if Nt > 0:  # if all values zero, no inverse transform
                             for i in range(Nlayers):
-                                if not np.any(disx[k, i, n*self.npint:(n+1)*self.npint] == 0.0) :
+                                if not np.any(disx[k, i, n * self.npint:
+                                              (n + 1) * self.npint] == 0.0) :
                                     if self.f2py:
-                                        rvx[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap(tp, 
-                                            self.tintervals[n], self.tintervals[n+1], 
-                                            disx[k, i, n * self.npint:(n + 1) * self.npint], 
+                                        rvx[i,it:it+Nt] += e.bc[itime] * \
+                                            invlaptrans.invlap(tp, 
+                                            self.tintervals[n], 
+                                            self.tintervals[n + 1], 
+                                            disx[k, i, n * self.npint:
+                                                 (n + 1) * self.npint], 
                                             self.gamma[n], self.M, Nt)
-                                        rvy[i,it:it+Nt] += e.bc[itime] * invlaptrans.invlap(tp, 
-                                            self.tintervals[n], self.tintervals[n+1], 
-                                            disy[k, i, n * self.npint:(n + 1) * self.npint], 
+                                        rvy[i,it:it+Nt] += e.bc[itime] * \
+                                            invlaptrans.invlap(tp, 
+                                            self.tintervals[n], 
+                                            self.tintervals[n + 1], 
+                                            disy[k, i, n * self.npint:
+                                                 (n + 1) * self.npint], 
                                             self.gamma[n], self.M, Nt)
                                     else:
                                         rvx[i, it: it + Nt] += e.bc[itime] * \
                                             invlap(tp, self.tintervals[n + 1], 
-                                            disx[k, i , n * self.npint:(n + 1) * self.npint],
+                                            disx[k, i , n * self.npint:
+                                                 (n + 1) * self.npint],
                                             self.M)
                                         rvy[i, it: it + Nt] += e.bc[itime] * \
                                             invlap(tp, self.tintervals[n + 1], 
-                                            disy[k, i , n * self.npint:(n + 1) * self.npint],
+                                            disy[k, i , n * self.npint:
+                                                 (n + 1) * self.npint],
                                             self.M)
                             it = it + Nt
         return rvx, rvy
@@ -408,14 +421,17 @@ class TimModel(PlotTtim):
             if (t[0] < self.tmin): it = np.argmax( t >= self.tmin )  
             for n in range(self.nint):
                 if n == self.nint-1:
-                    tp = t[ (t >= self.tintervals[n]) & (t <= self.tintervals[n+1]) ]
+                    tp = t[(t >= self.tintervals[n]) & 
+                           (t <= self.tintervals[n+1])]
                 else:
-                    tp = t[ (t >= self.tintervals[n]) & (t < self.tintervals[n+1]) ]
+                    tp = t[(t >= self.tintervals[n]) & 
+                           (t < self.tintervals[n+1])]
                 nt = len(tp)
-                if nt > 0:  # if all values zero, don't do the inverse transform
-                    # Not needed anymore: if np.abs( pot[n*self.npint] ) > 1e-20:
-                    # If there is a zero item, zero should be returned; funky enough 
-                    # this can be done with a straight equal comparison
+                if nt > 0:  # if all values zero, don't do inverse transform
+                    # Not needed anymore: if np.abs(pot[n*self.npint]) > 1e-20:
+                    # If there is a zero item, zero should be returned; 
+                    # funky enough this can be done with a 
+                    # straight equal comparison
                     if not np.any(pot[n*self.npint:(n+1)*self.npint] == 0.0):
                         if self.f2py:
                             rv[it : it + nt] = invlaptrans.invlap(tp,
@@ -450,7 +466,8 @@ class TimModel(PlotTtim):
         ieq = 0
         for e in self.elementlist:
             if e.nunknowns > 0:
-                mat[ieq:ieq+e.nunknowns, :, :], rhs[ieq:ieq+e.nunknowns, :, :] = e.equation()
+                mat[ieq: ieq + e.nunknowns, :, :], \
+                rhs[ieq: ieq + e.nunknowns, :, :] = e.equation()
                 ieq += e.nunknowns
         if printmat:
             return mat, rhs
@@ -477,7 +494,8 @@ class TimModel(PlotTtim):
         rv = self.modelname + ' = '+self.name+'(\n'
         for key in self.inputargs[1:]:  # The first argument (self) is ignored
             if isinstance(self.inputvalues[key],np.ndarray):
-                rv += key + ' = ' + np.array2string(self.inputvalues[key],separator=',') + ',\n'
+                rv += key + ' = ' + np.array2string(self.inputvalues[key],
+                                                    separator=',') + ',\n'
             elif isinstance(self.inputvalues[key],str):                
                 rv += key + " = '" + self.inputvalues[key] + "',\n"
             else:
@@ -486,7 +504,7 @@ class TimModel(PlotTtim):
         return rv
     
     def writemodel(self,fname):
-        self.initialize()  # So that the model can be written without solving first
+        self.initialize()  # So that model can be written without solving first
         f = open(fname,'w')
         f.write('from ttim import *\n')
         f.write( self.write() )

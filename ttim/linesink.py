@@ -173,7 +173,7 @@ class LineSink(LineSinkBase):
     #             layers=0, label=None, addtomodel=True):
     #    self.storeinput(inspect.currentframe())
     #    LineSinkBase.__init__(self, model, x1=x1, y1=y1, x2=x2, y2=y2, \
-    #                          tsandbc=[(0, 0)], res=res, wh=wh, layers=layers, \
+    #                          tsandbc=[(0, 0)], res=res, wh=wh, layers=layers,\
     #                          type='z', name='ZeroHeadLineSink', label=label, \
     #                          addtomodel=addtomodel)
     #    self.nunknowns = self.nparam
