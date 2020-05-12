@@ -8,13 +8,6 @@ from .aquifer import Aquifer
 #from .bessel import *
 from .invlapnumba import compute_laplace_parameters_numba, invlap
 from .util import PlotTtim
-try:
-    from .src.bessel import bessel
-    from .src.invlap import invlaptrans
-    bessel.initialize()
-except:
-    print('FORTRAN extension not found while f2py=True')
-    print('Using Numba instead')
 
 class TimModel(PlotTtim):
     def __init__(self, kaq=[1, 1], Haq=[1, 1], Hll=[0], c=[1e100, 100], 
@@ -36,6 +29,9 @@ class TimModel(PlotTtim):
         self.f2py = False
         if f2py:
             try:
+                from .src.bessel import bessel
+                from .src.invlap import invlaptrans
+                bessel.initialize()
                 self.f2py = True
             except:
                 print('FORTRAN extension not found while f2py=True')
@@ -575,7 +571,7 @@ class ModelMaq(TimModel):
         kaq, Haq, Hll, c, Saq, Sll = param_maq(kaq, z, c, Saq, Sll, topboundary,
                                                phreatictop)
         TimModel.__init__(self, kaq, Haq, Hll, c, Saq, Sll, topboundary, 
-                          phreatictop, tmin, tmax, tstart, M, f2py)
+                          phreatictop, tmin, tmax, tstart, M, f2py=f2py)
         self.name = 'ModelMaq'
         
 class Model3D(TimModel):
