@@ -28,8 +28,8 @@ class Calibrate:
         Parameters
         ----------
         name : str
-            parameter name, kan include layer information. 
-            name can be be 'kaq', 'Saq' or 'c'. A number after the parameter 
+            parameter name, can include layer information. 
+            name can be 'kaq', 'Saq' or 'c'. A number after the parameter 
             name denotes the layer number, i.e. 'kaq0' refers to the hydraulic 
             conductivity of layer 0. 
             name also supports layer ranges, entered by adding a '_' and a
