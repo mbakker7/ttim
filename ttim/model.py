@@ -304,11 +304,11 @@ class TimModel(PlotTtim):
         
         Parameters
         ----------
-        x : array
+        x : 1D array or list
             x values of line
-        y : array
+        y : 1D array or list
             y values of line
-        t : list or array
+        t : float or 1D array or list
             times for which grid is returned
         layers : integer, list or array, optional
             layers for which grid is returned
