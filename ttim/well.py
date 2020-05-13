@@ -95,8 +95,20 @@ class WellBase(Element):
         return qx,qy
     
     def headinside(self, t, derivative=0):
-        '''Returns head inside the well for the layers that 
-        the well is screened in'''
+        """Returns head inside the well for the layers that 
+        the well is screened in.
+
+        Parameters
+        ----------
+        t : float, list or array
+            time for which head is computed
+        Returns
+        -------
+        Q : array of size `nscreens, ntimes`
+            nsreens is the number of layers with a well screen
+
+        """
+
         return self.model.head(self.xc[0], self.yc[0], t, 
                                derivative=derivative)[self.layers] - \
                                self.resfach[:, np.newaxis] * \
