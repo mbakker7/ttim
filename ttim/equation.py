@@ -17,7 +17,7 @@ class HeadEquation:
         rhs = np.zeros((self.nunknowns, self.model.ngvbc, 
                         self.model.npval), 'D')
         for icp in range(self.ncp):
-            istart = icp*self.nlayers
+            istart = icp * self.nlayers
             ieq = 0  
             for e in self.model.elementlist:
                 if e.nunknowns > 0:
@@ -63,7 +63,7 @@ class WellBoreStorageEquation:
                     disterm = self.dischargeinflayers * self.res / (2 * np.pi * 
                         self.rw * self.aq.Haq[self.layers][:, np.newaxis])
                     if self.nunknowns > 1:  # Multiple layers
-                        for i in range(self.nunknowns-1):
+                        for i in range(self.nunknowns - 1):
                             mat[i, ieq + i, :] -= disterm[i]
                             mat[i, ieq + i + 1, :] += disterm[i + 1]
                     mat[-1, ieq: ieq + self.nunknowns, :] += \
@@ -292,8 +292,8 @@ class MscreenDitchEquation:
         mat[-1, istartself: istartself + self.nparam, :] = 1.0
         if self.Astorage is not None:
             # Used to store last equation in case of ditch storage
-            matlast = np.zeros((self.model.neq, self.model.np), 'D')
-            rhslast = np.zeros((self.model.np), 'D')  
+            matlast = np.zeros((self.model.neq, self.model.npval), 'D')
+            rhslast = np.zeros((self.model.npval), 'D')  
             ieq = 0
             for e in self.model.elementlist:
                 head = e.potinflayers(self.xc[0], self.yc[0], self.layers) / \
@@ -325,9 +325,9 @@ class InhomEquation:
     def equation(self):
         '''Mix-in class that returns matrix rows for inhomogeneity conditions'''
         mat = np.zeros((self.nunknowns, self.model.neq,
-                        self.model.np), 'D')
+                        self.model.npval), 'D')
         rhs = np.zeros((self.nunknowns, self.model.ngvbc,
-                        self.model.np), 'D')
+                        self.model.npval), 'D')
         for icp in range(self.ncp):
             istart = icp * 2 * self.nlayers
             ieq = 0  
