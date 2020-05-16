@@ -209,12 +209,13 @@ class TimModel(PlotTtim):
             disx = np.sum(disx[:, np.newaxis, :, :] * aq.eigvec, 2)
             disy = np.sum(disy[:, np.newaxis, :, :] * aq.eigvec, 2)
         else:
-            disx = np.sum( disx[:,np.newaxis,:,:] * aq.eigvec[layers, :], 2)
-            disy = np.sum( disy[:,np.newaxis,:,:] * aq.eigvec[layers, :], 2)
+            disx = np.sum(disx[:, np.newaxis, :, :] * aq.eigvec[layers, :], 2)
+            disy = np.sum(disy[:, np.newaxis, :, :] * aq.eigvec[layers, :], 2)
         if derivative > 0:
             disx *= self.p ** derivative
             disy *= self.p ** derivative
-        rvx,rvy = np.zeros((Nlayers,len(time))), np.zeros((Nlayers,len(time)))
+        rvx = np.zeros((Nlayers, len(time)))
+        rvy = np.zeros((Nlayers, len(time)))
         if (time[0] < self.tintervals[0]) or (time[-1] > self.tintervals[-1]):
             print('Warning, some of the times are smaller than tmin or' + 
                   'larger than tmax; zeros are substituted')
@@ -245,6 +246,15 @@ class TimModel(PlotTtim):
                                             disx[k, i, n * self.npint:
                                                  (n + 1) * self.npint], 
                                             self.gamma[n], self.M, Nt)
+                                    else:
+                                        rvx[i, it: it + Nt] += e.bc[itime] * \
+                                            invlap(tp, self.tintervals[n + 1], 
+                                            disx[k, i , n * self.npint:
+                                                 (n + 1) * self.npint],
+                                            self.M)
+                                if not np.any(disy[k, i, n * self.npint:
+                                              (n + 1) * self.npint] == 0.0) :
+                                    if self.f2py:
                                         rvy[i,it:it+Nt] += e.bc[itime] * \
                                             invlaptrans.invlap(tp, 
                                             self.tintervals[n], 
@@ -253,11 +263,6 @@ class TimModel(PlotTtim):
                                                  (n + 1) * self.npint], 
                                             self.gamma[n], self.M, Nt)
                                     else:
-                                        rvx[i, it: it + Nt] += e.bc[itime] * \
-                                            invlap(tp, self.tintervals[n + 1], 
-                                            disx[k, i , n * self.npint:
-                                                 (n + 1) * self.npint],
-                                            self.M)
                                         rvy[i, it: it + Nt] += e.bc[itime] * \
                                             invlap(tp, self.tintervals[n + 1], 
                                             disy[k, i , n * self.npint:
