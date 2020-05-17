@@ -150,3 +150,132 @@ def invlaptest():
     ft = invlap(t, 10, fp, 20, alpha=1e-10)
     print('approximate from invlap:', ft)
     print('exact:', t * np.exp(-t))
+    
+#@numba.njit(nogil=True) 
+# got deprecation warning that needs fixing
+# I think it doesn't like a list of arrays as input
+def invlapcompold(time, pot, npint, M, tintervals, 
+               etstartlist, ebclist, nlayers):
+    '''
+    """Compute time domain solution for given laplace domain solution
+
+    Parameters
+    ----------
+    t : array or lis, must be ordered
+        times for which time domain solution is computed, must start at 0
+    pot : array of laplace domain solution
+    npint : int
+        number of p values per interval (=2M + 1)
+    M : int
+        order of the approximation
+    nlayers : integer or None (default)
+        number of layers
+    tstart : starting time
+    tintervals : time intervals
+    
+    Returns
+    -------
+    pot[naq, ntimes] if layers=None, 
+    otherwise pot[len(layers,Ntimes)]
+    t must be ordered '''
+    
+    nelements, naq, npval = pot.shape
+    nint = len(tintervals) - 1
+    rv = np.zeros((nlayers, len(time)))
+    if (time[0] < tintervals[0]) or (time[-1] > tintervals[-1]):
+        print('Warning, some of the times are smaller than tmin or', 
+              'larger than tmax; zeros are substituted')
+    #
+    for k in range(nelements):
+        for itime, tstart in enumerate(etstartlist[k]):
+            t = time - tstart
+            it = 0
+            # this can be smarter
+            if t[-1] < tintervals[0]:  # Otherwise all zero
+                continue
+            if (t[0] < tintervals[0]):
+                it = np.argmax(t >= tintervals[0]) # find_first  
+            for n in range(nint):
+                tp = t[(t >= tintervals[n]) & \
+                       (t < tintervals[n + 1])]
+                nt = len(tp)
+                #if nt > 0:  # if all zero, don't do the inv transform
+                if nt == 0:
+                    continue
+                for i in range(nlayers):
+                    # I used to check the first value only, but got to check if 
+                    # none of the values are zero
+                    if not np.any(pot[k, i, n * npint: (n + 1) * npint] == 0) : 
+                        #if self.f2py:
+                        #    rv[i, it:it + nt] += e.bc[itime] * \
+                        #    invlaptrans.invlap(tp, 
+                        #        self.tintervals[n],
+                        #        self.tintervals[n + 1],
+                        #        pot[k, i , n * self.npint:
+                        #            (n + 1) * self.npint],
+                        #        self.gamma[n], self.M, nt)
+                        #else:
+                        rv[i, it: it + nt] += ebclist[k][itime] * \
+                        invlap(tp, tintervals[n + 1], 
+                               pot[k, i , n * npint: (n + 1) * npint], M)
+                it = it + nt
+    return rv
+
+@numba.njit(nogil=True) 
+def invlapcomp(time, pot, npint, M, tintervals, 
+                enumber, etstart, ebc, nlayers):
+    '''
+    """Compute time domain solution for given laplace domain solution
+
+    Parameters
+    ----------
+    t : array or lis, must be ordered
+        times for which time domain solution is computed, must start at 0
+    pot : array of laplace domain solution
+    npint : int
+        number of p values per interval (=2M + 1)
+    M : int
+        order of the approximation
+    nlayers : integer or None (default)
+        number of layers
+    tstart : starting time
+    tintervals : time intervals
+    
+    Returns
+    -------
+    pot[naq, ntimes] if layers=None, 
+    otherwise pot[len(layers,Ntimes)]
+    t must be ordered '''
+    
+    nelements, naq, npval = pot.shape
+    nint = len(tintervals) - 1
+    rv = np.zeros((nlayers, len(time)))
+    if (time[0] < tintervals[0]) or (time[-1] > tintervals[-1]):
+        print('Warning, some of the times are smaller than tmin or', 
+              'larger than tmax; zeros are substituted')
+    #
+    for j in range(len(enumber)):
+        k = enumber[j]
+        t = time - etstart[j]
+        it = 0
+        # this can be smarter
+        if t[-1] < tintervals[0]:  # Otherwise all zero
+            continue
+        if (t[0] < tintervals[0]):
+            it = np.argmax(t >= tintervals[0]) # find_first  
+        for n in range(nint):
+            tp = t[(t >= tintervals[n]) & \
+                   (t < tintervals[n + 1])]
+            nt = len(tp)
+            #if nt > 0:  # if all zero, don't do the inv transform
+            if nt == 0:
+                continue
+            for i in range(nlayers):
+                # I used to check the first value only, but got to check if 
+                # none of the values are zero
+                if not np.any(pot[k, i, n * npint: (n + 1) * npint] == 0) : 
+                    rv[i, it: it + nt] += ebc[j] * \
+                    invlap(tp, tintervals[n + 1], 
+                           pot[k, i , n * npint: (n + 1) * npint], M)
+            it = it + nt
+    return rv

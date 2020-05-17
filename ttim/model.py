@@ -6,7 +6,7 @@ import sys
 from .aquifer_parameters import param_3d, param_maq
 from .aquifer import Aquifer
 #from .bessel import *
-from .invlapnumba import compute_laplace_parameters_numba, invlap
+from .invlapnumba import compute_laplace_parameters_numba, invlap, invlapcomp
 from .util import PlotTtim
 
 class TimModel(PlotTtim):
@@ -121,7 +121,7 @@ class TimModel(PlotTtim):
             self.p = np.ravel(self.p)
         self.aq.initialize()
         
-    def potential(self, x, y, t, layers=None, aq=None, derivative=0, 
+    def potentialold(self, x, y, t, layers=None, aq=None, derivative=0, 
                   returnphi=0):
         '''Returns pot[naq, ntimes] if layers=None, 
         otherwise pot[len(layers,Ntimes)]
@@ -184,6 +184,51 @@ class TimModel(PlotTtim):
                                                    (n + 1) * self.npint],
                                                self.M)
                             it = it + nt
+        return rv
+    
+    def potential(self, x, y, t, layers=None, aq=None, derivative=0, 
+                  returnphi=0):
+        '''Returns pot[naq, ntimes] if layers=None, 
+        otherwise pot[len(layers,Ntimes)]
+        t must be ordered '''
+        if aq is None: aq = self.aq.find_aquifer_data(x, y)
+        if layers is None:
+            layers = range(aq.naq)
+        nlayers = len(layers)
+        time = np.atleast_1d(t - self.tstart).copy()
+        pot = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
+        for i in range(self.ngbc):
+            pot[i, :] += self.gbclist[i].unitpotential(x, y, aq)
+        for e in self.vzbclist:
+            pot += e.potential(x, y, aq)
+        if layers is None:
+            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec, 2)
+        else:
+            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec[layers, :], 2)
+        if derivative > 0: pot *= self.p ** derivative
+        if returnphi:
+            return pot
+        # probably move to initialization
+        etstartlist = []
+        ebclist = []
+        for k in range(self.ngvbc):
+            e = self.gvbclist[k]
+            etstartlist.append(e.tstart)
+            ebclist.append(e.bc)
+        enumber = []
+        etstart = []
+        ebc = []
+        for k in range(self.ngvbc):
+            enumber.extend(len(e.tstart) * [k])
+            etstart.extend(list(e.tstart))
+            ebc.extend(list(e.bc))
+        enumber = np.array(enumber)
+        etstart = np.array(etstart)
+        ebc = np.array(ebc)
+        #rv = invlapcomp(time, pot, self.npint, self.M, 
+        #                self.tintervals, etstartlist, ebclist, nlayers)
+        rv = invlapcomp(time, pot, self.npint, self.M, 
+                        self.tintervals, enumber, etstart, ebc, nlayers)
         return rv
     
     def disvec(self, x, y, t, layers=None, aq=None, derivative=0):
