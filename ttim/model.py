@@ -61,6 +61,7 @@ class TimModel(PlotTtim):
         etstart = []
         ebc = []
         for k in range(self.ngvbc):
+            e = self.gvbclist[k]
             enumber.extend(len(e.tstart) * [k])
             etstart.extend(list(e.tstart))
             ebc.extend(list(e.bc))
@@ -320,6 +321,33 @@ class TimModel(PlotTtim):
                                             self.M)
                             it = it + Nt
         return rvx, rvy
+    
+    def headold(self, x, y, t, layers=None, aq=None, derivative=0):
+        """Head at x, y, t where t can be multiple times
+        
+        Parameters
+        ----------
+        x : float
+        y : float
+        t : list or array
+            times for which grid is returned
+        layers : integer, list or array, optional
+            layers for which grid is returned
+            if None: all layers are returned
+        
+        Returns
+        -------
+        h : array size `nlayers, ntimes`
+
+        """
+        
+        if aq is None: aq = self.aq.find_aquifer_data(x, y)
+        if layers is None:
+            layers = range(aq.naq)
+        else:
+            layers = np.atleast_1d(layers)  # corrected for base zero
+        pot = self.potentialold(x, y, t, layers, aq, derivative)
+        return aq.potential_to_head(pot, layers)
     
     def head(self, x, y, t, layers=None, aq=None, derivative=0):
         """Head at x, y, t where t can be multiple times
