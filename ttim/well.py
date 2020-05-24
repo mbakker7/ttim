@@ -160,7 +160,7 @@ class DischargeWell(WellBase):
     >>> Well(ml, tsandQ=[(10, 100), (50, 20), (200, 0)])
     
     """
-    
+
     def __init__(self, model, xw=0, yw=0, tsandQ=[(0, 1)], rw=0.1, 
                  res=0, layers=0, label=None):
         self.storeinput(inspect.currentframe())
@@ -210,7 +210,7 @@ class Well(WellBase, WellBoreStorageEquation):
         label of the well
         
     """
-    
+
     def __init__(self, model, xw=0, yw=0, rw=0.1, tsandQ=[(0, 1)], res=0,
                  rc=None, layers=0, wbstype='pumping', label=None):
         self.storeinput(inspect.currentframe())
@@ -276,7 +276,7 @@ class HeadWell(WellBase,HeadEquation):
         label of the well
         
     """
-    
+
     def __init__(self, model, xw=0, yw=0, rw=0.1, tsandh=[(0, 1)], res=0, 
                  layers=0, label=None):
         self.storeinput(inspect.currentframe())
