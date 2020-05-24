@@ -56,6 +56,17 @@ class TimModel(PlotTtim):
         self.aq.initialize()
         for e in self.elementlist:
             e.initialize()
+        # lists used for inverse transform
+        enumber = []
+        etstart = []
+        ebc = []
+        for k in range(self.ngvbc):
+            enumber.extend(len(e.tstart) * [k])
+            etstart.extend(list(e.tstart))
+            ebc.extend(list(e.bc))
+        self.enumber = np.array(enumber)
+        self.etstart = np.array(etstart)
+        self.ebc = np.array(ebc)
             
     def addelement(self, e):
         if e.label is not None: self.elementdict[e.label] = e
@@ -208,27 +219,21 @@ class TimModel(PlotTtim):
         if derivative > 0: pot *= self.p ** derivative
         if returnphi:
             return pot
-        # probably move to initialization
-        etstartlist = []
-        ebclist = []
-        for k in range(self.ngvbc):
-            e = self.gvbclist[k]
-            etstartlist.append(e.tstart)
-            ebclist.append(e.bc)
-        enumber = []
-        etstart = []
-        ebc = []
-        for k in range(self.ngvbc):
-            enumber.extend(len(e.tstart) * [k])
-            etstart.extend(list(e.tstart))
-            ebc.extend(list(e.bc))
-        enumber = np.array(enumber)
-        etstart = np.array(etstart)
-        ebc = np.array(ebc)
+#         # probably move to initialization
+#         enumber = []
+#         etstart = []
+#         ebc = []
+#         for k in range(self.ngvbc):
+#             enumber.extend(len(e.tstart) * [k])
+#             etstart.extend(list(e.tstart))
+#             ebc.extend(list(e.bc))
+#         enumber = np.array(enumber)
+#         etstart = np.array(etstart)
+#         ebc = np.array(ebc)
         #rv = invlapcomp(time, pot, self.npint, self.M, 
         #                self.tintervals, etstartlist, ebclist, nlayers)
-        rv = invlapcomp(time, pot, self.npint, self.M, 
-                        self.tintervals, enumber, etstart, ebc, nlayers)
+        rv = invlapcomp(time, pot, self.npint, self.M, self.tintervals, 
+                        self.enumber, self.etstart, self.ebc, nlayers)
         return rv
     
     def disvec(self, x, y, t, layers=None, aq=None, derivative=0):
