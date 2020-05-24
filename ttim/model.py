@@ -195,7 +195,7 @@ class TimModel(PlotTtim):
         if layers is None:
             layers = range(aq.naq)
         nlayers = len(layers)
-        time = np.atleast_1d(t - self.tstart).copy()
+        time = np.atleast_1d(t) - self.tstart # used to be ).copy()
         pot = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
         for i in range(self.ngbc):
             pot[i, :] += self.gbclist[i].unitpotential(x, y, aq)
