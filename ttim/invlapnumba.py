@@ -206,15 +206,6 @@ def invlapcompold(time, pot, npint, M, tintervals,
                     # I used to check the first value only, but got to check if 
                     # none of the values are zero
                     if not np.any(pot[k, i, n * npint: (n + 1) * npint] == 0) : 
-                        #if self.f2py:
-                        #    rv[i, it:it + nt] += e.bc[itime] * \
-                        #    invlaptrans.invlap(tp, 
-                        #        self.tintervals[n],
-                        #        self.tintervals[n + 1],
-                        #        pot[k, i , n * self.npint:
-                        #            (n + 1) * self.npint],
-                        #        self.gamma[n], self.M, nt)
-                        #else:
                         rv[i, it: it + nt] += ebclist[k][itime] * \
                         invlap(tp, tintervals[n + 1], 
                                pot[k, i , n * npint: (n + 1) * npint], M)
@@ -223,7 +214,7 @@ def invlapcompold(time, pot, npint, M, tintervals,
 
 @numba.njit(nogil=True) 
 def invlapcomp(time, pot, npint, M, tintervals, 
-                enumber, etstart, ebc, nlayers):
+               enumber, etstart, ebc, nlayers):
     '''
     """Compute time domain solution for given laplace domain solution
 

@@ -2,12 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import inspect # Used for storing the input
 from .element import Element
-try:
-    from .bessel import *
-    bessel.initialize()
-    #print('succes on f2py')
-except:
-    pass
 from .equation import LeakyWallEquation
 from . import besselnumba
 
@@ -87,26 +81,15 @@ class LineDoubletHoBase(Element):
             pot = np.zeros((self.order+1,self.model.npint),'D')
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    if self.model.f2py:
-                        if bessel.isinside(self.z1, self.z2, x+y*1j, 
-                                           self.rzero*self.aq.lababs[i, j]):
-                            pot[:,:] = bessel.besselldv2(x, y, 
-                                self.z1, self.z2, self.aq.lab2[i, j, :], 
-                                self.order, 
-                                self.rzero * self.aq.lababs[i, j]) / self.L 
-                            for k in range(self.nlayers):
-                                rv[k::self.nlayers, i, j, :] = \
-                                    self.term2[k, i, j, :] * pot
-                    else:
-                        if besselnumba.isinside(self.z1, self.z2, x+y*1j, 
-                                           self.rzero*self.aq.lababs[i, j]):
-                            pot[:,:] = besselnumba.besselldv2(x, y, 
-                                self.z1, self.z2, self.aq.lab2[i, j, :], 
-                                self.order, 
-                                self.rzero * self.aq.lababs[i, j]) / self.L 
-                            for k in range(self.nlayers):
-                                rv[k::self.nlayers, i, j, :] = \
-                                    self.term2[k, i, j, :] * pot
+                    if besselnumba.isinside(self.z1, self.z2, x+y*1j, 
+                                       self.rzero*self.aq.lababs[i, j]):
+                        pot[:,:] = besselnumba.besselldv2(x, y, 
+                            self.z1, self.z2, self.aq.lab2[i, j, :], 
+                            self.order, 
+                            self.rzero * self.aq.lababs[i, j]) / self.L 
+                        for k in range(self.nlayers):
+                            rv[k::self.nlayers, i, j, :] = \
+                                self.term2[k, i, j, :] * pot
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
 
@@ -121,34 +104,19 @@ class LineDoubletHoBase(Element):
             qxqy = np.zeros((2*(self.order+1),self.model.npint),'D')
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    if self.model.f2py:
-                        if bessel.isinside(self.z1, self.z2, x+y*1j, 
-                                           self.rzero*self.aq.lababs[i, j]):
-                            qxqy[:,:] = bessel.besselldqxqyv2(x, y, 
-                                self.z1, self.z2,self.aq.lab2[i, j, :], 
-                                self.order, 
-                                self.rzero * self.aq.lababs[i, j]) / self.L
-                            for k in range(self.nlayers):
-                                rvx[k::self.nlayers, i, j, :] = \
-                                    self.term2[k, i, j, :] * \
-                                    qxqy[:self.order + 1,:]
-                                rvy[k::self.nlayers, i, j, :] = \
-                                    self.term2[k, i, j, :] * \
-                                    qxqy[self.order + 1:,:]
-                    else:
-                        if besselnumba.isinside(self.z1, self.z2, x+y*1j, 
-                                           self.rzero*self.aq.lababs[i, j]):
-                            qxqy[:,:] = besselnumba.besselldqxqyv2(x, y, 
-                                self.z1, self.z2,self.aq.lab2[i, j, :], 
-                                self.order, 
-                                self.rzero * self.aq.lababs[i, j]) / self.L
-                            for k in range(self.nlayers):
-                                rvx[k::self.nlayers, i, j, :] = \
-                                    self.term2[k, i, j, :] * \
-                                    qxqy[:self.order + 1,:]
-                                rvy[k::self.nlayers, i, j, :] = \
-                                    self.term2[k, i, j, :] * \
-                                    qxqy[self.order + 1:,:]
+                    if besselnumba.isinside(self.z1, self.z2, x+y*1j, 
+                                       self.rzero*self.aq.lababs[i, j]):
+                        qxqy[:,:] = besselnumba.besselldqxqyv2(x, y, 
+                            self.z1, self.z2,self.aq.lab2[i, j, :], 
+                            self.order, 
+                            self.rzero * self.aq.lababs[i, j]) / self.L
+                        for k in range(self.nlayers):
+                            rvx[k::self.nlayers, i, j, :] = \
+                                self.term2[k, i, j, :] * \
+                                qxqy[:self.order + 1,:]
+                            rvy[k::self.nlayers, i, j, :] = \
+                                self.term2[k, i, j, :] * \
+                                qxqy[self.order + 1:,:]
                             
         rvx.shape = (self.nparam, aq.naq, self.model.npval)
         rvy.shape = (self.nparam, aq.naq, self.model.npval)

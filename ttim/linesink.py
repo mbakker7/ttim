@@ -2,12 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import inspect # Used for storing the input
 from .element import Element
-try:
-    from .bessel import *
-    bessel.initialize()
-    #print('succes on f2py')
-except:
-    pass
 from .equation import HeadEquation, HeadEquationNores, \
                       MscreenEquation, MscreenDitchEquation
 from . import besselnumba
@@ -27,9 +21,6 @@ class LineSinkBase(Element):
         self.res = np.atleast_1d(res).astype(float)
         self.wh = wh
         if addtomodel: self.model.addelement(self)
-        # needed to call bessel.circle_line_intersection in f2py
-        self.xa, self.ya, self.xb, self.yb, self.np = \
-            np.zeros(1), np.zeros(1), np.zeros(1), np.zeros(1), np.zeros(1,'i')  
 
     def __repr__(self):
         return self.name + ' from ' + str((self.x1, self.y1)) + \
@@ -79,25 +70,10 @@ class LineSinkBase(Element):
             pot = np.zeros(self.model.npint, 'D')
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    if self.model.f2py:
-                        bessel.circle_line_intersection(self.z1, self.z2, 
-                            x + y * 1j, 
-                            self.rzero * abs(self.model.aq.lab2[i, j, 0]), 
-                            self.xa, self.ya, self.xb, self.yb, self.np)
-                        if self.np > 0:
-                            # f2py has problem returning complex arrays
-                            # fixed in new numpy
-                            za = complex(self.xa,self.ya)
-                            zb = complex(self.xb,self.yb) 
-                            pot[:] = bessel.bessellsuniv(x, y, 
-                                za, zb, self.aq.lab2[i, j, :])
-                            # Divide by L as the parameter is total discharge
-                            rv[:,i,j,:] = self.term2[:,i,j,:] * pot / self.L  
-                    else:
-                        pot[:] = besselnumba.bessellsuniv(x, y, 
-                            self.z1, self.z2, self.aq.lab2[i, j, :], self.rzero)
-                        # Divide by L as the parameter is total discharge
-                        rv[:,i,j,:] = self.term2[:, i, j, :] * pot / self.L  
+                    pot[:] = besselnumba.bessellsuniv(x, y, 
+                        self.z1, self.z2, self.aq.lab2[i, j, :], self.rzero)
+                    # Divide by L as the parameter is total discharge
+                    rv[:,i,j,:] = self.term2[:, i, j, :] * pot / self.L  
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
 
@@ -113,20 +89,12 @@ class LineSinkBase(Element):
             qxqy = np.zeros((2,self.model.npint), 'D')
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    if self.model.f2py:
-                        if bessel.isinside(self.z1, self.z2, x + y * 1j, 
-                                           self.rzero * self.aq.lababs[i, j]):
-                            qxqy[:,:] = bessel.bessellsqxqyv2(x, y, 
-                                self.z1, self.z2, self.aq.lab2[i, j, :], 
-                                self.order, 
-                                self.rzero * self.aq.lababs[i, j]) / self.L  
-                    else:
-                        if besselnumba.isinside(self.z1, self.z2, x + y * 1j, 
-                                           self.rzero * self.aq.lababs[i, j]):
-                            qxqy[:,:] = besselnumba.bessellsqxqyv2(x, y, 
-                                self.z1, self.z2, self.aq.lab2[i, j, :], 
-                                self.order, 
-                                self.rzero * self.aq.lababs[i, j]) / self.L
+                    if besselnumba.isinside(self.z1, self.z2, x + y * 1j, 
+                                       self.rzero * self.aq.lababs[i, j]):
+                        qxqy[:,:] = besselnumba.bessellsqxqyv2(x, y, 
+                            self.z1, self.z2, self.aq.lab2[i, j, :], 
+                            self.order, 
+                            self.rzero * self.aq.lababs[i, j]) / self.L
                     rvx[:,i,j,:] = self.term2[:,i,j,:] * qxqy[0]
                     rvy[:,i,j,:] = self.term2[:,i,j,:] * qxqy[1]
         rvx.shape = (self.nparam, aq.naq, self.model.npval)
@@ -634,20 +602,12 @@ class LineSinkHoBase(Element):
             pot = np.zeros((self.order + 1, self.model.npint), 'D')
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    if self.model.f2py:
-                        if bessel.isinside(self.z1, self.z2, x + y * 1j, 
-                                           self.rzero * self.aq.lababs[i, j]):
-                            pot[:,:] = bessel.bessellsv2(x, y, 
-                                self.z1, self.z2, self.aq.lab2[i, j, :], 
-                                self.order, self.rzero * self.aq.lababs[i, j]
-                                ) / self.L  
-                    else:
-                        if besselnumba.isinside(self.z1, self.z2, x + y * 1j, 
-                                self.rzero * self.aq.lababs[i, j]):
-                            pot[:,:] = besselnumba.bessellsv2(x, y, 
-                                self.z1, self.z2, self.aq.lab2[i, j, :],
-                                self.order, self.rzero * self.aq.lababs[i, j]
-                                ) / self.L  
+                    if besselnumba.isinside(self.z1, self.z2, x + y * 1j, 
+                            self.rzero * self.aq.lababs[i, j]):
+                        pot[:,:] = besselnumba.bessellsv2(x, y, 
+                            self.z1, self.z2, self.aq.lab2[i, j, :],
+                            self.order, self.rzero * self.aq.lababs[i, j]
+                            ) / self.L  
                     for k in range(self.nlayers):
                         rv[k::self.nlayers, i, j, :] = \
                             self.term2[k, i, j, :] * pot
@@ -667,20 +627,12 @@ class LineSinkHoBase(Element):
             qxqy = np.zeros((2 * (self.order + 1), self.model.npint), 'D')
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    if self.model.f2py:
-                        if bessel.isinside(self.z1, self.z2, x + y * 1j, 
-                                           self.rzero * self.aq.lababs[i, j]):
-                            qxqy[:, :] = bessel.bessellsqxqyv2(x, y, 
-                                self.z1, self.z2, self.aq.lab2[i, j, :], 
-                                self.order, 
-                                self.rzero * self.aq.lababs[i, j]) / self.L 
-                    else:
-                        if besselnumba.isinside(self.z1, self.z2, x + y * 1j, 
-                                           self.rzero * self.aq.lababs[i, j]):
-                            qxqy[:, :] = besselnumba.bessellsqxqyv2(x, y, 
-                                self.z1, self.z2, self.aq.lab2[i, j, :], 
-                                self.order, 
-                                self.rzero * self.aq.lababs[i, j]) / self.L
+                    if besselnumba.isinside(self.z1, self.z2, x + y * 1j, 
+                                       self.rzero * self.aq.lababs[i, j]):
+                        qxqy[:, :] = besselnumba.bessellsqxqyv2(x, y, 
+                            self.z1, self.z2, self.aq.lab2[i, j, :], 
+                            self.order, 
+                            self.rzero * self.aq.lababs[i, j]) / self.L
                     for k in range(self.nlayers):
                         rvx[k::self.nlayers, i, j, :] = \
                             self.term2[k, i, j, :] * qxqy[:self.order + 1, :]

@@ -13,7 +13,7 @@ class TimModel(PlotTtim):
     def __init__(self, kaq=[1, 1], Haq=[1, 1], Hll=[0], c=[1e100, 100], 
                  Saq=[1e-4, 1e-4], Sll=[0], topboundary='conf', 
                  phreatictop=False, tmin=1, tmax=10, tstart=0, M=10, 
-                 kzoverkh=None, model3d=False, f2py=False):
+                 kzoverkh=None, model3d=False):
         self.elementlist = []
         self.elementdict = {}
         self.vbclist = []  # variable boundary condition 'v' elements
@@ -26,17 +26,6 @@ class TimModel(PlotTtim):
         self.M = M
         self.aq = Aquifer(self, kaq, Haq, Hll, c, Saq, Sll, topboundary, 
                           phreatictop, kzoverkh, model3d)
-        self.f2py = False
-        if f2py:
-            try:
-                from .src.bessel import bessel
-                from .src.invlap import invlaptrans
-                bessel.initialize()
-                self.f2py = True
-            except:
-                print('FORTRAN extension not found while f2py=True')
-                print('Using Numba instead')
-                self.f2py = False
         self.compute_laplace_parameters()
         self.name = 'TimModel'
         self.modelname = 'ml' # Used for writing out input
@@ -108,95 +97,14 @@ class TimModel(PlotTtim):
         self.nint = len(self.tintervals) - 1
         self.npint = 2 * self.M + 1
         self.npval = self.nint * self.npint
-        if self.f2py:
-            #alpha = 1.0
-            alpha = 0.0  # I don't see why it shouldn't be 0.0
-            tol = 1e-9
-            # so there are 2M+1 terms in Fourier series expansion
-            run = np.arange(2 * self.M + 1)  
-            self.p = []
-            self.gamma = []
-            for i in range(self.nint):
-                T = self.tintervals[i + 1] * 2.0
-                gamma = alpha - np.log(tol) / (T / 2.0)
-                p = gamma + 1j * np.pi * run / T
-                self.p.extend(p.tolist())
-                self.gamma.append(gamma)
-            self.p = np.array(self.p)
-            self.gamma = np.array(self.gamma)
-        else:  # numba 
-            self.p = np.zeros((self.nint, self.npint), dtype=np.complex128)
-            for i in range(self.nint):
-                self.p[i] = compute_laplace_parameters_numba(
-                                            self.tintervals[i + 1], self.M)
-            #TODO: make self.p a 2D array
-            self.p = np.ravel(self.p)
+        # numba 
+        self.p = np.zeros((self.nint, self.npint), dtype=np.complex128)
+        for i in range(self.nint):
+            self.p[i] = compute_laplace_parameters_numba(
+                                        self.tintervals[i + 1], self.M)
+        #TODO: make self.p a 2D array
+        self.p = np.ravel(self.p)
         self.aq.initialize()
-        
-    def potentialold(self, x, y, t, layers=None, aq=None, derivative=0, 
-                  returnphi=0):
-        '''Returns pot[naq, ntimes] if layers=None, 
-        otherwise pot[len(layers,Ntimes)]
-        t must be ordered '''
-        if aq is None: aq = self.aq.find_aquifer_data(x, y)
-        if layers is None:
-            layers = range(aq.naq)
-        nlayers = len(layers)
-        time = np.atleast_1d(t - self.tstart).copy()
-        pot = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
-        for i in range(self.ngbc):
-            pot[i, :] += self.gbclist[i].unitpotential(x, y, aq)
-        for e in self.vzbclist:
-            pot += e.potential(x, y, aq)
-        if layers is None:
-            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec, 2)
-        else:
-            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec[layers, :], 2)
-        if derivative > 0: pot *= self.p ** derivative
-        if returnphi:
-            return pot
-        rv = np.zeros((nlayers, len(time)))
-        if (time[0] < self.tintervals[0]) or (time[-1] > self.tintervals[-1]):
-            print('Warning, some of the times are smaller than tmin or', 
-                  'larger than tmax; zeros are substituted')
-        #
-        for k in range(self.ngvbc):
-            e = self.gvbclist[k]
-            for itime in range(e.ntstart):
-                t = time - e.tstart[itime]
-                it = 0
-                if t[-1] >= self.tintervals[0]:  # Otherwise all zero
-                    if (t[0] < self.tintervals[0]):
-                        # clever call that should be replaced with find_first 
-                        # function when included in numpy
-                        it = np.argmax(t >= self.tintervals[0])  
-                    for n in range(self.nint):
-                        tp = t[(t >= self.tintervals[n]) & \
-                               (t < self.tintervals[n + 1])]
-                        nt = len(tp)
-                        if nt > 0:  # if all zero, don't do the inv transform
-                            for i in range(nlayers):
-                                # I used to check the first value only, 
-                                # but it seems that checking that nothing is 
-                                # zero is needed 
-                                if not np.any(pot[k, i, n * self.npint: 
-                                              (n + 1) * self.npint] == 0) : 
-                                    if self.f2py:
-                                        rv[i, it:it + nt] += e.bc[itime] * \
-                                        invlaptrans.invlap(tp, 
-                                            self.tintervals[n],
-                                            self.tintervals[n + 1],
-                                            pot[k, i , n * self.npint:
-                                                (n + 1) * self.npint],
-                                            self.gamma[n], self.M, nt)
-                                    else:
-                                        rv[i, it:it + nt] += e.bc[itime] * \
-                                        invlap(tp, self.tintervals[n + 1], 
-                                               pot[k, i , n * self.npint:
-                                                   (n + 1) * self.npint],
-                                               self.M)
-                            it = it + nt
-        return rv
     
     def potential(self, x, y, t, layers=None, aq=None, derivative=0, 
                   returnphi=0):
@@ -220,19 +128,6 @@ class TimModel(PlotTtim):
         if derivative > 0: pot *= self.p ** derivative
         if returnphi:
             return pot
-#         # probably move to initialization
-#         enumber = []
-#         etstart = []
-#         ebc = []
-#         for k in range(self.ngvbc):
-#             enumber.extend(len(e.tstart) * [k])
-#             etstart.extend(list(e.tstart))
-#             ebc.extend(list(e.bc))
-#         enumber = np.array(enumber)
-#         etstart = np.array(etstart)
-#         ebc = np.array(ebc)
-        #rv = invlapcomp(time, pot, self.npint, self.M, 
-        #                self.tintervals, etstartlist, ebclist, nlayers)
         rv = invlapcomp(time, pot, self.npint, self.M, self.tintervals, 
                         self.enumber, self.etstart, self.ebc, nlayers)
         return rv
@@ -289,65 +184,20 @@ class TimModel(PlotTtim):
                             for i in range(Nlayers):
                                 if not np.any(disx[k, i, n * self.npint:
                                               (n + 1) * self.npint] == 0.0) :
-                                    if self.f2py:
-                                        rvx[i,it:it+Nt] += e.bc[itime] * \
-                                            invlaptrans.invlap(tp, 
-                                            self.tintervals[n], 
-                                            self.tintervals[n + 1], 
-                                            disx[k, i, n * self.npint:
-                                                 (n + 1) * self.npint], 
-                                            self.gamma[n], self.M, Nt)
-                                    else:
-                                        rvx[i, it: it + Nt] += e.bc[itime] * \
-                                            invlap(tp, self.tintervals[n + 1], 
-                                            disx[k, i , n * self.npint:
-                                                 (n + 1) * self.npint],
-                                            self.M)
+                                    rvx[i, it: it + Nt] += e.bc[itime] * \
+                                        invlap(tp, self.tintervals[n + 1], 
+                                        disx[k, i , n * self.npint:
+                                             (n + 1) * self.npint],
+                                        self.M)
                                 if not np.any(disy[k, i, n * self.npint:
                                               (n + 1) * self.npint] == 0.0) :
-                                    if self.f2py:
-                                        rvy[i,it:it+Nt] += e.bc[itime] * \
-                                            invlaptrans.invlap(tp, 
-                                            self.tintervals[n], 
-                                            self.tintervals[n + 1], 
-                                            disy[k, i, n * self.npint:
-                                                 (n + 1) * self.npint], 
-                                            self.gamma[n], self.M, Nt)
-                                    else:
-                                        rvy[i, it: it + Nt] += e.bc[itime] * \
-                                            invlap(tp, self.tintervals[n + 1], 
-                                            disy[k, i , n * self.npint:
-                                                 (n + 1) * self.npint],
-                                            self.M)
+                                    rvy[i, it: it + Nt] += e.bc[itime] * \
+                                        invlap(tp, self.tintervals[n + 1], 
+                                        disy[k, i , n * self.npint:
+                                             (n + 1) * self.npint],
+                                        self.M)
                             it = it + Nt
         return rvx, rvy
-    
-    def headold(self, x, y, t, layers=None, aq=None, derivative=0):
-        """Head at x, y, t where t can be multiple times
-        
-        Parameters
-        ----------
-        x : float
-        y : float
-        t : list or array
-            times for which grid is returned
-        layers : integer, list or array, optional
-            layers for which grid is returned
-            if None: all layers are returned
-        
-        Returns
-        -------
-        h : array size `nlayers, ntimes`
-
-        """
-        
-        if aq is None: aq = self.aq.find_aquifer_data(x, y)
-        if layers is None:
-            layers = range(aq.naq)
-        else:
-            layers = np.atleast_1d(layers)  # corrected for base zero
-        pot = self.potentialold(x, y, t, layers, aq, derivative)
-        return aq.potential_to_head(pot, layers)
     
     def head(self, x, y, t, layers=None, aq=None, derivative=0):
         """Head at x, y, t where t can be multiple times
@@ -512,16 +362,10 @@ class TimModel(PlotTtim):
                     # funky enough this can be done with a 
                     # straight equal comparison
                     if not np.any(pot[n*self.npint:(n+1)*self.npint] == 0.0):
-                        if self.f2py:
-                            rv[it : it + nt] = invlaptrans.invlap(tp,
-                                self.tintervals[n], self.tintervals[n+1], 
-                                pot[n * self.npint: (n + 1) * self.npint], 
-                                self.gamma[n], self.M, nt)
-                        else:
-                            rv[it : it + nt] = invlap(tp, 
-                                self.tintervals[n + 1], 
-                                pot[n * self.npint: (n + 1) * self.npint],
-                                self.M)
+                        rv[it : it + nt] = invlap(tp, 
+                            self.tintervals[n + 1], 
+                            pot[n * self.npint: (n + 1) * self.npint],
+                            self.M)
                     it = it + nt
         return rv
     
@@ -641,20 +485,17 @@ class ModelMaq(TimModel):
         the number of terms to be used in the numerical inversion algorithm.
         10 is usually sufficient. If drawdown curves appear to oscillate,
         more terms may be needed, but this seldom happens. 
-    f2py : boolean
-        flag to indicate if the compiled FORTRAN extension should be used.
-        only recommended for testing.
     
     """
     
     def __init__(self, kaq=[1], z=[1,0], c=[], Saq=[0.001], Sll=[0], \
                  topboundary='conf', phreatictop=False, \
-                 tmin=1, tmax=10, tstart=0, M=10, f2py=False):
+                 tmin=1, tmax=10, tstart=0, M=10):
         self.storeinput(inspect.currentframe())
         kaq, Haq, Hll, c, Saq, Sll = param_maq(kaq, z, c, Saq, Sll, topboundary,
                                                phreatictop)
         TimModel.__init__(self, kaq, Haq, Hll, c, Saq, Sll, topboundary, 
-                          phreatictop, tmin, tmax, tstart, M, f2py=f2py)
+                          phreatictop, tmin, tmax, tstart, M)
         self.name = 'ModelMaq'
         
 class Model3D(TimModel):
@@ -707,15 +548,12 @@ class Model3D(TimModel):
         the number of terms to be used in the numerical inversion algorithm.
         10 is usually sufficient. If drawdown curves appear to oscillate,
         more terms may be needed, but this seldom happens. 
-    f2py : boolean
-        flag to indicate if the compiled FORTRAN extension should be used.
-        only recommended for testing.
         
     """
     
     def __init__(self, kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, \
                  topboundary='conf', phreatictop=True, topres=0, topthick=0, 
-                 topSll=0, tmin=1, tmax=10, tstart=0, M=10, f2py=False):
+                 topSll=0, tmin=1, tmax=10, tstart=0, M=10):
         '''z must have the length of the number of layers + 1'''
         self.storeinput(inspect.currentframe())
         kaq, Haq, Hll, c, Saq, Sll = param_3d(kaq, z, Saq, kzoverkh, 
@@ -723,5 +561,5 @@ class Model3D(TimModel):
                                               topthick, topSll)
         TimModel.__init__(self, kaq, Haq, Hll, c, Saq, Sll, topboundary, 
                           phreatictop, tmin, tmax, tstart, M, 
-                          kzoverkh, model3d=True, f2py=f2py)
+                          kzoverkh, model3d=True)
         self.name = 'Model3D'
