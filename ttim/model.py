@@ -125,7 +125,8 @@ class TimModel(PlotTtim):
             pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec, 2)
         else:
             pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec[layers, :], 2)
-        if derivative > 0: pot *= self.p ** derivative
+        if derivative > 0: 
+            pot *= self.p ** derivative
         if returnphi:
             return pot
         rv = invlapcomp(time, pot, self.npint, self.M, self.tintervals, 
@@ -134,23 +135,23 @@ class TimModel(PlotTtim):
     
     def disvec(self, x, y, t, layers=None, aq=None, derivative=0):
         '''Returns qx[naq, ntimes], qy[naq, ntimes] if layers=None, otherwise
-        qx[len(layers,Ntimes)],qy[len(layers,Ntimes)]
+        qx[len(layers,Ntimes)],qy[len(layers, ntimes)]
         t must be ordered '''
         if aq is None: aq = self.aq.find_aquifer_data(x, y)
         if layers is None:
             layers = range(aq.naq)
-        else:
-            layers = np.atleast_1d(layers)  # corrected for base zero
-        Nlayers = len(layers)
-        time = np.atleast_1d(t - self.tstart).copy()
+        nlayers = len(layers)
+        time = np.atleast_1d(t) - self.tstart
         disx = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
         disy = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
         for i in range(self.ngbc):
-            qx,qy = self.gbclist[i].unitdisvec(x, y, aq)
-            disx[i,:] += qx; disy[i,:] += qy
+            qx, qy = self.gbclist[i].unitdisvec(x, y, aq)
+            disx[i, :] += qx
+            disy[i, :] += qy
         for e in self.vzbclist:
-            qx,qy = e.disvec(x, y, aq)
-            disx += qx; disy += qy
+            qx, qy = e.disvec(x, y, aq)
+            disx += qx
+            disy += qy
         if layers is None:
             disx = np.sum(disx[:, np.newaxis, :, :] * aq.eigvec, 2)
             disy = np.sum(disy[:, np.newaxis, :, :] * aq.eigvec, 2)
@@ -160,44 +161,78 @@ class TimModel(PlotTtim):
         if derivative > 0:
             disx *= self.p ** derivative
             disy *= self.p ** derivative
-        rvx = np.zeros((Nlayers, len(time)))
-        rvy = np.zeros((Nlayers, len(time)))
-        if (time[0] < self.tintervals[0]) or (time[-1] > self.tintervals[-1]):
-            print('Warning, some of the times are smaller than tmin or' + 
-                  'larger than tmax; zeros are substituted')
-        #
-        for k in range(self.ngvbc):
-            e = self.gvbclist[k]
-            for itime in range(e.ntstart):
-                t = time - e.tstart[itime]
-                it = 0
-                if t[-1] >= self.tintervals[0]:  # Otherwise all zero
-                    if (t[0] < self.tintervals[0]):
-                        # clever call that should be replaced with find_first 
-                        # function when included in numpy
-                        it = np.argmax( t >= self.tintervals[0])  
-                    for n in range(self.nint):
-                        tp = t[(t >= self.tintervals[n]) & 
-                               (t < self.tintervals[n+1])]
-                        Nt = len(tp)
-                        if Nt > 0:  # if all values zero, no inverse transform
-                            for i in range(Nlayers):
-                                if not np.any(disx[k, i, n * self.npint:
-                                              (n + 1) * self.npint] == 0.0) :
-                                    rvx[i, it: it + Nt] += e.bc[itime] * \
-                                        invlap(tp, self.tintervals[n + 1], 
-                                        disx[k, i , n * self.npint:
-                                             (n + 1) * self.npint],
-                                        self.M)
-                                if not np.any(disy[k, i, n * self.npint:
-                                              (n + 1) * self.npint] == 0.0) :
-                                    rvy[i, it: it + Nt] += e.bc[itime] * \
-                                        invlap(tp, self.tintervals[n + 1], 
-                                        disy[k, i , n * self.npint:
-                                             (n + 1) * self.npint],
-                                        self.M)
-                            it = it + Nt
+        rvx = invlapcomp(time, disx, self.npint, self.M, self.tintervals, 
+                         self.enumber, self.etstart, self.ebc, nlayers)
+        rvy = invlapcomp(time, disy, self.npint, self.M, self.tintervals, 
+                         self.enumber, self.etstart, self.ebc, nlayers)
         return rvx, rvy
+    
+#     def disvecold(self, x, y, t, layers=None, aq=None, derivative=0):
+#         '''Returns qx[naq, ntimes], qy[naq, ntimes] if layers=None, otherwise
+#         qx[len(layers,Ntimes)],qy[len(layers,Ntimes)]
+#         t must be ordered '''
+#         if aq is None: aq = self.aq.find_aquifer_data(x, y)
+#         if layers is None:
+#             layers = range(aq.naq)
+#         else:
+#             layers = np.atleast_1d(layers)  # corrected for base zero
+#         Nlayers = len(layers)
+#         time = np.atleast_1d(t - self.tstart).copy()
+#         disx = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
+#         disy = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
+#         for i in range(self.ngbc):
+#             qx,qy = self.gbclist[i].unitdisvec(x, y, aq)
+#             disx[i,:] += qx; disy[i,:] += qy
+#         for e in self.vzbclist:
+#             qx,qy = e.disvec(x, y, aq)
+#             disx += qx; disy += qy
+#         if layers is None:
+#             disx = np.sum(disx[:, np.newaxis, :, :] * aq.eigvec, 2)
+#             disy = np.sum(disy[:, np.newaxis, :, :] * aq.eigvec, 2)
+#         else:
+#             disx = np.sum(disx[:, np.newaxis, :, :] * aq.eigvec[layers, :], 2)
+#             disy = np.sum(disy[:, np.newaxis, :, :] * aq.eigvec[layers, :], 2)
+#         if derivative > 0:
+#             disx *= self.p ** derivative
+#             disy *= self.p ** derivative
+#         rvx = np.zeros((Nlayers, len(time)))
+#         rvy = np.zeros((Nlayers, len(time)))
+#         if (time[0] < self.tintervals[0]) or (time[-1] > self.tintervals[-1]):
+#             print('Warning, some of the times are smaller than tmin or' + 
+#                   'larger than tmax; zeros are substituted')
+#         #
+#         for k in range(self.ngvbc):
+#             e = self.gvbclist[k]
+#             for itime in range(e.ntstart):
+#                 t = time - e.tstart[itime]
+#                 it = 0
+#                 if t[-1] >= self.tintervals[0]:  # Otherwise all zero
+#                     if (t[0] < self.tintervals[0]):
+#                         # clever call that should be replaced with find_first 
+#                         # function when included in numpy
+#                         it = np.argmax( t >= self.tintervals[0])  
+#                     for n in range(self.nint):
+#                         tp = t[(t >= self.tintervals[n]) & 
+#                                (t < self.tintervals[n+1])]
+#                         Nt = len(tp)
+#                         if Nt > 0:  # if all values zero, no inverse transform
+#                             for i in range(Nlayers):
+#                                 if not np.any(disx[k, i, n * self.npint:
+#                                               (n + 1) * self.npint] == 0.0) :
+#                                     rvx[i, it: it + Nt] += e.bc[itime] * \
+#                                         invlap(tp, self.tintervals[n + 1], 
+#                                         disx[k, i , n * self.npint:
+#                                              (n + 1) * self.npint],
+#                                         self.M)
+#                                 if not np.any(disy[k, i, n * self.npint:
+#                                               (n + 1) * self.npint] == 0.0) :
+#                                     rvy[i, it: it + Nt] += e.bc[itime] * \
+#                                         invlap(tp, self.tintervals[n + 1], 
+#                                         disy[k, i , n * self.npint:
+#                                              (n + 1) * self.npint],
+#                                         self.M)
+#                             it = it + Nt
+#         return rvx, rvy
     
     def head(self, x, y, t, layers=None, aq=None, derivative=0):
         """Head at x, y, t where t can be multiple times

@@ -86,7 +86,7 @@ class Element:
             aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.disvecinf(x, y, aq)
         return np.sum(self.parameters[:, :, np.newaxis, :] * qx, 1), \
-               np.sum(self.parameters[:, :, np.newaxis, :] * qy, 1 )
+               np.sum(self.parameters[:, :, np.newaxis, :] * qy, 1)
     
     def unitdisvec(self, x, y, aq=None):
         '''Returns 2 complex arrays of size (Naq, npval)
