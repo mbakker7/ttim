@@ -260,8 +260,8 @@ class LineSinkStringBase(Element):
         self.resfach = []; self.resfacp = []
         for ls in self.lslist:
             ls.initialize()
-            self.resfach.extend( ls.resfach.tolist() )  # Needed in solving
-            self.resfacp.extend( ls.resfacp.tolist() )  # Needed in solving
+            self.resfach.extend(ls.resfach.tolist())  # Needed in solving
+            self.resfacp.extend(ls.resfacp.tolist())  # Needed in solving
         self.resfach = np.array(self.resfach)
         self.resfacp = np.array(self.resfacp)
         self.dischargeinf = np.zeros((self.nparam, self.aq.naq, 
@@ -427,7 +427,7 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
         for i in range(self.nls):
             self.lslist.append(HeadLineSink(
                 self.model, x1=self.x[i], y1=self.y[i], x2=self.x[i + 1], 
-                y2=self.y[i + 1], tsandh=self.tsandh, res=self.res, wh=self.wh,                 
+                y2=self.y[i + 1], tsandh=self.tsandh, res=self.res, wh=self.wh,               
                 layers=self.layers, label=None, addtomodel=False))
         LineSinkStringBase.initialize(self)
         self.pc = np.zeros(self.nls * self.nlayers)
@@ -517,10 +517,11 @@ class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
         self.x,self.y = xy[:, 0], xy[:, 1]
         self.nls = len(self.x) - 1
         for i in range(self.nls):
-            self.lslist.append(MscreenLineSink(
-                model, x1=self.x[i], y1=self.y[i], x2=self.x[i + 1], 
-                y2=self.y[i + 1], tsandQ=tsandQ, res=res, wh=wh, layers=layers, 
-                label=None, addtomodel=False))
+            self.lslist.append(
+                MscreenLineSink(model, x1=self.x[i], y1=self.y[i], 
+                                x2=self.x[i + 1], y2=self.y[i + 1], 
+                                tsandQ=tsandQ, res=res, wh=wh, layers=layers, 
+                                label=None, addtomodel=False))
         self.Astorage = Astorage
         self.model.addelement(self)
     def initialize(self):
