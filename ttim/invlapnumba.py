@@ -22,7 +22,7 @@ import numpy as np
 import numba
 
 @numba.njit(nogil=True)
-def invlap(t, tmax, fp, M, alpha=1e-10):
+def invlap(t, tmax, fp, M, alpha=1e-10, tol=1e-9):
     """Inverse Laplace tansform with algorithm of De Hoog, Knight and Stokes
 
     Parameters
@@ -63,7 +63,7 @@ def invlap(t, tmax, fp, M, alpha=1e-10):
     T = scale * tmax
     Nt = len(t)
     #
-    tol = alpha * 10.0
+    #tol = alpha * 10.0
     gamma = alpha - np.log(tol) / (scale * T)
 
     # would it be useful to try re-using
@@ -102,14 +102,14 @@ def invlap(t, tmax, fp, M, alpha=1e-10):
     # seed A and B for recurrence
     A[0] = 0.0 
     A[1] = d[0]
-    B[0:2] = 1.0 + 0j
+    B[0: 2] = 1.0 + 0j
 
     # base of the power series
     z = np.exp(1j * np.pi * t / T) 
 
     # coefficients of Pade approximation (A & B)
     # using recurrence for all but last term
-    for i in range(1,2*M):
+    for i in range(1, 2 * M):
         A[i + 1] = A[i] + d[i] * A[i - 1] * z
         B[i + 1] = B[i] + d[i] * B[i - 1] * z
 
@@ -131,10 +131,10 @@ def invlap(t, tmax, fp, M, alpha=1e-10):
     return result
 
 @numba.njit(nogil=True)
-def compute_laplace_parameters_numba(tmax, M=20, alpha=1e-10):
+def compute_laplace_parameters_numba(tmax, M=20, alpha=1e-10, tol=1e-9):
     # 2*M+1 terms in approximation
     # desired tolerance (here simply related to alpha)
-    tol = alpha * 10.0
+    #tol = alpha * 10.0
     nump = 2 * M + 1 # number of terms in approximation
     # scaling factor (likely tune-able, but 2 is typical)
     scale = 2.0
