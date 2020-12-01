@@ -59,29 +59,29 @@ class Element:
         pass
     
     def potinf(self, x, y, aq=None):
-        '''Returns complex array of size (nparam, Naq, npval)'''
+        '''Returns complex array of size (nparam, naq, npval)'''
         raise 'Must overload Element.potinf()'
     
     def potential(self, x, y, aq=None):
-        '''Returns complex array of size (ngvbc, Naq, npval)'''
+        '''Returns complex array of size (ngvbc, naq, npval)'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum(self.parameters[:, :, np.newaxis, :] * \
                       self.potinf(x, y, aq), 1)
     
     def unitpotential(self, x, y, aq=None):
-        '''Returns complex array of size (Naq, npval)
+        '''Returns complex array of size (naq, npval)
         Can be more efficient for given elements'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum(self.potinf(x, y, aq), 0)
     
     def disvecinf(self, x, y, aq=None):
-        '''Returns 2 complex arrays of size (nparam, Naq, npval)'''
+        '''Returns 2 complex arrays of size (nparam, naq, npval)'''
         raise 'Must overload Element.disvecinf()'
     
     def disvec(self, x, y, aq=None):
-        '''Returns 2 complex arrays of size (ngvbc, Naq, npval)'''
+        '''Returns 2 complex arrays of size (ngvbc, naq, npval)'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.disvecinf(x, y, aq)
@@ -89,7 +89,7 @@ class Element:
                np.sum(self.parameters[:, :, np.newaxis, :] * qy, 1)
     
     def unitdisvec(self, x, y, aq=None):
-        '''Returns 2 complex arrays of size (Naq, npval)
+        '''Returns 2 complex arrays of size (naq, npval)
         Can be more efficient for given elements'''
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)

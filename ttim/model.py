@@ -94,8 +94,8 @@ class TimModel(PlotTtim):
         # also, you cannot count on t >= 10 ** log10(t) for all possible t
         self.tintervals[0] = self.tintervals[0] * (1 - 1e-12)
         self.tintervals[-1] = self.tintervals[-1] * (1 + 1e-12)
-        self.nint = len(self.tintervals) - 1
-        self.npint = 2 * self.M + 1
+        self.nint = len(self.tintervals) - 1 # number of p-intervals
+        self.npint = 2 * self.M + 1 # number of p values in an interval
         self.npval = self.nint * self.npint
         # numba 
         self.p = np.zeros((self.nint, self.npint), dtype=np.complex128)
