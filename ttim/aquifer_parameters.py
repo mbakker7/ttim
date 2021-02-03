@@ -1,29 +1,40 @@
 import numpy as np
 
-def param_maq(kaq=[1], z=[1, 0], c=[], Saq=[0.001], Sll=[0],
-              topboundary='conf', phreatictop=False):
+def param_maq(kaq=[1], z=[1, 0], c=[], Saq=[0.001], Sll=[0], 
+              poraq=[0.3], porll=[0.3], topboundary='conf', phreatictop=False):
     # Computes the parameters for a TimModel from input for a maq model
     kaq = np.atleast_1d(kaq).astype('d')
-    Naq = len(kaq)
+    naq = len(kaq)
     z = np.atleast_1d(z).astype('d')
     c = np.atleast_1d(c).astype('d')
     Saq = np.atleast_1d(Saq).astype('d')
     if len(Saq) == 1: 
-        Saq = Saq * np.ones(Naq)
+        Saq = Saq * np.ones(naq)
     Sll = np.atleast_1d(Sll).astype('d')
+    poraq = np.atleast_1d(poraq).astype('d')
+    if len(poraq) == 1:
+        poraq = poraq * np.ones(naq)
+    porll = np.atleast_1d(porll).astype('d')
     H = z[:-1] - z[1:]
     assert np.all(H >= 0), 'Error: Not all layers thicknesses are' + \
                            ' non-negative' + str(H) 
     if topboundary[:3] == 'con':
-        assert len(z) == 2 * Naq, 'Error: Length of z needs to be ' + \
-                                  str(2 * Naq)
-        assert len(c) == Naq - 1, 'Error: Length of c needs to be ' + \
-                                  str(Naq - 1)
-        assert len(Saq) == Naq, 'Error: Length of Saq needs to be ' + \
-                                str(Naq)
-        if len(Sll) == 1: Sll = Sll * np.ones(Naq - 1)
-        assert len(Sll) == Naq-1, 'Error: Length of Sll needs to be ' + \
-                                  str(Naq-1)
+        assert len(z) == 2 * naq, 'Error: Length of z needs to be ' + \
+                                  str(2 * naq)
+        assert len(c) == naq - 1, 'Error: Length of c needs to be ' + \
+                                  str(naq - 1)
+        assert len(Saq) == naq, 'Error: Length of Saq needs to be ' + \
+                                str(naq)
+        assert len(poraq) == naq, 'Error: Length of poraq needs to be ' + \
+                                str(naq)
+        if len(Sll) == 1: 
+            Sll = Sll * np.ones(naq - 1)
+        if len(porll) == 1:
+            porll = porll * np.ones(naq - 1)
+        assert len(Sll) == naq - 1, 'Error: Length of Sll needs to be ' + \
+                                  str(naq - 1)
+        assert len(porll) == naq - 1, 'Error: Length of porll needs to be ' + \
+                                  str(naq - 1)
         Haq = H[::2]
         #Saq = Saq * Haq
         #if phreatictop: Saq[0] = Saq[0] / H[0]
@@ -36,19 +47,24 @@ def param_maq(kaq=[1], z=[1, 0], c=[], Saq=[0.001], Sll=[0],
         Sll = np.hstack((1e-30, Sll)) 
         Hll = np.hstack((1e-30, Hll))
     else: # leaky layers on top
-        assert len(z) == 2 * Naq + 1, 'Error: Length of z needs to be ' + \
-                                      str(2*Naq+1)
-        assert len(c) == Naq, 'Error: Length of c needs to be ' + str(Naq)
-        assert len(Saq) == Naq, 'Error: Length of Saq needs to be ' + str(Naq)
+        assert len(z) == 2 * naq + 1, 'Error: Length of z needs to be ' + \
+                                      str(2*naq+1)
+        assert len(c) == naq, 'Error: Length of c needs to be ' + str(naq)
+        assert len(Saq) == naq, 'Error: Length of Saq needs to be ' + str(naq)
+        assert len(poraq) == naq, 'Error: Length of poraq needs to be ' + str(naq)
         if len(Sll) == 1: 
-            Sll = Sll * np.ones(Naq)
-        assert len(Sll) == Naq, 'Error: Length of Sll needs to be ' + str(Naq)
+            Sll = Sll * np.ones(naq)
+        assert len(Sll) == naq, 'Error: Length of Sll needs to be ' + str(naq)
+        if len(porll) == 1: 
+            porll = porll * np.ones(naq)
+        assert len(porll) == naq, 'Error: Length of porll needs to be ' + \
+                                   str(naq)
         Haq = H[1::2]
         #Saq = Saq * Haq
         Hll = H[::2]
         #Sll = Sll * Hll
         #if phreatictop and (topboundary[:3]=='lea'): Sll[0] = Sll[0] / H[0]
-    return kaq, Haq, Hll, c, Saq, Sll
+    return kaq, Haq, Hll, c, Saq, Sll, poraq, porll
     
 def param_3d(kaq=[1], z=[1, 0], Saq=[0.001], kzoverkh=1, phreatictop=False,
              topboundary='conf', topres=0, topthick=0, topSll=0):
