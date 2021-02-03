@@ -3,12 +3,13 @@ import matplotlib.pyplot as plt
 import inspect # Used for storing the input
 
 class AquiferData:
-    def __init__(self, model, kaq, Haq, Hll, c, Saq, Sll, poraq, porll, 
+    def __init__(self, model, kaq, z, Haq, Hll, c, Saq, Sll, poraq, porll, 
                  topboundary, phreatictop, kzoverkh=None, model3d=False):
         '''kzoverkh and model3d only need to be specified when model
         is model3d'''
         self.model = model
         self.kaq = np.atleast_1d(kaq).astype('d')
+        self.z = np.atleast_1d(z).astype('d')
         self.naq = len(self.kaq)
         self.Haq = np.atleast_1d(Haq).astype('d')
         self.Hll = np.atleast_1d(Hll).astype('d')
@@ -148,9 +149,9 @@ class AquiferData:
         return +9999
     
 class Aquifer(AquiferData):
-    def __init__(self, model, kaq, Haq, Hll, c, Saq, Sll, poraq, porll, 
+    def __init__(self, model, kaq, z, Haq, Hll, c, Saq, Sll, poraq, porll, 
                  topboundary, phreatictop, kzoverkh=None, model3d=False):
-        AquiferData.__init__(self, model, kaq, Haq, Hll, c, Saq, Sll, 
+        AquiferData.__init__(self, model, kaq, z, Haq, Hll, c, Saq, Sll, 
                 poraq, porll, topboundary, phreatictop, kzoverkh, model3d)
         self.inhomlist = []
         self.area = 1e300 # Needed to find smallest inhomogeneity

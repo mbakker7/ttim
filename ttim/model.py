@@ -10,7 +10,7 @@ from .invlapnumba import compute_laplace_parameters_numba, invlap, invlapcomp
 from .util import PlotTtim
 
 class TimModel(PlotTtim):
-    def __init__(self, kaq=[1, 1], Haq=[1, 1], Hll=[0], c=[1e100, 100], 
+    def __init__(self, kaq=[1, 1], z=[3, 2, 1], Haq=[1, 1], Hll=[0], c=[1e100, 100], 
                  Saq=[1e-4, 1e-4], Sll=[0], poraq=0.3, porll=0.3, topboundary='conf', 
                  phreatictop=False, tmin=1, tmax=10, tstart=0, M=10, 
                  kzoverkh=None, model3d=False):
@@ -24,7 +24,7 @@ class TimModel(PlotTtim):
         self.tmax = tmax
         self.tstart = tstart
         self.M = M
-        self.aq = Aquifer(self, kaq, Haq, Hll, c, Saq, Sll, poraq, porll,
+        self.aq = Aquifer(self, kaq, z, Haq, Hll, c, Saq, Sll, poraq, porll,
                           topboundary, phreatictop, kzoverkh, model3d)
         self.compute_laplace_parameters()
         self.name = 'TimModel'
@@ -225,16 +225,22 @@ class TimModel(PlotTtim):
         pot = self.potential(x, y, t, layers, aq, derivative)
         return aq.potential_to_head(pot, layers)
     
-    def velocomp(self, x, y, z, t, layer=0, aq=None):
+    def velocomp(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
         # implemented for one layer
         if aq is None: 
             aq = self.aq.find_aquifer_data(x, y)
         qx, qy = self.disvec(x, y, t, aq=aq)
+        layer = layer_ltype[0]
         vx = qx[layer] / (aq.Haq[layer] * aq.poraq[layer])
         vy = qy[layer] / (aq.Haq[layer] * aq.poraq[layer])
-        vz = 0.0
+        vz = np.zeros_like(vx)
         return vx, vy, vz
-        
+    
+    def velo_one(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
+        # implemented for one layer and one time
+        vx, vy, vz = self.velocomp(x, y, z, t, aq, layer_ltype)
+        return np.array([vx[0], vy[0], vz[0]])
+
     def headinside(self, elabel, t):
         return self.elementdict[elabel].headinside(t - self.tstart)
     
@@ -504,7 +510,7 @@ class ModelMaq(TimModel):
         self.storeinput(inspect.currentframe())
         kaq, Haq, Hll, c, Saq, Sll, poraq, porll = param_maq(
                 kaq, z, c, Saq, Sll, poraq, porll, topboundary, phreatictop)
-        TimModel.__init__(self, kaq, Haq, Hll, c, Saq, Sll, poraq, porll, 
+        TimModel.__init__(self, kaq, z, Haq, Hll, c, Saq, Sll, poraq, porll, 
                           topboundary, phreatictop, tmin, tmax, tstart, M)
         self.name = 'ModelMaq'
         
@@ -570,7 +576,7 @@ class Model3D(TimModel):
         kaq, Haq, Hll, c, Saq, Sll, poraq, porll = param_3d(
             kaq, z, Saq, kzoverkh, poraq, phreatictop, topboundary, topres, 
             topthick, topSll, toppor)
-        TimModel.__init__(self, kaq, Haq, Hll, c, Saq, Sll, poraq, porll, 
+        TimModel.__init__(self, kaq, z, Haq, Hll, c, Saq, Sll, poraq, porll, 
                           topboundary, phreatictop, tmin, tmax, tstart, M, 
                           kzoverkh, model3d=True)
         self.name = 'Model3D'
