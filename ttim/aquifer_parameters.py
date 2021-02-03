@@ -66,8 +66,9 @@ def param_maq(kaq=[1], z=[1, 0], c=[], Saq=[0.001], Sll=[0],
         #if phreatictop and (topboundary[:3]=='lea'): Sll[0] = Sll[0] / H[0]
     return kaq, Haq, Hll, c, Saq, Sll, poraq, porll
     
-def param_3d(kaq=[1], z=[1, 0], Saq=[0.001], kzoverkh=1, phreatictop=False,
-             topboundary='conf', topres=0, topthick=0, topSll=0):
+def param_3d(kaq=[1], z=[1, 0], Saq=[0.001], kzoverkh=1, poraq=0.3, 
+             phreatictop=False, topboundary='conf', topres=0, topthick=0, 
+             topSll=0, toppor=0.3):
     # Computes the parameters for a TimModel from input for a 3D model
     kaq = np.atleast_1d(kaq).astype('d')
     z = np.atleast_1d(z).astype('d')
@@ -80,6 +81,9 @@ def param_3d(kaq=[1], z=[1, 0], Saq=[0.001], kzoverkh=1, phreatictop=False,
     kzoverkh = np.atleast_1d(kzoverkh).astype('d')
     if len(kzoverkh) == 1: 
         kzoverkh = kzoverkh * np.ones(naq)
+    poraq = np.atleast_1d(poraq).astype('d')
+    if len(poraq) == 1:
+        poraq = poraq * np.ones(naq)
     Haq = z[:-1] - z[1:]
     c = 0.5 * Haq[:-1] / (kzoverkh[:-1] * kaq[:-1]) + \
         0.5 * Haq[1:] /  (kzoverkh[1:] * kaq[1:])
@@ -89,8 +93,10 @@ def param_3d(kaq=[1], z=[1, 0], Saq=[0.001], kzoverkh=1, phreatictop=False,
     c = np.hstack((1e100, c))
     Hll = 1e-20 * np.ones(len(c))
     Sll = 1e-20 * np.ones(len(c))
+    porll = np.zeros(len(c))
     if (topboundary[:3] == 'sem') or (topboundary[:3] == 'lea'):
         c[0] = np.max([1e-20, topres])
         Hll[0] = np.max([1e-20, topthick])
         Sll[0] = np.max([1e-20, topSll])
-    return kaq, Haq, Hll, c, Saq, Sll
+        porll[0] = toppor
+    return kaq, Haq, Hll, c, Saq, Sll, poraq, porll

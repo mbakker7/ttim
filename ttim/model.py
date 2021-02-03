@@ -233,7 +233,7 @@ class TimModel(PlotTtim):
         vx = qx[layer] / (aq.Haq[layer] * aq.poraq[layer])
         vy = qy[layer] / (aq.Haq[layer] * aq.poraq[layer])
         vz = 0.0
-        return np.array([vx, vy, vz])
+        return vx, vy, vz
         
     def headinside(self, elabel, t):
         return self.elementdict[elabel].headinside(t - self.tstart)
@@ -561,15 +561,16 @@ class Model3D(TimModel):
         
     """
     
-    def __init__(self, kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, \
-                 topboundary='conf', phreatictop=True, topres=0, topthick=0, 
-                 topSll=0, tmin=1, tmax=10, tstart=0, M=10):
+    def __init__(self, kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, 
+                 poraq=0.3, topboundary='conf', phreatictop=True, 
+                 topres=0, topthick=0, topSll=0, toppor=0.3, 
+                 tmin=1, tmax=10, tstart=0, M=10):
         '''z must have the length of the number of layers + 1'''
         self.storeinput(inspect.currentframe())
-        kaq, Haq, Hll, c, Saq, Sll = param_3d(kaq, z, Saq, kzoverkh, 
-                                              phreatictop, topboundary, topres, 
-                                              topthick, topSll)
-        TimModel.__init__(self, kaq, Haq, Hll, c, Saq, Sll, topboundary, 
-                          phreatictop, tmin, tmax, tstart, M, 
+        kaq, Haq, Hll, c, Saq, Sll, poraq, porll = param_3d(
+            kaq, z, Saq, kzoverkh, poraq, phreatictop, topboundary, topres, 
+            topthick, topSll, toppor)
+        TimModel.__init__(self, kaq, Haq, Hll, c, Saq, Sll, poraq, porll, 
+                          topboundary, phreatictop, tmin, tmax, tstart, M, 
                           kzoverkh, model3d=True)
         self.name = 'Model3D'
