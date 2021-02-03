@@ -133,6 +133,37 @@ class TimModel(PlotTtim):
                         self.enumber, self.etstart, self.ebc, nlayers)
         return rv
     
+    def potentialone(self, x, y, time, layers=None, aq=None, derivative=0, 
+                  returnphi=0):
+        '''Returns pot[naq] if layers=None, 
+        otherwise pot[len(layers)]
+        time is one value'''
+        if aq is None: 
+            aq = self.aq.find_aquifer_data(x, y)
+        if layers is None:
+            layers = range(aq.naq)
+        nlayers = len(layers)
+        time = np.atleast_1d(time) - self.tstart # used to be ).copy()
+        jtime = np.searchsorted(self.tintervals, time)[0] - 1
+        assert 0 <= jtime <= len(self.tintervals), 'time not in tintervals'
+        pot = np.zeros((self.ngvbc, aq.naq, self.npint), 'D')
+        for i in range(self.ngbc):
+            pot[i, :] += self.gbclist[i].unitpotentialone(x, y, jtime, aq)
+        for e in self.vzbclist:
+            pot += e.potential(x, y, aq)
+        if layers is None:
+            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec2[:, :, jtime], 2)
+        else:
+            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec2[layers, :, jtime], 2)
+        if derivative > 0: 
+            pot *= self.p ** derivative
+        if returnphi:
+            return pot
+        rv = invlapcomp(time, pot[:, :, :], self.npint, self.M, 
+                        self.tintervals[jtime: jtime + 2], 
+                        self.enumber, self.etstart, self.ebc, nlayers)
+        return rv
+    
     def disvec(self, x, y, t, layers=None, aq=None, derivative=0):
         '''Returns qx[naq, ntimes], qy[naq, ntimes] if layers=None, otherwise
         qx[len(layers,Ntimes)],qy[len(layers, ntimes)]

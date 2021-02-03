@@ -78,6 +78,9 @@ class AquiferData:
         self.lab2 = self.lab.copy() 
         self.lab2.shape = (self.naq, self.model.nint, self.model.npint)
         self.lababs = np.abs(self.lab2[:, :, 0]) # used to check distances
+        self.eigvec2 = self.eigvec.copy()
+        self.eigvec2.shape = (self.naq, self.naq, 
+                              self.model.nint, self.model.npint)
     
     def compute_lab_eigvec(self, p, returnA = False, B = None):
         sqrtpSc = np.sqrt( p * self.Scoefll * self.c )
