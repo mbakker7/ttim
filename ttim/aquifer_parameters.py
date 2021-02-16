@@ -48,7 +48,7 @@ def param_maq(kaq=[1], z=[1, 0], c=[], Saq=[0.001], Sll=[0],
         Hll = np.hstack((1e-30, Hll))
         # layertype
         nlayers = len(z) - 1
-        ltype = nlayers * ['a']
+        ltype = np.array(nlayers * ['a'])
         ltype[1::2] = 'l'
     else: # leaky layers on top
         assert len(z) == 2 * naq + 1, 'Error: Length of z needs to be ' + \
@@ -69,8 +69,8 @@ def param_maq(kaq=[1], z=[1, 0], c=[], Saq=[0.001], Sll=[0],
         #Sll = Sll * Hll
         #if phreatictop and (topboundary[:3]=='lea'): Sll[0] = Sll[0] / H[0]
         # layertype
-        nlayers = len(self.z) - 1
-        ltype = nlayers * ['a']
+        nlayers = len(z) - 1
+        ltype = np.array(nlayers * ['a'])
         ltype[0::2] = 'l'
     return kaq, Haq, Hll, c, Saq, Sll, poraq, porll, ltype
     
@@ -103,12 +103,12 @@ def param_3d(kaq=[1], z=[1, 0], Saq=[0.001], kzoverkh=1, poraq=0.3,
     Sll = 1e-20 * np.ones(len(c))
     porll = np.zeros(len(c))
     nlayers = len(z) - 1
-    ltype = nlayers * ['a']
+    ltype = np.array(nlayers * ['a'])
     if (topboundary[:3] == 'sem') or (topboundary[:3] == 'lea'):
         c[0] = np.max([1e-20, topres])
         Hll[0] = np.max([1e-20, topthick])
         Sll[0] = np.max([1e-20, topSll])
         porll[0] = toppor
-        ltype = ['l'] + ltype
+        ltype = np.hstack(('l', ltype))
         z = np.hstack((z[0] + topthick, z))
     return kaq, Haq, Hll, c, Saq, Sll, poraq, porll, ltype, z
