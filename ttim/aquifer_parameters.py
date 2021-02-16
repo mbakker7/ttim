@@ -1,7 +1,7 @@
 import numpy as np
 
-def param_maq(kaq=[1], z=[1, 0], c=[], Saq=[0.001], Sll=[0], 
-              poraq=[0.3], porll=[0.3], topboundary='conf', phreatictop=False):
+def param_maq(kaq=[1], z=[1, 0], c=[], Saq=[0.001], Sll=[], 
+              poraq=[0.3], porll=[], topboundary='conf', phreatictop=False):
     # Computes the parameters for a TimModel from input for a maq model
     kaq = np.atleast_1d(kaq).astype('d')
     naq = len(kaq)
