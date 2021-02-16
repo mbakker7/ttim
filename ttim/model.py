@@ -267,12 +267,12 @@ class TimModel(PlotTtim):
             #
             h = np.zeros(3) # head above layer, in layer, and below layer
             if layer > 0:
-                if layer < aq.naq: # there is a layer above and below
+                if layer < aq.naq - 1: # there is a layer above and below
                     h[:] = self.head(x, y, t, layers=[layer - 1, layer, layer + 1], aq=aq)[:, 0]
                 else:
                     h[:2] = self.head(x, y, t, layers=[layer - 1, layer], aq=aq)[:, 0]
-            else: # top layer
-                if layer < aq.naq:
+            else: # layer = 0, so top layer
+                if layer < aq.naq - 1:
                     if aq.ltype[0] == 'l':
                         h[1:] = self.head(x, y, t, layers=[layer, layer + 1], aq=aq)[:, 0]
                     else:
@@ -282,7 +282,7 @@ class TimModel(PlotTtim):
             # TO DO modify for infiltration in top aquifer
             #if layer == 0:
             #    qztop += self.qztop(x, y)   
-            if layer < aq.naq:
+            if layer < aq.naq - 1:
                 qzbot = (h[2] - h[1]) / self.aq.c[layer + 1]
             else:
                 qzbot = 0.0

@@ -27,10 +27,6 @@ def param_maq(kaq=[1], z=[1, 0], c=[], Saq=[0.001], Sll=[0],
                                 str(naq)
         assert len(poraq) == naq, 'Error: Length of poraq needs to be ' + \
                                 str(naq)
-        if len(Sll) == 1: 
-            Sll = Sll * np.ones(naq - 1)
-        if len(porll) == 1:
-            porll = porll * np.ones(naq - 1)
         assert len(Sll) == naq - 1, 'Error: Length of Sll needs to be ' + \
                                   str(naq - 1)
         assert len(porll) == naq - 1, 'Error: Length of porll needs to be ' + \
@@ -46,6 +42,7 @@ def param_maq(kaq=[1], z=[1, 0], c=[], Saq=[0.001], Sll=[0],
         # when c approaches inf
         Sll = np.hstack((1e-30, Sll)) 
         Hll = np.hstack((1e-30, Hll))
+        porll = np.hstack((1e-30, porll))
         # layertype
         nlayers = len(z) - 1
         ltype = np.array(nlayers * ['a'])
