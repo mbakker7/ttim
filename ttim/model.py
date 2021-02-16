@@ -226,16 +226,70 @@ class TimModel(PlotTtim):
         pot = self.potential(x, y, t, layers, aq, derivative)
         return aq.potential_to_head(pot, layers)
     
-    def velocomp(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
+    def velocompold(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
         # implemented for one layer
         if aq is None: 
             aq = self.aq.find_aquifer_data(x, y)
+        assert z <= aq.z[0] and z >= aq.z[-1], "z value not inside aquifer"
+        if layer_ltype is None:
+            layer, ltype, dummy = aq.findlayer(z)
+        else:
+            layer, ltype = layer_ltype
         qx, qy = self.disvec(x, y, t, aq=aq)
         layer = layer_ltype[0]
         vx = qx[layer] / (aq.Haq[layer] * aq.poraq[layer])
         vy = qy[layer] / (aq.Haq[layer] * aq.poraq[layer])
         vz = np.zeros_like(vx)
         return vx, vy, vz
+    
+    def velocomp(self, x, y, z, t, aq=None, layer_ltype=None):
+        if aq is None: 
+            aq = self.aq.find_aquifer_data(x, y)
+        assert z <= aq.z[0] and z >= aq.z[-1], "z value not inside aquifer"
+        if layer_ltype is None:
+            layer, ltype, dummy = aq.findlayer(z)
+        else:
+            layer, ltype = layer_ltype            
+        if ltype == 'l':
+            vx = 0.0
+            vy = 0.0
+            if layer == 0:
+                h = self.head(x, y, t, layers=layer, aq=aq)
+                qz = (h[0, 0] - 0.0) / aq.c[0]
+            else:
+                h = self.head(x, y, t, layers=[layer - 1, layer], aq=aq)
+                qz = (h[1, 0] - h[0, 0]) / aq.c[layer] # TO DO include storage in leaky layer
+            vz = qz / aq.porll[layer]
+        else:
+            qx, qy = self.disvec(x, y, t, aq=aq)
+            vx = qx[layer, 0] / (aq.Haq[layer] * aq.poraq[layer])
+            vy = qy[layer, 0] / (aq.Haq[layer] * aq.poraq[layer])
+            #
+            h = np.zeros(3) # head above layer, in layer, and below layer
+            if layer > 0:
+                if layer < aq.naq: # there is a layer above and below
+                    h[:] = self.head(x, y, t, layers=[layer - 1, layer, layer + 1], aq=aq)[:, 0]
+                else:
+                    h[:2] = self.head(x, y, t, layers=[layer - 1, layer], aq=aq)[:, 0]
+            else: # top layer
+                if layer < aq.naq:
+                    if aq.ltype[0] == 'l':
+                        h[1:] = self.head(x, y, t, layers=[layer, layer + 1], aq=aq)[:, 0]
+                    else:
+                        h[1] = self.head(x, y, t, layers=[layer], aq=aq)[:, 0]
+            # this works because c[0] = 1e100 for impermeable top
+            qztop = (h[1] - h[0]) / self.aq.c[layer] 
+            # TO DO modify for infiltration in top aquifer
+            #if layer == 0:
+            #    qztop += self.qztop(x, y)   
+            if layer < aq.naq:
+                qzbot = (h[2] - h[1]) / self.aq.c[layer + 1]
+            else:
+                qzbot = 0.0
+            vz = (qzbot + (z - aq.zaqbot[layer]) / aq.Haq[layer] * \
+                 (qztop - qzbot)) / aq.poraq[layer]    
+
+        return np.array([vx, vy, vz])
     
     def velo_one(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
         # implemented for one layer and one time

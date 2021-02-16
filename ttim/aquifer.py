@@ -24,6 +24,8 @@ class AquiferData:
         self.poraq = np.atleast_1d(poraq).astype('d')
         self.porll = np.atleast_1d(porll).astype('d')
         self.ltype = np.atleast_1d(ltype)
+        self.zaqtop = self.z[:-1][self.ltype == 'a']
+        self.zaqbot = self.z[1:][self.ltype == 'a']
         self.layernumber = np.zeros(self.nlayers, dtype='int')
         self.layernumber[self.ltype == 'a'] = np.arange(self.naq)
         self.layernumber[self.ltype == 'l'] = np.arange(self.nlayers - self.naq)
