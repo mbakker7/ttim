@@ -226,7 +226,7 @@ class TimModel(PlotTtim):
         pot = self.potential(x, y, t, layers, aq, derivative)
         return aq.potential_to_head(pot, layers)
     
-    def velocompold(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
+    def velocomp(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
         # implemented for one layer
         if aq is None: 
             aq = self.aq.find_aquifer_data(x, y)
@@ -242,7 +242,7 @@ class TimModel(PlotTtim):
         vz = np.zeros_like(vx)
         return vx, vy, vz
     
-    def velocomp(self, x, y, z, t, aq=None, layer_ltype=None):
+    def velocompnew(self, x, y, z, t, aq=None, layer_ltype=None):
         if aq is None: 
             aq = self.aq.find_aquifer_data(x, y)
         assert z <= aq.z[0] and z >= aq.z[-1], "z value not inside aquifer"
