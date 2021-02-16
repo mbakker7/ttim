@@ -4,13 +4,14 @@ import inspect # Used for storing the input
 
 class AquiferData:
     def __init__(self, model, kaq, z, Haq, Hll, c, Saq, Sll, poraq, porll, 
-                 topboundary, phreatictop, kzoverkh=None, model3d=False):
+                 ltype, topboundary, phreatictop, kzoverkh=None, model3d=False):
         '''kzoverkh and model3d only need to be specified when model
         is model3d'''
         self.model = model
         self.kaq = np.atleast_1d(kaq).astype('d')
         self.z = np.atleast_1d(z).astype('d')
         self.naq = len(self.kaq)
+        self.nlayers = len(self.z) - 1
         self.Haq = np.atleast_1d(Haq).astype('d')
         self.Hll = np.atleast_1d(Hll).astype('d')
         self.T = self.kaq * self.Haq
@@ -22,6 +23,12 @@ class AquiferData:
         self.Sll[self.Sll < 1e-20] = 1e-20 # Cannot be zero
         self.poraq = np.atleast_1d(poraq).astype('d')
         self.porll = np.atleast_1d(porll).astype('d')
+        self.ltype = np.atleast_1d(ltype)
+        self.layernumber = np.zeros(self.nlayers, dtype='int')
+        self.layernumber[self.ltype == 'a'] = np.arange(self.naq)
+        self.layernumber[self.ltype == 'l'] = np.arange(self.nlayers - self.naq)
+        if self.ltype[0] == 'a':
+            self.layernumber[self.ltype == 'l'] += 1  # first leaky layer below first aquifer layer
         self.topboundary = topboundary[:3]
         self.phreatictop = phreatictop
         self.kzoverkh = kzoverkh
@@ -148,11 +155,29 @@ class AquiferData:
             return self.naq - 1
         return +9999
     
+    def findlayer(self, z):
+        '''
+        Returns layer-number, layer-type and model-layer-number'''
+        if z > self.z[0]:
+            modellayer = -1
+            ltype = 'above'
+            layernumber = None
+        elif z < self.z[-1]:
+            modellayer = len(self.layernumber)
+            ltype = 'below'
+            layernumber = None
+        else:
+            modellayer = np.argwhere((z <= self.z[:-1]) & 
+                                     (z >= self.z[1:]))[0, 0]
+            layernumber = self.layernumber[modellayer]
+            ltype = self.ltype[modellayer] 
+        return layernumber, ltype, modellayer
+    
 class Aquifer(AquiferData):
     def __init__(self, model, kaq, z, Haq, Hll, c, Saq, Sll, poraq, porll, 
-                 topboundary, phreatictop, kzoverkh=None, model3d=False):
+                 ltype, topboundary, phreatictop, kzoverkh=None, model3d=False):
         AquiferData.__init__(self, model, kaq, z, Haq, Hll, c, Saq, Sll, 
-                poraq, porll, topboundary, phreatictop, kzoverkh, model3d)
+            poraq, porll, ltype, topboundary, phreatictop, kzoverkh, model3d)
         self.inhomlist = []
         self.area = 1e300 # Needed to find smallest inhomogeneity
     

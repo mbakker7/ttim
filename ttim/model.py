@@ -10,8 +10,9 @@ from .invlapnumba import compute_laplace_parameters_numba, invlap, invlapcomp
 from .util import PlotTtim
 
 class TimModel(PlotTtim):
-    def __init__(self, kaq=[1, 1], z=[3, 2, 1], Haq=[1, 1], Hll=[0], c=[1e100, 100], 
-                 Saq=[1e-4, 1e-4], Sll=[0], poraq=0.3, porll=0.3, topboundary='conf', 
+    def __init__(self, kaq=[1, 1], z=[3, 2, 1], Haq=[1, 1], Hll=[0], 
+                 c=[1e100, 100], Saq=[1e-4, 1e-4], Sll=[0], 
+                 poraq=0.3, porll=0.3, ltype=['a', 'a'], topboundary='conf', 
                  phreatictop=False, tmin=1, tmax=10, tstart=0, M=10, 
                  kzoverkh=None, model3d=False):
         self.elementlist = []
@@ -25,7 +26,7 @@ class TimModel(PlotTtim):
         self.tstart = tstart
         self.M = M
         self.aq = Aquifer(self, kaq, z, Haq, Hll, c, Saq, Sll, poraq, porll,
-                          topboundary, phreatictop, kzoverkh, model3d)
+                          ltype, topboundary, phreatictop, kzoverkh, model3d)
         self.compute_laplace_parameters()
         self.name = 'TimModel'
         self.modelname = 'ml' # Used for writing out input
@@ -508,9 +509,10 @@ class ModelMaq(TimModel):
                  topboundary='conf', phreatictop=False,
                  tmin=1, tmax=10, tstart=0, M=10):
         self.storeinput(inspect.currentframe())
-        kaq, Haq, Hll, c, Saq, Sll, poraq, porll = param_maq(
+        kaq, Haq, Hll, c, Saq, Sll, poraq, porll, ltype = param_maq(
                 kaq, z, c, Saq, Sll, poraq, porll, topboundary, phreatictop)
-        TimModel.__init__(self, kaq, z, Haq, Hll, c, Saq, Sll, poraq, porll, 
+        TimModel.__init__(self, kaq, z, Haq, Hll, c, Saq, Sll, 
+                          poraq, porll, ltype,
                           topboundary, phreatictop, tmin, tmax, tstart, M)
         self.name = 'ModelMaq'
         
@@ -573,10 +575,11 @@ class Model3D(TimModel):
                  tmin=1, tmax=10, tstart=0, M=10):
         '''z must have the length of the number of layers + 1'''
         self.storeinput(inspect.currentframe())
-        kaq, Haq, Hll, c, Saq, Sll, poraq, porll = param_3d(
+        kaq, Haq, Hll, c, Saq, Sll, poraq, porll, ltype, z = param_3d(
             kaq, z, Saq, kzoverkh, poraq, phreatictop, topboundary, topres, 
             topthick, topSll, toppor)
-        TimModel.__init__(self, kaq, z, Haq, Hll, c, Saq, Sll, poraq, porll, 
+        TimModel.__init__(self, kaq, z, Haq, Hll, c, Saq, Sll, 
+                          poraq, porll, ltype, 
                           topboundary, phreatictop, tmin, tmax, tstart, M, 
                           kzoverkh, model3d=True)
         self.name = 'Model3D'
