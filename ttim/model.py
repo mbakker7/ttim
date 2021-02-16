@@ -558,8 +558,8 @@ class ModelMaq(TimModel):
     
     """
     
-    def __init__(self, kaq=[1], z=[1,0], c=[], Saq=[0.001], Sll=[],
-                 poraq=[0.3], porll=[],
+    def __init__(self, kaq=[1], z=[1,0], c=[], Saq=[0.001], Sll=[0],
+                 poraq=[0.3], porll=[0.3],
                  topboundary='conf', phreatictop=False,
                  tmin=1, tmax=10, tstart=0, M=10):
         self.storeinput(inspect.currentframe())
