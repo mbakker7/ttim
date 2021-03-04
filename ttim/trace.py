@@ -53,7 +53,6 @@ def timtraceline(ml, xstart, ystart, zstart, tstart, delt, tmax,
         xyzt1 = np.array([x1, y1, z1, t1])
         # check if point needs to be changed
         correction = False # don't do correction
-        ## not checked if correction is needed
         for e in ml.elementlist:
             changed, terminate, xyztnew, changemessage = e.changetrace(
                 xyzt[-1], xyzt1, aq, layer, ltype, modellayer, 
