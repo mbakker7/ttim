@@ -134,6 +134,37 @@ class WellBase(Element):
             
     def plot(self):
         plt.plot(self.xw, self.yw, 'k.')
+        
+    def changetrace(self, xyzt1, xyzt2, aq, layer, ltype, modellayer,
+                    direction, hstepmax):
+        changed = False
+        terminate = False
+        xyztnew = 0
+        message = None
+        hdistance = np.sqrt((xyzt1[0] - self.xw) ** 2 + (xyzt1[1] - self.yw) ** 2) 
+        if hdistance < hstepmax:
+            if ltype == "a":
+                if (layer == self.layers).any():  # in a layer where well is screened
+                    layernumber = np.where(self.layers==layer)[0][0]
+                    dis = self.discharge(xyzt1[3])[layernumber, 0]
+                    if (dis > 0 and direction > 0) or (
+                        dis < 0 and direction < 0):
+                        vx, vy, vz = self.model.velocomp(*xyzt1)
+                        tstep = np.sqrt(
+                            (xyzt1[0] - self.xw) ** 2 + (xyzt1[1] - self.yw) ** 2
+                        ) / np.sqrt(vx ** 2 + vy ** 2)
+                        xnew = self.xw
+                        ynew = self.yw
+                        znew = xyzt1[2] + tstep * vz * direction
+                        tnew = xyzt1[3] + tstep
+                        xyztnew = np.array([xnew, ynew, znew, tnew])
+                        changed = True
+                        terminate = True
+        if terminate:
+            message = "reached element of type well"
+            if self.label:
+                message += " ({lab})".format(lab=self.label)
+        return changed, terminate, xyztnew, message
     
 class DischargeWell(WellBase):
     """
