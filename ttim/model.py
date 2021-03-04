@@ -272,7 +272,10 @@ class TimModel(PlotTtim):
                 else:
                     h[:2] = self.head(x, y, t, layers=[layer - 1, layer], aq=aq)[:, 0]
             else: # layer = 0, so top layer
-                h[1:] = self.head(x, y, t, layers=[layer, layer + 1], aq=aq)[:, 0]
+                if aq.naq == 1: # only one layer
+                    h[1] = self.head(x, y, t, layers=[layer], aq=aq)[:, 0]
+                else:
+                    h[1:] = self.head(x, y, t, layers=[layer, layer + 1], aq=aq)[:, 0]
             # this works because c[0] = 1e100 for impermeable top
             qztop = (h[1] - h[0]) / self.aq.c[layer] 
             # TO DO modify for infiltration in top aquifer

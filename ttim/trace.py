@@ -1,7 +1,7 @@
 import numpy as np
 
-def timtraceline(ml, xstart, ystart, zstart, tstart, delt,
-                 nstep=100, hstepmax=10, silent=False, 
+def timtraceline(ml, xstart, ystart, zstart, tstart, delt, tmax,
+                 nstepmax=100, hstepmax=10, silent=False, 
                  returnlayers=False, verbose=False):
     #verbose = True  # used for debugging
     # treating aquifer layers and leaky layers the same way
@@ -17,7 +17,7 @@ def timtraceline(ml, xstart, ystart, zstart, tstart, delt,
     # starting at time 0
     xyzt = [np.array([xstart * (1 + eps), ystart * (1 + eps), zstart, tstart])]  
     layerlist = []  # to keep track of layers for plotting with colors
-    for _ in range(nstep):
+    for istep in range(nstepmax):
         if terminate:
             break
         x0, y0, z0, t0 = xyzt[-1]
@@ -29,20 +29,23 @@ def timtraceline(ml, xstart, ystart, zstart, tstart, delt,
             print('xyz, layer', x0, y0, z0, layer)
             print('v0, layer, ltype', v0, layer, ltype)
         vx, vy, vz = v0
-        hstep = np.sqrt(vx ** 2 + vy ** 2) * delt
-        # check if step larger than max step
-        if hstep > hstepmax:
-            delt0 = hstepmax / hstep * delt
+        # check if max time reached
+        if t0 + delt > tmax:
+            delt0 = tmax - t0
         else:
             delt0 = delt
+        # check if horizontal step larger than hstepmax
+        hstep = np.sqrt(vx ** 2 + vy ** 2) * delt0
+        if hstep > hstepmax:
+            delt0 = hstepmax / hstep * delt0
         # check if going to different layer
         z1 = z0 + delt0 * vz
         layer1, ltype1, modellayer1 = aq.findlayer(z1)
         if modellayer1 < modellayer: # step up to next layer
-            delt0 = (aq.z[modellayer] - z0) / (z1 - z0) * delt
+            delt0 = (aq.z[modellayer] - z0) / (z1 - z0) * delt0
             z1 = aq.z[modellayer] + eps
         elif modellayer1 > modellayer: # step down to next layer
-            delt0 = (z0 - aq.z[modellayer + 1]) / (z0 - z1) * delt
+            delt0 = (z0 - aq.z[modellayer + 1]) / (z0 - z1) * delt0
             z1 = aq.z[modellayer1] - eps
         x1 = x0 + delt0 * vx
         y1 = y0 + delt0 * vy
@@ -61,6 +64,15 @@ def timtraceline(ml, xstart, ystart, zstart, tstart, delt,
                 if changemessage:
                     message = changemessage
                 break
+        xyzt.append(np.array([x1, y1, z1, t1]))
+        if t1 >= tmax:
+            terminate = True
+            message = 'reached maximum time tmax'
+        if istep == nstepmax - 1:
+            terminate = True
+            message = 'reached maximum number of steps'
+        if terminate: 
+            break
 #         if correction:  # correction step
 #             vnew = ml.velocomp(x1, y1, z1, t1, aq, [layer, ltype])
 #             v1 = 0.5 * (v0 + vnew)                            
@@ -83,9 +95,7 @@ def timtraceline(ml, xstart, ystart, zstart, tstart, delt,
 #                         if changemessage:
 #                             message = changemessage
 #                         break
-        xyzt.append(np.array([x1, y1, z1, t1]))
-        if terminate: 
-            break
+
     if not silent:
         print(message)
     result = {"trace": np.array(xyzt), "message": message, 
