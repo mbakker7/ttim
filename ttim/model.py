@@ -226,7 +226,7 @@ class TimModel(PlotTtim):
         pot = self.potential(x, y, t, layers, aq, derivative)
         return aq.potential_to_head(pot, layers)
     
-    def velocomp(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
+    def velocompold(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
         # implemented for one layer
         if aq is None: 
             aq = self.aq.find_aquifer_data(x, y)
@@ -242,7 +242,7 @@ class TimModel(PlotTtim):
         vz = np.zeros_like(vx)
         return vx, vy, vz
     
-    def velocompnew(self, x, y, z, t, aq=None, layer_ltype=None):
+    def velocomp(self, x, y, z, t, aq=None, layer_ltype=None):
         if aq is None: 
             aq = self.aq.find_aquifer_data(x, y)
         assert z <= aq.z[0] and z >= aq.z[-1], "z value not inside aquifer"
@@ -250,7 +250,7 @@ class TimModel(PlotTtim):
             layer, ltype, dummy = aq.findlayer(z)
         else:
             layer, ltype = layer_ltype            
-        if ltype == 'l':
+        if ltype == 'l': # inside leaky layer
             vx = 0.0
             vy = 0.0
             if layer == 0:
@@ -260,7 +260,7 @@ class TimModel(PlotTtim):
                 h = self.head(x, y, t, layers=[layer - 1, layer], aq=aq)
                 qz = (h[1, 0] - h[0, 0]) / aq.c[layer] # TO DO include storage in leaky layer
             vz = qz / aq.porll[layer]
-        else:
+        else: # in aquifer layer
             qx, qy = self.disvec(x, y, t, aq=aq)
             vx = qx[layer, 0] / (aq.Haq[layer] * aq.poraq[layer])
             vy = qy[layer, 0] / (aq.Haq[layer] * aq.poraq[layer])
@@ -272,11 +272,7 @@ class TimModel(PlotTtim):
                 else:
                     h[:2] = self.head(x, y, t, layers=[layer - 1, layer], aq=aq)[:, 0]
             else: # layer = 0, so top layer
-                if layer < aq.naq - 1:
-                    if aq.ltype[0] == 'l':
-                        h[1:] = self.head(x, y, t, layers=[layer, layer + 1], aq=aq)[:, 0]
-                    else:
-                        h[1] = self.head(x, y, t, layers=[layer], aq=aq)[:, 0]
+                h[1:] = self.head(x, y, t, layers=[layer, layer + 1], aq=aq)[:, 0]
             # this works because c[0] = 1e100 for impermeable top
             qztop = (h[1] - h[0]) / self.aq.c[layer] 
             # TO DO modify for infiltration in top aquifer
