@@ -3,18 +3,19 @@ import numpy as np
 def timtracelines(ml, xstart, ystart, zstart, tstartend, tstartoffset, 
                   deltlist, nstepmax=100, hstepmax=10, silent=False, 
                   correctionstep=False):
-    xyzt = np.array([[xstart, ystart, zstart, tstartend[0]]])
+    xyzt = [np.array([[xstart, ystart, zstart, tstartend[0]]])]
     if np.isscalar(deltlist):
         deltlist = len(tstartend) * [deltlist]
     for itrace in range(len(tstartend) - 1):
-        x0, y0, z0, t0 = xyzt[-1]
+        x0, y0, z0, t0 = xyzt[-1][-1]
         trace = timtraceline(ml, x0, y0, z0, t0 + tstartoffset, 
                              deltlist[itrace], tstartend[itrace + 1],
                              nstepmax=nstepmax, hstepmax=hstepmax, 
                              silent=silent, correctionstep=correctionstep)
-        xyzt = np.vstack((xyzt, trace['trace']))
+        xyzt.append(trace['trace'])
         if trace['message'] != 'reached maximum time tmax':
             break
+    xyzt = np.vstack(xyzt)
     result = {"trace": np.array(xyzt), "message": trace['message'], 
               "complete": trace['complete']}
     return result                 
