@@ -14,7 +14,7 @@ class TimModel(PlotTtim):
                  c=[1e100, 100], Saq=[1e-4, 1e-4], Sll=[0], 
                  poraq=0.3, porll=0.3, ltype=['a', 'a'], topboundary='conf', 
                  phreatictop=False, tmin=1, tmax=10, tstart=0, M=10, 
-                 kzoverkh=None, model3d=False):
+                 kzoverkh=None, model3d=False, timmlmodel=None):
         self.elementlist = []
         self.elementdict = {}
         self.vbclist = []  # variable boundary condition 'v' elements
@@ -30,6 +30,7 @@ class TimModel(PlotTtim):
         self.compute_laplace_parameters()
         self.name = 'TimModel'
         self.modelname = 'ml' # Used for writing out input
+        self.timmlmodel = timmlmodel
         
     def __repr__(self):
         return 'Model'
@@ -224,7 +225,11 @@ class TimModel(PlotTtim):
         else:
             layers = np.atleast_1d(layers)  # corrected for base zero
         pot = self.potential(x, y, t, layers, aq, derivative)
-        return aq.potential_to_head(pot, layers)
+        h = aq.potential_to_head(pot, layers)
+        if self.timmlmodel is not None:
+            htimml = self.timmlmodel.head(x, y, layers=layers)
+            h += htimml[:, np.newaxis]
+        return h
     
     def velocompold(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
         # implemented for one layer
@@ -243,6 +248,7 @@ class TimModel(PlotTtim):
         return vx, vy, vz
     
     def velocomp(self, x, y, z, t, aq=None, layer_ltype=None):
+        # compute velocity for one point x, y, z, t
         if aq is None: 
             aq = self.aq.find_aquifer_data(x, y)
         assert z <= aq.z[0] and z >= aq.z[-1], "z value not inside aquifer"
@@ -286,9 +292,14 @@ class TimModel(PlotTtim):
             else:
                 qzbot = 0.0
             vz = (qzbot + (z - aq.zaqbot[layer]) / aq.Haq[layer] * \
-                 (qztop - qzbot)) / aq.poraq[layer]    
+                 (qztop - qzbot)) / aq.poraq[layer]   
+        velo = np.array([vx, vy, vz])
+        
+        if self.timmlmodel is not None:
+            velotimml = self.timmlmodel.velocity(x, y, z)
+            velo += velotimml
 
-        return np.array([vx, vy, vz])
+        return velo
     
     def velo_one(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
         # implemented for one layer and one time
@@ -554,19 +565,22 @@ class ModelMaq(TimModel):
         the number of terms to be used in the numerical inversion algorithm.
         10 is usually sufficient. If drawdown curves appear to oscillate,
         more terms may be needed, but this seldom happens. 
+    timmlmodel : optional instance of a solved TimML model 
+        a timml model may be included to add steady-state flow
     
     """
     
     def __init__(self, kaq=[1], z=[1,0], c=[], Saq=[0.001], Sll=[0],
                  poraq=[0.3], porll=[0.3],
                  topboundary='conf', phreatictop=False,
-                 tmin=1, tmax=10, tstart=0, M=10):
+                 tmin=1, tmax=10, tstart=0, M=10, timmlmodel=None):
         self.storeinput(inspect.currentframe())
         kaq, Haq, Hll, c, Saq, Sll, poraq, porll, ltype = param_maq(
                 kaq, z, c, Saq, Sll, poraq, porll, topboundary, phreatictop)
         TimModel.__init__(self, kaq, z, Haq, Hll, c, Saq, Sll, 
                           poraq, porll, ltype,
-                          topboundary, phreatictop, tmin, tmax, tstart, M)
+                          topboundary, phreatictop, tmin, tmax, tstart, M,
+                          timmlmodel=timmlmodel)
         self.name = 'ModelMaq'
         
 class Model3D(TimModel):
@@ -619,13 +633,15 @@ class Model3D(TimModel):
         the number of terms to be used in the numerical inversion algorithm.
         10 is usually sufficient. If drawdown curves appear to oscillate,
         more terms may be needed, but this seldom happens. 
+    timmlmodel : optional instance of a solved TimML model 
+        a timml model may be included to add steady-state flow
         
     """
     
     def __init__(self, kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, 
                  poraq=0.3, topboundary='conf', phreatictop=True, 
                  topres=0, topthick=0, topSll=0, toppor=0.3, 
-                 tmin=1, tmax=10, tstart=0, M=10):
+                 tmin=1, tmax=10, tstart=0, M=10, timmlmodel=None):
         '''z must have the length of the number of layers + 1'''
         self.storeinput(inspect.currentframe())
         kaq, Haq, Hll, c, Saq, Sll, poraq, porll, ltype, z = param_3d(
@@ -634,5 +650,5 @@ class Model3D(TimModel):
         TimModel.__init__(self, kaq, z, Haq, Hll, c, Saq, Sll, 
                           poraq, porll, ltype, 
                           topboundary, phreatictop, tmin, tmax, tstart, M, 
-                          kzoverkh, model3d=True)
+                          kzoverkh, model3d=True, timmlmodel=timmlmodel)
         self.name = 'Model3D'

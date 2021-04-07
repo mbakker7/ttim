@@ -21,4 +21,4 @@ from .linesink import LineSink, HeadLineSink, HeadLineSinkString, \
 from .linedoublet import LeakyLineDoublet, LeakyLineDoubletString
 from .circareasink import CircAreaSink
 from .fit import Calibrate
-from .trace import timtraceline, timtraceline2, timtracelines
+from .trace import timtraceline, timtrace

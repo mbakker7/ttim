@@ -1,9 +1,62 @@
 import numpy as np
 
-def timtracelines(ml, xstart, ystart, zstart, tstartend, tstartoffset, 
+def timtrace(ml, xstart, ystart, zstart, tstartend, tstartoffset, 
                   deltlist, nstepmax=100, hstepmax=10, silent=False, 
-                  correctionstep=False):
+                  correctionstep=True):
+    """
+    Compute a pathline by numerical integration of the velocity vector.
+    Pathline is broken up in sections for which starting times are provided. 
+    Pathline is computed from first starting time + offset until second
+    starting time, then continued from second starting time + offset until 
+    third starting time, etc. 
+    
+    Parameters
+    ----------
+    model : Model object
+        model
+    xstart : float
+        x-coordinate of starting location of pathline
+    ystart : float
+        y-coordinate of starting location of pathline
+    zstart : float
+        z-coordinate of starting location of pathline
+    tstartend : list
+        list of starting times of pathline. last entry is the ending time.
+    tstartoffset : float
+        time after starting time when pathline is started. this value can not
+        be smaller than tmin.
+    deltlist : scalar or list
+        maximum time step for each step along pathline. either one value for
+        all sections, or list with value for each section.
+    nstepmax : integer
+        maximu number of steps per section
+    hstepmax : float or integer
+        maximum length of horizontal step
+    silent : boolean
+        parameter to indicate if message should be printed to the screen for
+        each section of the pathline
+    correctionstep : boolean
+        parameter to indicate if a correction step (Euler's method) should
+        be taken. Taking a correction step is more accurate, especially for 
+        curved pathlines.
+
+        
+    Returns
+    --------
+    result : dictionary with three entries
+        xyzt : 2D array with four columns: x, y, z, t along pathline
+        message : list with text messages of each section of the pathline
+        status : numerical indication of the result. Negative is likely
+        undesirable. 
+        -2 : reached maximum number of steps before reaching maximum time
+        -1 : starting z value not inside aquifer
+        +1 : reached maximum time
+        +2 : reached element   
+    
+    """
     xyzt = [np.array([[xstart, ystart, zstart, tstartend[0]]])]
+    messages = []
+    status = []
     if np.isscalar(deltlist):
         deltlist = len(tstartend) * [deltlist]
     for itrace in range(len(tstartend) - 1):
@@ -13,26 +66,29 @@ def timtracelines(ml, xstart, ystart, zstart, tstartend, tstartoffset,
                              nstepmax=nstepmax, hstepmax=hstepmax, 
                              silent=silent, correctionstep=correctionstep)
         xyzt.append(trace['trace'])
-        if trace['message'] != 'reached maximum time tmax':
+        messages.append(trace['message'])
+        status.append(trace['status'])
+        if trace['status'] != 1:
             break
     xyzt = np.vstack(xyzt)
-    result = {"trace": np.array(xyzt), "message": trace['message'], 
-              "complete": trace['complete']}
+    result = {"trace": np.array(xyzt), "message": messages, 
+              "status": status}
     return result                 
                
 
 def timtraceline(ml, xstart, ystart, zstart, tstart, delt, tmax,
-                 nstepmax=100, hstepmax=10, silent=False, 
-                 correctionstep=False):
+                 nstepmax=100, hstepmax=10, correctionstep=True, silent=False):
     # treating aquifer layers and leaky layers the same way
     direction = 1 # forward
     terminate = False
-    message = "no message"
+    status = 0
+    message = 'no message'
     eps = 1e-10  # used to place point just above or below aquifer top or bottom
     aq = ml.aq.find_aquifer_data(xstart, ystart)
     if zstart > aq.z[0] or zstart < aq.z[-1]:
         terminate = True
-        message = "starting z value not inside aquifer"
+        status = -1
+        message = 'starting z value not inside aquifer'
     # slightly alter starting location not to get stuck in surpring points
     # starting at time 0
     xyzt = [np.array([xstart * (1 + eps), ystart * (1 + eps), zstart, tstart])]  
@@ -83,20 +139,23 @@ def timtraceline(ml, xstart, ystart, zstart, tstart, delt, tmax,
 
                 # check elements if point needs to be changed
                 for e in ml.elementlist:
-                    changed, terminate, xyztnew, changemessage = e.changetrace(
+                    changed, terminate, xyztnew, message = e.changetrace(
                         xyzt[-1], xyzt1, aq, layer, ltype, modellayer, 
                         direction, hstepmax)
                     if changed or terminate:
                         x1, y1, z1, t1 = xyztnew
                         do_correction = False
-                        message = changemessage
+                        status = 2
+                        message = message
                         break
 
                 if t1 >= tmax:
                     terminate = True
+                    status = 1
                     message = 'reached maximum time tmax'
                 if istep == nstepmax - 1:
                     terminate = True
+                    status = -2
                     message = 'reached maximum number of steps'
                 if terminate: 
                     xyzt.append(np.array([x1, y1, z1, t1]))
@@ -114,7 +173,7 @@ def timtraceline(ml, xstart, ystart, zstart, tstart, delt, tmax,
     if not silent:
         print(message)
     result = {"trace": np.array(xyzt), "message": message, 
-              "complete": terminate}
+              "status": status}
     return result
 
 # test with tmult. didn't improve much

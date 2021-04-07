@@ -161,9 +161,10 @@ class WellBase(Element):
                         changed = True
                         terminate = True
         if terminate:
-            message = "reached element of type well"
             if self.label:
-                message += " ({lab})".format(lab=self.label)
+                message = "reached well element with label: " + self.label
+            else:
+                message = "reached element of type well: " + str(self)
         return changed, terminate, xyztnew, message
     
 class DischargeWell(WellBase):
