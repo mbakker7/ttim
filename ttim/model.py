@@ -10,10 +10,11 @@ from .invlapnumba import compute_laplace_parameters_numba, invlap, invlapcomp
 from .util import PlotTtim
 
 class TimModel(PlotTtim):
-    def __init__(self, kaq=[1, 1], Haq=[1, 1], Hll=[0], c=[1e100, 100], 
-                 Saq=[1e-4, 1e-4], Sll=[0], topboundary='conf', 
+    def __init__(self, kaq=[1, 1], z=[3, 2, 1], Haq=[1, 1], Hll=[0], 
+                 c=[1e100, 100], Saq=[1e-4, 1e-4], Sll=[0], 
+                 poraq=0.3, porll=0.3, ltype=['a', 'a'], topboundary='conf', 
                  phreatictop=False, tmin=1, tmax=10, tstart=0, M=10, 
-                 kzoverkh=None, model3d=False):
+                 kzoverkh=None, model3d=False, timmlmodel=None):
         self.elementlist = []
         self.elementdict = {}
         self.vbclist = []  # variable boundary condition 'v' elements
@@ -24,11 +25,12 @@ class TimModel(PlotTtim):
         self.tmax = tmax
         self.tstart = tstart
         self.M = M
-        self.aq = Aquifer(self, kaq, Haq, Hll, c, Saq, Sll, topboundary, 
-                          phreatictop, kzoverkh, model3d)
+        self.aq = Aquifer(self, kaq, z, Haq, Hll, c, Saq, Sll, poraq, porll,
+                          ltype, topboundary, phreatictop, kzoverkh, model3d)
         self.compute_laplace_parameters()
         self.name = 'TimModel'
         self.modelname = 'ml' # Used for writing out input
+        self.timmlmodel = timmlmodel
         
     def __repr__(self):
         return 'Model'
@@ -133,6 +135,37 @@ class TimModel(PlotTtim):
                         self.enumber, self.etstart, self.ebc, nlayers)
         return rv
     
+    def potentialone(self, x, y, time, layers=None, aq=None, derivative=0, 
+                  returnphi=0):
+        '''Returns pot[naq] if layers=None, 
+        otherwise pot[len(layers)]
+        time is one value'''
+        if aq is None: 
+            aq = self.aq.find_aquifer_data(x, y)
+        if layers is None:
+            layers = range(aq.naq)
+        nlayers = len(layers)
+        time = np.atleast_1d(time) - self.tstart # used to be ).copy()
+        jtime = np.searchsorted(self.tintervals, time)[0] - 1
+        assert 0 <= jtime <= len(self.tintervals), 'time not in tintervals'
+        pot = np.zeros((self.ngvbc, aq.naq, self.npint), 'D')
+        for i in range(self.ngbc):
+            pot[i, :] += self.gbclist[i].unitpotentialone(x, y, jtime, aq)
+        for e in self.vzbclist:
+            pot += e.potential(x, y, aq)
+        if layers is None:
+            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec2[:, :, jtime], 2)
+        else:
+            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec2[layers, :, jtime], 2)
+        if derivative > 0: 
+            pot *= self.p ** derivative
+        if returnphi:
+            return pot
+        rv = invlapcomp(time, pot[:, :, :], self.npint, self.M, 
+                        self.tintervals[jtime: jtime + 2], 
+                        self.enumber, self.etstart, self.ebc, nlayers)
+        return rv
+    
     def disvec(self, x, y, t, layers=None, aq=None, derivative=0):
         '''Returns qx[naq, ntimes], qy[naq, ntimes] if layers=None, otherwise
         qx[len(layers,Ntimes)],qy[len(layers, ntimes)]
@@ -167,73 +200,6 @@ class TimModel(PlotTtim):
                          self.enumber, self.etstart, self.ebc, nlayers)
         return rvx, rvy
     
-#     def disvecold(self, x, y, t, layers=None, aq=None, derivative=0):
-#         '''Returns qx[naq, ntimes], qy[naq, ntimes] if layers=None, otherwise
-#         qx[len(layers,Ntimes)],qy[len(layers,Ntimes)]
-#         t must be ordered '''
-#         if aq is None: aq = self.aq.find_aquifer_data(x, y)
-#         if layers is None:
-#             layers = range(aq.naq)
-#         else:
-#             layers = np.atleast_1d(layers)  # corrected for base zero
-#         Nlayers = len(layers)
-#         time = np.atleast_1d(t - self.tstart).copy()
-#         disx = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
-#         disy = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
-#         for i in range(self.ngbc):
-#             qx,qy = self.gbclist[i].unitdisvec(x, y, aq)
-#             disx[i,:] += qx; disy[i,:] += qy
-#         for e in self.vzbclist:
-#             qx,qy = e.disvec(x, y, aq)
-#             disx += qx; disy += qy
-#         if layers is None:
-#             disx = np.sum(disx[:, np.newaxis, :, :] * aq.eigvec, 2)
-#             disy = np.sum(disy[:, np.newaxis, :, :] * aq.eigvec, 2)
-#         else:
-#             disx = np.sum(disx[:, np.newaxis, :, :] * aq.eigvec[layers, :], 2)
-#             disy = np.sum(disy[:, np.newaxis, :, :] * aq.eigvec[layers, :], 2)
-#         if derivative > 0:
-#             disx *= self.p ** derivative
-#             disy *= self.p ** derivative
-#         rvx = np.zeros((Nlayers, len(time)))
-#         rvy = np.zeros((Nlayers, len(time)))
-#         if (time[0] < self.tintervals[0]) or (time[-1] > self.tintervals[-1]):
-#             print('Warning, some of the times are smaller than tmin or' + 
-#                   'larger than tmax; zeros are substituted')
-#         #
-#         for k in range(self.ngvbc):
-#             e = self.gvbclist[k]
-#             for itime in range(e.ntstart):
-#                 t = time - e.tstart[itime]
-#                 it = 0
-#                 if t[-1] >= self.tintervals[0]:  # Otherwise all zero
-#                     if (t[0] < self.tintervals[0]):
-#                         # clever call that should be replaced with find_first 
-#                         # function when included in numpy
-#                         it = np.argmax( t >= self.tintervals[0])  
-#                     for n in range(self.nint):
-#                         tp = t[(t >= self.tintervals[n]) & 
-#                                (t < self.tintervals[n+1])]
-#                         Nt = len(tp)
-#                         if Nt > 0:  # if all values zero, no inverse transform
-#                             for i in range(Nlayers):
-#                                 if not np.any(disx[k, i, n * self.npint:
-#                                               (n + 1) * self.npint] == 0.0) :
-#                                     rvx[i, it: it + Nt] += e.bc[itime] * \
-#                                         invlap(tp, self.tintervals[n + 1], 
-#                                         disx[k, i , n * self.npint:
-#                                              (n + 1) * self.npint],
-#                                         self.M)
-#                                 if not np.any(disy[k, i, n * self.npint:
-#                                               (n + 1) * self.npint] == 0.0) :
-#                                     rvy[i, it: it + Nt] += e.bc[itime] * \
-#                                         invlap(tp, self.tintervals[n + 1], 
-#                                         disy[k, i , n * self.npint:
-#                                              (n + 1) * self.npint],
-#                                         self.M)
-#                             it = it + Nt
-#         return rvx, rvy
-    
     def head(self, x, y, t, layers=None, aq=None, derivative=0):
         """Head at x, y, t where t can be multiple times
         
@@ -259,8 +225,87 @@ class TimModel(PlotTtim):
         else:
             layers = np.atleast_1d(layers)  # corrected for base zero
         pot = self.potential(x, y, t, layers, aq, derivative)
-        return aq.potential_to_head(pot, layers)
+        h = aq.potential_to_head(pot, layers)
+        if self.timmlmodel is not None:
+            htimml = self.timmlmodel.head(x, y, layers=layers)
+            h += htimml[:, np.newaxis]
+        return h
     
+    def velocompold(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
+        # implemented for one layer
+        if aq is None: 
+            aq = self.aq.find_aquifer_data(x, y)
+        assert z <= aq.z[0] and z >= aq.z[-1], "z value not inside aquifer"
+        if layer_ltype is None:
+            layer, ltype, dummy = aq.findlayer(z)
+        else:
+            layer, ltype = layer_ltype
+        qx, qy = self.disvec(x, y, t, aq=aq)
+        layer = layer_ltype[0]
+        vx = qx[layer] / (aq.Haq[layer] * aq.poraq[layer])
+        vy = qy[layer] / (aq.Haq[layer] * aq.poraq[layer])
+        vz = np.zeros_like(vx)
+        return vx, vy, vz
+    
+    def velocomp(self, x, y, z, t, aq=None, layer_ltype=None):
+        # compute velocity for one point x, y, z, t
+        if aq is None: 
+            aq = self.aq.find_aquifer_data(x, y)
+        assert z <= aq.z[0] and z >= aq.z[-1], "z value not inside aquifer"
+        if layer_ltype is None:
+            layer, ltype, dummy = aq.findlayer(z)
+        else:
+            layer, ltype = layer_ltype            
+        if ltype == 'l': # inside leaky layer
+            vx = 0.0
+            vy = 0.0
+            if layer == 0:
+                h = self.head(x, y, t, layers=layer, aq=aq)
+                qz = (h[0, 0] - 0.0) / aq.c[0]
+            else:
+                h = self.head(x, y, t, layers=[layer - 1, layer], aq=aq)
+                qz = (h[1, 0] - h[0, 0]) / aq.c[layer] # TO DO include storage in leaky layer
+            vz = qz / aq.porll[layer]
+        else: # in aquifer layer
+            qx, qy = self.disvec(x, y, t, aq=aq)
+            vx = qx[layer, 0] / (aq.Haq[layer] * aq.poraq[layer])
+            vy = qy[layer, 0] / (aq.Haq[layer] * aq.poraq[layer])
+            #
+            h = np.zeros(3) # head above layer, in layer, and below layer
+            if layer > 0:
+                if layer < aq.naq - 1: # there is a layer above and below
+                    h[:] = self.head(x, y, t, layers=[layer - 1, layer, layer + 1], aq=aq)[:, 0]
+                else:
+                    h[:2] = self.head(x, y, t, layers=[layer - 1, layer], aq=aq)[:, 0]
+            else: # layer = 0, so top layer
+                if aq.naq == 1: # only one layer
+                    h[1] = self.head(x, y, t, layers=[layer], aq=aq)[:, 0]
+                else:
+                    h[1:] = self.head(x, y, t, layers=[layer, layer + 1], aq=aq)[:, 0]
+            # this works because c[0] = 1e100 for impermeable top
+            qztop = (h[1] - h[0]) / self.aq.c[layer] 
+            # TO DO modify for infiltration in top aquifer
+            #if layer == 0:
+            #    qztop += self.qztop(x, y)   
+            if layer < aq.naq - 1:
+                qzbot = (h[2] - h[1]) / self.aq.c[layer + 1]
+            else:
+                qzbot = 0.0
+            vz = (qzbot + (z - aq.zaqbot[layer]) / aq.Haq[layer] * \
+                 (qztop - qzbot)) / aq.poraq[layer]   
+        velo = np.array([vx, vy, vz])
+        
+        if self.timmlmodel is not None:
+            velotimml = self.timmlmodel.velocity(x, y, z)
+            velo += velotimml
+
+        return velo
+    
+    def velo_one(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
+        # implemented for one layer and one time
+        vx, vy, vz = self.velocomp(x, y, z, t, aq, layer_ltype)
+        return np.array([vx[0], vy[0], vz[0]])
+
     def headinside(self, elabel, t):
         return self.elementdict[elabel].headinside(t - self.tstart)
     
@@ -520,17 +565,22 @@ class ModelMaq(TimModel):
         the number of terms to be used in the numerical inversion algorithm.
         10 is usually sufficient. If drawdown curves appear to oscillate,
         more terms may be needed, but this seldom happens. 
+    timmlmodel : optional instance of a solved TimML model 
+        a timml model may be included to add steady-state flow
     
     """
     
-    def __init__(self, kaq=[1], z=[1,0], c=[], Saq=[0.001], Sll=[0], \
-                 topboundary='conf', phreatictop=False, \
-                 tmin=1, tmax=10, tstart=0, M=10):
+    def __init__(self, kaq=[1], z=[1,0], c=[], Saq=[0.001], Sll=[0],
+                 poraq=[0.3], porll=[0.3],
+                 topboundary='conf', phreatictop=False,
+                 tmin=1, tmax=10, tstart=0, M=10, timmlmodel=None):
         self.storeinput(inspect.currentframe())
-        kaq, Haq, Hll, c, Saq, Sll = param_maq(kaq, z, c, Saq, Sll, topboundary,
-                                               phreatictop)
-        TimModel.__init__(self, kaq, Haq, Hll, c, Saq, Sll, topboundary, 
-                          phreatictop, tmin, tmax, tstart, M)
+        kaq, Haq, Hll, c, Saq, Sll, poraq, porll, ltype = param_maq(
+                kaq, z, c, Saq, Sll, poraq, porll, topboundary, phreatictop)
+        TimModel.__init__(self, kaq, z, Haq, Hll, c, Saq, Sll, 
+                          poraq, porll, ltype,
+                          topboundary, phreatictop, tmin, tmax, tstart, M,
+                          timmlmodel=timmlmodel)
         self.name = 'ModelMaq'
         
 class Model3D(TimModel):
@@ -583,18 +633,22 @@ class Model3D(TimModel):
         the number of terms to be used in the numerical inversion algorithm.
         10 is usually sufficient. If drawdown curves appear to oscillate,
         more terms may be needed, but this seldom happens. 
+    timmlmodel : optional instance of a solved TimML model 
+        a timml model may be included to add steady-state flow
         
     """
     
-    def __init__(self, kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, \
-                 topboundary='conf', phreatictop=True, topres=0, topthick=0, 
-                 topSll=0, tmin=1, tmax=10, tstart=0, M=10):
+    def __init__(self, kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, 
+                 poraq=0.3, topboundary='conf', phreatictop=True, 
+                 topres=0, topthick=0, topSll=0, toppor=0.3, 
+                 tmin=1, tmax=10, tstart=0, M=10, timmlmodel=None):
         '''z must have the length of the number of layers + 1'''
         self.storeinput(inspect.currentframe())
-        kaq, Haq, Hll, c, Saq, Sll = param_3d(kaq, z, Saq, kzoverkh, 
-                                              phreatictop, topboundary, topres, 
-                                              topthick, topSll)
-        TimModel.__init__(self, kaq, Haq, Hll, c, Saq, Sll, topboundary, 
-                          phreatictop, tmin, tmax, tstart, M, 
-                          kzoverkh, model3d=True)
+        kaq, Haq, Hll, c, Saq, Sll, poraq, porll, ltype, z = param_3d(
+            kaq, z, Saq, kzoverkh, poraq, phreatictop, topboundary, topres, 
+            topthick, topSll, toppor)
+        TimModel.__init__(self, kaq, z, Haq, Hll, c, Saq, Sll, 
+                          poraq, porll, ltype, 
+                          topboundary, phreatictop, tmin, tmax, tstart, M, 
+                          kzoverkh, model3d=True, timmlmodel=timmlmodel)
         self.name = 'Model3D'

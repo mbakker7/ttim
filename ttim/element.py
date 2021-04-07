@@ -76,6 +76,13 @@ class Element:
             aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum(self.potinf(x, y, aq), 0)
     
+    def unitpotentialone(self, x, y, jtime, aq=None):
+        '''Returns complex array of size (naq, npval)
+        Can be more efficient for given elements'''
+        if aq is None:
+            aq = self.model.aq.find_aquifer_data(x, y)
+        return np.sum(self.potinfone(x, y, jtime, aq), 0)
+    
     def disvecinf(self, x, y, aq=None):
         '''Returns 2 complex arrays of size (nparam, naq, npval)'''
         raise 'Must overload Element.disvecinf()'

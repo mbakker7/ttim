@@ -53,7 +53,8 @@ class WellBase(Element):
         
     def potinf(self, x, y, aq=None):
         '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
+        if aq is None: 
+            aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.nparam, aq.naq, self.model.nint, 
                        self.model.npint), 'D')
         if aq == self.aq:
@@ -69,6 +70,23 @@ class WellBase(Element):
                         #bessel.k0besselv( r / self.aq.lab2[i,j,:], pot )
                         rv[:, i, j, :] = self.term2[:, i, j, :] * pot
         rv.shape = (self.nparam, aq.naq, self.model.npval)
+        return rv
+    
+    def potinfone(self, x, y, jtime, aq=None):
+        '''Can be called with only one x,y value for time interval jtime'''
+        if aq is None: 
+            aq = self.model.aq.find_aquifer_data(x, y)
+        rv = np.zeros((self.nparam, aq.naq, self.model.npint), 'D')
+        if aq == self.aq:
+            r = np.sqrt((x - self.xw) ** 2 + (y - self.yw) ** 2)
+            pot = np.zeros(self.model.npint, 'D')
+            if r < self.rw:
+                r = self.rw  # If at well, set to at radius
+            for i in range(self.aq.naq):
+                if r / abs(self.aq.lab2[i, jtime, 0]) < self.rzero:
+                    pot[:] = kv(0, r / self.aq.lab2[i, jtime, :])
+                    rv[:, i, :] = self.term2[:, i, jtime, :] * pot
+        #rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
     
     def disvecinf(self, x, y, aq=None):
@@ -116,6 +134,38 @@ class WellBase(Element):
             
     def plot(self):
         plt.plot(self.xw, self.yw, 'k.')
+        
+    def changetrace(self, xyzt1, xyzt2, aq, layer, ltype, modellayer,
+                    direction, hstepmax):
+        changed = False
+        terminate = False
+        xyztnew = 0
+        message = None
+        hdistance = np.sqrt((xyzt1[0] - self.xw) ** 2 + (xyzt1[1] - self.yw) ** 2) 
+        if hdistance < hstepmax:
+            if ltype == "a":
+                if (layer == self.layers).any():  # in a layer where well is screened
+                    layernumber = np.where(self.layers==layer)[0][0]
+                    dis = self.discharge(xyzt1[3])[layernumber, 0]
+                    if (dis > 0 and direction > 0) or (
+                        dis < 0 and direction < 0):
+                        vx, vy, vz = self.model.velocomp(*xyzt1)
+                        tstep = np.sqrt(
+                            (xyzt1[0] - self.xw) ** 2 + (xyzt1[1] - self.yw) ** 2
+                        ) / np.sqrt(vx ** 2 + vy ** 2)
+                        xnew = self.xw
+                        ynew = self.yw
+                        znew = xyzt1[2] + tstep * vz * direction
+                        tnew = xyzt1[3] + tstep
+                        xyztnew = np.array([xnew, ynew, znew, tnew])
+                        changed = True
+                        terminate = True
+        if terminate:
+            if self.label:
+                message = "reached well element with label: " + self.label
+            else:
+                message = "reached element of type well: " + str(self)
+        return changed, terminate, xyztnew, message
     
 class DischargeWell(WellBase):
     """
