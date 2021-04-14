@@ -206,7 +206,6 @@ class HeadLineSink(LineSinkBase, HeadEquation):
     :class:`.HeadLineSinkString`
     
     """
-    
     def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandh=[(0, 1)],
                  res=0, wh='H', layers=0, label=None, addtomodel=True):
         self.storeinput(inspect.currentframe())

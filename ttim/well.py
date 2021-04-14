@@ -210,7 +210,6 @@ class DischargeWell(WellBase):
     >>> Well(ml, tsandQ=[(10, 100), (50, 20), (200, 0)])
     
     """
-
     def __init__(self, model, xw=0, yw=0, tsandQ=[(0, 1)], rw=0.1, 
                  res=0, layers=0, label=None):
         self.storeinput(inspect.currentframe())
@@ -260,7 +259,6 @@ class Well(WellBase, WellBoreStorageEquation):
         label of the well
         
     """
-
     def __init__(self, model, xw=0, yw=0, rw=0.1, tsandQ=[(0, 1)], res=0,
                  rc=None, layers=0, wbstype='pumping', label=None):
         self.storeinput(inspect.currentframe())
@@ -326,7 +324,6 @@ class HeadWell(WellBase,HeadEquation):
         label of the well
         
     """
-
     def __init__(self, model, xw=0, yw=0, rw=0.1, tsandh=[(0, 1)], res=0, 
                  layers=0, label=None):
         self.storeinput(inspect.currentframe())
@@ -340,15 +337,15 @@ class HeadWell(WellBase,HeadEquation):
         # Needed in solving for a unit head
         self.pc = self.aq.T[self.layers] 
         
-class TestWell(WellBase):
-    def __init__(self, model, xw=0, yw=0, tsandQ=[(0, 1)], rw=0.1, res=0, 
-                 layers=0, label=None, fp=None):
-        self.storeinput(inspect.currentframe())
-        WellBase.__init__(self, model, xw, yw, rw, tsandbc=tsandQ, res=res,
-                          layers=layers, type='g', name='DischargeWell', 
-                          label=label)
-        self.fp = fp
+# class TestWell(WellBase):
+#     def __init__(self, model, xw=0, yw=0, tsandQ=[(0, 1)], rw=0.1, res=0, 
+#                  layers=0, label=None, fp=None):
+#         self.storeinput(inspect.currentframe())
+#         WellBase.__init__(self, model, xw, yw, rw, tsandbc=tsandQ, res=res,
+#                           layers=layers, type='g', name='DischargeWell', 
+#                           label=label)
+#         self.fp = fp
         
-    def setflowcoef(self):
-        '''Separate function so that this can be overloaded for other types'''
-        self.flowcoef = self.fp
+#     def setflowcoef(self):
+#         '''Separate function so that this can be overloaded for other types'''
+#         self.flowcoef = self.fp
