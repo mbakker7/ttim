@@ -40,5 +40,5 @@ for i in range(len(p)):
     p1 = p[i].imag
     fp[i] = glag(p0, p1, func)
 #ml2 = ModelMaq(kaq=[1, 5], z=[3, 2, 1, 0], c=[10], Saq=[0.3, 0.01], Sll=[0.001], tmin=10, tmax=100, M=20)
-w2 = TestWell(ml2, xw=0, yw=0, rw=0.3, tsandQ=[(0, 1)], layers=0, fp=fp)
+w2 = WellTest(ml2, xw=0, yw=0, rw=0.3, tsandQ=[(0, 1)], layers=0, fp=fp)
 ml2.solve()
