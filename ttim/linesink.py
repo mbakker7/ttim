@@ -401,7 +401,6 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
     :class:`.HeadLineSink`
     
     """
-    
     def __init__(self, model, xy=[(-1, 0), (1, 0)], tsandh=[(0, 1)],
                  res=0, wh='H', layers=0, label=None):
         if tsandh == 'fixed':
@@ -503,9 +502,8 @@ class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
         if list or array: element is placed in all these layers 
     label: str or None
         label of element
-    
-    """
-    
+        
+    """    
     def __init__(self, model, xy=[(-1, 0), (1, 0)], tsandQ=[(0, 1)], res=0,
                  wh='H', layers=0, Astorage=None, label=None):
         self.storeinput(inspect.currentframe())
