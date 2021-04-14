@@ -44,14 +44,16 @@ def timtrace(ml, xstart, ystart, zstart, tstartend, tstartoffset,
     Returns
     --------
     result : dictionary with three entries
-        xyzt : 2D array with four columns: x, y, z, t along pathline
-        message : list with text messages of each section of the pathline
-        status : numerical indication of the result. Negative is likely
-        undesirable. 
-        -2 : reached maximum number of steps before reaching maximum time
-        -1 : starting z value not inside aquifer
-        +1 : reached maximum time
-        +2 : reached element   
+    
+        * xyzt : 2D array with four columns: x, y, z, t along pathline
+        * message : list with text messages of each section of the pathline
+        * status : numerical indication of the result. Negative is likely
+        undesirable.
+        
+            * -2 : reached maximum number of steps before reaching maximum time
+            * -1 : starting z value not inside aquifer
+            * +1 : reached maximum time
+            * +2 : reached element   
     
     """
     xyzt = [np.array([[xstart, ystart, zstart, tstartend[0]]])]

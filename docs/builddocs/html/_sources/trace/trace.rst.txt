@@ -1,0 +1,4 @@
+Pathline tracing
+----------------
+
+.. function:: ttim.trace.timtrace

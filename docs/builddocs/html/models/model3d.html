@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Model3D &#8212; ttim 0.4.a1 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Elements" href="../aems.html" />
@@ -35,9 +36,9 @@
             
   <div class="section" id="model3d">
 <h1>Model3D<a class="headerlink" href="#model3d" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="ttim.model.Model3D">
-<em class="property">class </em><code class="sig-prename descclassname">ttim.model.</code><code class="sig-name descname">Model3D</code><span class="sig-paren">(</span><em class="sig-param">kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, topboundary='conf', phreatictop=True, topres=0, topthick=0, topSll=0, tmin=1, tmax=10, tstart=0, M=10, f2py=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/model.html#Model3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.model.Model3D" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ttim.model.</code><code class="sig-name descname">Model3D</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kaq</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">z</span><span class="o">=</span><span class="default_value">[4, 3, 2, 1]</span></em>, <em class="sig-param"><span class="n">Saq</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">kzoverkh</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">poraq</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">topboundary</span><span class="o">=</span><span class="default_value">'conf'</span></em>, <em class="sig-param"><span class="n">phreatictop</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">topres</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">topthick</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">topSll</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">toppor</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">tmin</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">tmax</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">tstart</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">M</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">timmlmodel</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/model.html#Model3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.model.Model3D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a multi-layer model object consisting of
 many aquifer layers. The resistance between the layers is computed
 from the vertical hydraulic conductivity of the layers.</p>
@@ -74,14 +75,13 @@ in boundary condition.</p></li>
 <li><p><strong>M</strong> (<em>integer</em><em> (</em><em>default 10</em><em>)</em>) – the number of terms to be used in the numerical inversion algorithm.
 10 is usually sufficient. If drawdown curves appear to oscillate,
 more terms may be needed, but this seldom happens.</p></li>
-<li><p><strong>f2py</strong> (<em>boolean</em>) – flag to indicate if the compiled FORTRAN extension should be used.
-only recommended for testing.</p></li>
+<li><p><strong>timmlmodel</strong> (<em>optional instance of a solved TimML model</em>) – a timml model may be included to add steady-state flow</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="ttim.model.Model3D.contour">
-<code class="sig-name descname">contour</code><span class="sig-paren">(</span><em class="sig-param">win</em>, <em class="sig-param">ngr=20</em>, <em class="sig-param">t=1</em>, <em class="sig-param">layers=0</em>, <em class="sig-param">levels=20</em>, <em class="sig-param">layout=True</em>, <em class="sig-param">labels=False</em>, <em class="sig-param">decimals=0</em>, <em class="sig-param">color=None</em>, <em class="sig-param">newfig=True</em>, <em class="sig-param">figsize=None</em>, <em class="sig-param">legend=True</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.contour" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">contour</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">win</span></em>, <em class="sig-param"><span class="n">ngr</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">t</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">layers</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">levels</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">layout</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">labels</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">decimals</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">newfig</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">legend</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.contour" title="Permalink to this definition">¶</a></dt>
 <dd><p>Contour plot</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -105,9 +105,9 @@ if list of strings: use strings as names in legend</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ttim.model.Model3D.head">
-<code class="sig-name descname">head</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">t</em>, <em class="sig-param">layers=None</em>, <em class="sig-param">aq=None</em>, <em class="sig-param">derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.head" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">head</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">layers</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">aq</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">derivative</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.head" title="Permalink to this definition">¶</a></dt>
 <dd><p>Head at x, y, t where t can be multiple times</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -128,16 +128,16 @@ if None: all layers are returned</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ttim.model.Model3D.headalongline">
-<code class="sig-name descname">headalongline</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">t</em>, <em class="sig-param">layers=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.headalongline" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">headalongline</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">layers</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.headalongline" title="Permalink to this definition">¶</a></dt>
 <dd><p>Head along line or curve</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>array</em>) – x values of line</p></li>
-<li><p><strong>y</strong> (<em>array</em>) – y values of line</p></li>
-<li><p><strong>t</strong> (<em>list</em><em> or </em><em>array</em>) – times for which grid is returned</p></li>
+<li><p><strong>x</strong> (<em>1D array</em><em> or </em><em>list</em>) – x values of line</p></li>
+<li><p><strong>y</strong> (<em>1D array</em><em> or </em><em>list</em>) – y values of line</p></li>
+<li><p><strong>t</strong> (<em>float</em><em> or </em><em>1D array</em><em> or </em><em>list</em>) – times for which grid is returned</p></li>
 <li><p><strong>layers</strong> (<em>integer</em><em>, </em><em>list</em><em> or </em><em>array</em><em>, </em><em>optional</em>) – layers for which grid is returned</p></li>
 </ul>
 </dd>
@@ -150,9 +150,9 @@ if None: all layers are returned</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ttim.model.Model3D.headgrid">
-<code class="sig-name descname">headgrid</code><span class="sig-paren">(</span><em class="sig-param">xg</em>, <em class="sig-param">yg</em>, <em class="sig-param">t</em>, <em class="sig-param">layers=None</em>, <em class="sig-param">printrow=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.headgrid" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">headgrid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xg</span></em>, <em class="sig-param"><span class="n">yg</span></em>, <em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">layers</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">printrow</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.headgrid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Grid of heads</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -177,9 +177,9 @@ if None: all layers are returned</p></li>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ttim.model.Model3D.headgrid2">
-<code class="sig-name descname">headgrid2</code><span class="sig-paren">(</span><em class="sig-param">x1</em>, <em class="sig-param">x2</em>, <em class="sig-param">nx</em>, <em class="sig-param">y1</em>, <em class="sig-param">y2</em>, <em class="sig-param">ny</em>, <em class="sig-param">t</em>, <em class="sig-param">layers=None</em>, <em class="sig-param">printrow=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.headgrid2" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">headgrid2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x1</span></em>, <em class="sig-param"><span class="n">x2</span></em>, <em class="sig-param"><span class="n">nx</span></em>, <em class="sig-param"><span class="n">y1</span></em>, <em class="sig-param"><span class="n">y2</span></em>, <em class="sig-param"><span class="n">ny</span></em>, <em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">layers</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">printrow</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.headgrid2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Grid of heads</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -204,9 +204,9 @@ if None: all layers are returned</p></li>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ttim.model.Model3D.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">win=None</em>, <em class="sig-param">newfig=True</em>, <em class="sig-param">figsize=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.plot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">win</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">newfig</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot layout</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -215,9 +215,9 @@ if None: all layers are returned</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ttim.model.Model3D.solve">
-<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param">printmat=0</em>, <em class="sig-param">sendback=0</em>, <em class="sig-param">silent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.solve" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">printmat</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">sendback</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.model.Model3D.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute solution</p>
 </dd></dl>
 
@@ -280,7 +280,7 @@ if None: all layers are returned</p></li>
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -289,7 +289,7 @@ if None: all layers are returned</p></li>
       &copy;2017, Mark Bakker.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

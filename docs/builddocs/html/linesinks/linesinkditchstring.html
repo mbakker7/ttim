@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Line-sink ditch string &#8212; ttim 0.4.a1 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Line-doublets" href="../linedoublets/linedoubletindex.html" />
@@ -36,9 +37,9 @@
   <div class="section" id="line-sink-ditch-string">
 <h1>Line-sink ditch string<a class="headerlink" href="#line-sink-ditch-string" title="Permalink to this headline">¶</a></h1>
 <p>String of line-sinks with specified total discharge with unknown but uniform head</p>
-<dl class="class">
+<dl class="py class">
 <dt id="ttim.linesink.LineSinkDitchString">
-<em class="property">class </em><code class="sig-prename descclassname">ttim.linesink.</code><code class="sig-name descname">LineSinkDitchString</code><span class="sig-paren">(</span><em class="sig-param">model, xy=[(-1, 0), (1, 0)], tsandQ=[(0, 1)], res=0, wh='H', layers=0, Astorage=None, label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/linesink.html#LineSinkDitchString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.linesink.LineSinkDitchString" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ttim.linesink.</code><code class="sig-name descname">LineSinkDitchString</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">xy</span><span class="o">=</span><span class="default_value">[- 1, 0, 1, 0]</span></em>, <em class="sig-param"><span class="n">tsandQ</span><span class="o">=</span><span class="default_value">[0, 1]</span></em>, <em class="sig-param"><span class="n">res</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">wh</span><span class="o">=</span><span class="default_value">'H'</span></em>, <em class="sig-param"><span class="n">layers</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">Astorage</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ttim/linesink.html#LineSinkDitchString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ttim.linesink.LineSinkDitchString" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create ditch consisting of a string of line-sink.
 The total discharge for the string is specified and divided over the
 line-sinks such that the head at the center inside each line-sink is
@@ -61,9 +62,12 @@ line-sinks in string</p></li>
 <li><p><strong>tsandQ</strong> (<em>list</em><em> or </em><em>2D array of</em><em> (</em><em>time</em><em>, </em><em>discharge</em><em>) </em><em>values</em>) – if list or 2D array: pairs of time and discharge after that time</p></li>
 <li><p><strong>res</strong> (<em>scalar</em><em> (</em><em>default is 0</em><em>)</em>) – resistance of line-sink</p></li>
 <li><p><strong>wh</strong> (<em>scalar</em><em> or </em><em>str</em>) – distance over which water enters line-sink
-if ‘H’: (default) distance is equal to the thickness of the aquifer layer (when flow comes mainly from one side)
-if ‘2H’: distance is twice the thickness of the aquifer layer (when flow comes from both sides)
-if scalar: the width of the stream that partially penetrates the aquifer layer</p></li>
+if ‘H’: (default) distance is equal to the thickness of the aquifer
+layer (when flow comes mainly from one side)
+if ‘2H’: distance is twice the thickness of the aquifer layer (when
+flow comes from both sides)
+if scalar: the width of the stream that partially penetrates the
+aquifer layer</p></li>
 <li><p><strong>layers</strong> (<em>scalar</em><em>, </em><em>list</em><em> or </em><em>array</em>) – layer(s) in which element is placed
 if scalar: element is placed in this layer
 if list or array: element is placed in all these layers</p></li>
@@ -71,9 +75,9 @@ if list or array: element is placed in all these layers</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="ttim.linesink.LineSinkDitchString.discharge">
-<code class="sig-name descname">discharge</code><span class="sig-paren">(</span><em class="sig-param">t</em>, <em class="sig-param">derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.linesink.LineSinkDitchString.discharge" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">discharge</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">derivative</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.linesink.LineSinkDitchString.discharge" title="Permalink to this definition">¶</a></dt>
 <dd><p>The discharge in each layer</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -90,9 +94,9 @@ screened</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ttim.linesink.LineSinkDitchString.discharge_list">
-<code class="sig-name descname">discharge_list</code><span class="sig-paren">(</span><em class="sig-param">t</em>, <em class="sig-param">derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.linesink.LineSinkDitchString.discharge_list" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">discharge_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">derivative</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.linesink.LineSinkDitchString.discharge_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>The discharge of each line-sink in the string</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -108,9 +112,9 @@ the line-sink is screened in, and each time</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ttim.linesink.LineSinkDitchString.headinside">
-<code class="sig-name descname">headinside</code><span class="sig-paren">(</span><em class="sig-param">t</em>, <em class="sig-param">derivative=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.linesink.LineSinkDitchString.headinside" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">headinside</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">derivative</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ttim.linesink.LineSinkDitchString.headinside" title="Permalink to this definition">¶</a></dt>
 <dd><p>The head inside the line-sink string</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -194,7 +198,7 @@ the line-sink is screened in, and each time</p>
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -203,7 +207,7 @@ the line-sink is screened in, and each time</p>
       &copy;2017, Mark Bakker.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -51,3 +51,4 @@ A list of available elements is available in the menu on the right under *elemen
     
     Models <models/modelindex>
     Elements <aems>
+    Pathlines <pathlines/trace>
