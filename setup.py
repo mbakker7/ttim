@@ -22,7 +22,7 @@ setup(
     url="https://github.com/mbakker7/ttim",
     license="MIT",
     packages=["ttim"],
-    python_requires='>3.6',
-    install_requires=["numpy>=1.17", "scipy>=0.19", "numba>=0.39", "matplotlib>=2.0", "lmfit>=1.0", "pandas>=0.25"],
+    python_requires='>=3.7',
+    install_requires=["numpy>=1.17", "scipy>=1.5", "numba>=0.5", "matplotlib>=3.1", "lmfit>=1.0", "pandas>=1.1"],
     classifiers=['Topic :: Scientific/Engineering :: Hydrology'],
 )

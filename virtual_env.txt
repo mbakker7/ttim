@@ -1,10 +1,10 @@
-**Install a virtual environment for Python 3.6. In a terminal, type**
+**Install a virtual environment for Python 3.8. In a terminal, type**
     
-    conda create -n py36 python=3.6 anaconda
-    conda activate py36
+    conda create -n py38 python=3.8 anaconda
+    conda activate py38
     pip install ttim
 
 To activate the environment and start a jupyter notebook, type the following in a terminal:
     
-    conda activate py36
+    conda activate py38
     jupyter notebook
