@@ -232,9 +232,13 @@ class Calibrate:
             for name in self.parameters.index:
                 self.parameters.loc[name, 'optimal'] = \
                     self.fitresult.params.valuesdict()[name]
-            self.parameters['std'] = np.sqrt(np.diag(self.fitresult.covar))
-            self.parameters['perc_std'] = 100 * self.parameters['std'] / \
-                                          np.abs(self.parameters['optimal'])
+            if hasattr(self.fitresult, 'covar'):
+                self.parameters['std'] = np.sqrt(np.diag(self.fitresult.covar))
+                self.parameters['perc_std'] = 100 * self.parameters['std'] / \
+                                              np.abs(self.parameters['optimal'])
+            else:
+                self.parameters['std'] = np.nan
+                self.parameters['perc_std'] = np.nan
         if report:
             print(lmfit.fit_report(self.fitresult))
             
