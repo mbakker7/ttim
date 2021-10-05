@@ -174,11 +174,11 @@ class Calibrate:
         for key in self.seriesdict:
             s = self.seriesdict[key]
             h = self.model.head(s.x, s.y, s.t, layers=s.layer)
-            rv = np.append(rv, np.log10(s.h) - np.log10(h))
+            rv = np.append(rv, np.log(np.absolute(s.h - h)))
         for key in self.seriesinwelldict:
             s = self.seriesinwelldict[key]
             h = s.element.headinside(s.t)[0]
-            rv = np.append(rv, np.log10(s.h) - np.log10(h))
+            rv = np.append(rv, np.log(np.absolute(s.h - h)))
         return rv
     
     def residuals_lmfit(self, lmfitparams, printdot=False):
