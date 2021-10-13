@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import inspect # Used for storing the input
+import cmath # Complex tanh calculation in compute_lab_eigenvec
 
 class AquiferData:
     def __init__(self, model, kaq, z, Haq, Hll, c, Saq, Sll, poraq, porll, 
@@ -109,7 +110,7 @@ class AquiferData:
                 dzero = sqrtpSc[0] * np.tanh(sqrtpSc[0])
             else:
                 # Bug in complex tanh in numpy
-                dzero = sqrtpSc[0] * cmath_tanh(sqrtpSc[0])  
+                dzero = sqrtpSc[0] * cmath.tanh(sqrtpSc[0])  
         d0 = p / self.D
         if B is not None:
             d0 = d0 * B  # B is vector of load efficiency paramters
