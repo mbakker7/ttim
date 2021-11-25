@@ -1,7 +1,7 @@
 import numpy as np
 
 def timtrace(ml, xstart, ystart, zstart, tstartend, tstartoffset, 
-                  deltlist, nstepmax=100, hstepmax=10, silent=False, 
+                  tstep, nstepmax=100, hstepmax=10, silent=False, 
                   correctionstep=True):
     """
     Compute a pathline by numerical integration of the velocity vector.
@@ -22,12 +22,13 @@ def timtrace(ml, xstart, ystart, zstart, tstartend, tstartoffset,
         z-coordinate of starting location of pathline
     tstartend : list
         list of starting times of pathline. last entry is the ending time.
-    tstartoffset : float
-        time after starting time when pathline is started. this value can not
-        be smaller than tmin.
-    deltlist : scalar or list
+    tstartoffset : float or list
+        time after starting time when pathline is started. value or list. if 
+        this value is smaller than tmin it may cause problems after change in
+        boundary conditions
+    tstep : scalar or list
         maximum time step for each step along pathline. either one value for
-        all sections, or list with value for each section.
+        all sections, or list with values for each section.
     nstepmax : integer
         maximu number of steps per section
     hstepmax : float or integer
@@ -53,27 +54,30 @@ def timtrace(ml, xstart, ystart, zstart, tstartend, tstartoffset,
             * -2 : reached maximum number of steps before reaching maximum time
             * -1 : starting z value not inside aquifer
             * +1 : reached maximum time
-            * +2 : reached element   
+            * +2 : reached element
+            * +3 : flows out of top of aquifer
     
     """
     xyzt = [np.array([[xstart, ystart, zstart, tstartend[0]]])]
     messages = []
     status = []
-    if np.isscalar(deltlist):
-        deltlist = len(tstartend) * [deltlist]
+    if np.isscalar(tstep):
+        tstep = len(tstartend) * [tstep]
+    if np.isscalar(tstartoffset):
+        tstartoffset = len(tstartend) * [tstartoffset]
     for itrace in range(len(tstartend) - 1):
         x0, y0, z0, t0 = xyzt[-1][-1]
-        trace = timtraceline(ml, x0, y0, z0, t0 + tstartoffset, 
-                             deltlist[itrace], tstartend[itrace + 1],
+        trace = timtraceline(ml, x0, y0, z0, t0 + tstartoffset[itrace], 
+                             tstep[itrace], tstartend[itrace + 1],
                              nstepmax=nstepmax, hstepmax=hstepmax, 
                              silent=silent, correctionstep=correctionstep)
-        xyzt.append(trace['trace'])
+        xyzt.append(trace['xyzt'])
         messages.append(trace['message'])
         status.append(trace['status'])
         if trace['status'] != 1:
             break
     xyzt = np.vstack(xyzt)
-    result = {"trace": np.array(xyzt), "message": messages, 
+    result = {"xyzt": np.array(xyzt), "message": messages, 
               "status": status}
     return result                 
                
@@ -85,7 +89,7 @@ def timtraceline(ml, xstart, ystart, zstart, tstart, delt, tmax,
     terminate = False
     status = 0
     message = 'no message'
-    eps = 1e-10  # used to place point just above or below aquifer top or bottom
+    eps = 1e-6  # used to place point just above or below aquifer top or bottom
     aq = ml.aq.find_aquifer_data(xstart, ystart)
     if zstart > aq.z[0] or zstart < aq.z[-1]:
         terminate = True
@@ -124,9 +128,11 @@ def timtraceline(ml, xstart, ystart, zstart, tstart, delt, tmax,
                 # check if going to different layer
                 z1 = z0 + delt0 * vz
                 layer1, ltype1, modellayer1 = aq.findlayer(z1)
+                # print(steps, 'z1', z1, layer1, ltype1, modellayer1)
                 if modellayer1 < modellayer: # step up to next layer
                     delt0 = (aq.z[modellayer] - z0) / (z1 - z0) * delt0
                     z1 = aq.z[modellayer] + eps
+                    # print('stepping up to next layer, z1= ', z1)
                     do_correction = False
                 elif modellayer1 > modellayer: # step down to next layer
                     delt0 = (z0 - aq.z[modellayer + 1]) / (z0 - z1) * delt0
@@ -159,6 +165,10 @@ def timtraceline(ml, xstart, ystart, zstart, tstart, delt, tmax,
                     terminate = True
                     status = -2
                     message = 'reached maximum number of steps'
+                if z1 > aq.z[0]:
+                    terminate = True
+                    message = 'flows out of top of aquifer'
+                    status = 3
                 if terminate: 
                     xyzt.append(np.array([x1, y1, z1, t1]))
                     break
@@ -174,7 +184,7 @@ def timtraceline(ml, xstart, ystart, zstart, tstart, delt, tmax,
 
     if not silent:
         print(message)
-    result = {"trace": np.array(xyzt), "message": message, 
+    result = {"xyzt": np.array(xyzt), "message": message, 
               "status": status}
     return result
 
@@ -284,7 +294,7 @@ def timtraceline2(ml, xstart, ystart, zstart, tstart, tmax,
 
     if not silent:
         print(message)
-    result = {"trace": np.array(xyzt), "message": message, 
+    result = {"xyzt": np.array(xyzt), "message": message, 
               "complete": terminate}
     return result
 
