@@ -255,8 +255,8 @@ def invlapcomp(time, pot, npint, M, tintervals,
     for j in range(len(enumber)):
         t = time - etstart[j]
         it = 0
-        if t[0] < 0:  # there are times before start of bc
-            if t[-1] < 0:  # all times before start of bc, also for len(t)=1
+        if t[0] <= 0:  # there are times before start of bc
+            if t[-1] <= 0:  # all times before start of bc, also for len(t)=1
                 continue
             else:
                 # no effect for any t <= 0
