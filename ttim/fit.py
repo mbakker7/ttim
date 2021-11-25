@@ -164,6 +164,9 @@ class Calibrate:
             print('.', end='')
         # set the values of the variables
         
+        if printdot == 7:
+            print(p)
+        
         for i, k in enumerate(self.parameters.index):
             # [:] needed to do set value in array
             self.parameters.loc[k, 'parray'][:] = p[i]  
