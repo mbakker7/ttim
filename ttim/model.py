@@ -267,8 +267,10 @@ class TimModel(PlotTtim):
                 qz = (h[1, 0] - h[0, 0]) / aq.c[layer] # TO DO include storage in leaky layer
             vz = qz / aq.porll[layer]
         else: # in aquifer layer
+            h = self.head(x, y, t, layers=layer, aq=aq)
             qx, qy = self.disvec(x, y, t, aq=aq)
-            vx = qx[layer, 0] / (aq.Haq[layer] * aq.poraq[layer])
+            vx = qx[layer, 0] / (aq.Haq[layer] * 
+                                (aq.poraq[layer] + aq.Saq[layer] * h[0, 0]))
             vy = qy[layer, 0] / (aq.Haq[layer] * aq.poraq[layer])
             #
             h = np.zeros(3) # head above layer, in layer, and below layer
