@@ -1,3 +1,4 @@
+# flake8: noqa
 import numpy as np
 from scipy.special import kv, iv # Needed for K1 in Well class, and in CircInhom
 from .aquifer import AquiferData
