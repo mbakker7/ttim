@@ -1,8 +1,7 @@
 [run]
 omit =
     # omit these files
-    ttiml/circinhom.py
-    # omit anything in a .local directory anywhere
-    # */.local/*
-    # omit everything in /usr
-    # /usr/*
+    ttim/circinhom.py
+    ttim/besselnumba_total.py
+    ttim/aquifernew.py
+    ttim/kuhlman_invlap.py
