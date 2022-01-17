@@ -1,6 +1,5 @@
 [run]
 omit =
-    # omit these files
     ttim/circinhom.py
     ttim/besselnumba_total.py
     ttim/aquifernew.py
