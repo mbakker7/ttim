@@ -1,0 +1,8 @@
+[run]
+omit =
+    # omit these files
+    ttiml/circinhom.py
+    # omit anything in a .local directory anywhere
+    # */.local/*
+    # omit everything in /usr
+    # /usr/*
