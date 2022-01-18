@@ -1,6 +1,6 @@
 [run]
 omit =
-    ttim/circinhom.py
-    ttim/besselnumba_total.py
-    ttim/aquifernew.py
-    ttim/kuhlman_invlap.py
+    */ttim/circinhom.py
+    */ttim/besselnumba_total.py
+    */ttim/aquifernew.py
+    */ttim/kuhlman_invlap.py
