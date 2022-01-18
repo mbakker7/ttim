@@ -104,6 +104,7 @@ def timtraceline(ml, xstart, ystart, zstart, tstart, delt, tmax,
             break
         do_correction = correctionstep # do correction step, unless do_correction changed to False
         x0, y0, z0, t0 = xyzt[-1]
+        #print(x0, y0, z0, t0)
         #aq = ml.aq.find_aquifer_data(x0, y0)  # find new aquifer
         layer, ltype, modellayer = aq.findlayer(z0)
         layerlist.append(modellayer)

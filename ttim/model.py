@@ -94,8 +94,8 @@ class TimModel(PlotTtim):
         # lower and upper limit are adjusted to prevent any problems from t 
         # exactly at the beginning and end of the interval
         # also, you cannot count on t >= 10 ** log10(t) for all possible t
-        self.tintervals[0] = self.tintervals[0] * (1 - 1e-12)
-        self.tintervals[-1] = self.tintervals[-1] * (1 + 1e-12)
+        self.tintervals[0] = self.tintervals[0] * (1 - 1e-8)
+        self.tintervals[-1] = self.tintervals[-1] * (1 + 1e-8)
         self.nint = len(self.tintervals) - 1 # number of p-intervals
         self.npint = 2 * self.M + 1 # number of p values in an interval
         self.npval = self.nint * self.npint
@@ -200,7 +200,8 @@ class TimModel(PlotTtim):
                          self.enumber, self.etstart, self.ebc, nlayers)
         return rvx, rvy
     
-    def head(self, x, y, t, layers=None, aq=None, derivative=0):
+    def head(self, x, y, t, layers=None, 
+             aq=None, derivative=0, neglect_steady=False):
         """Head at x, y, t where t can be multiple times
         
         Parameters
@@ -227,8 +228,9 @@ class TimModel(PlotTtim):
         pot = self.potential(x, y, t, layers, aq, derivative)
         h = aq.potential_to_head(pot, layers)
         if self.timmlmodel is not None:
-            htimml = self.timmlmodel.head(x, y, layers=layers)
-            h += htimml[:, np.newaxis]
+            if not neglect_steady:
+                htimml = self.timmlmodel.head(x, y, layers=layers)
+                h += htimml[:, np.newaxis]
         return h
     
     def velocompold(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
@@ -260,30 +262,31 @@ class TimModel(PlotTtim):
             vx = 0.0
             vy = 0.0
             if layer == 0:
-                h = self.head(x, y, t, layers=layer, aq=aq)
+                h = self.head(x, y, t, layers=layer, aq=aq, neglect_steady=True)
                 qz = (h[0, 0] - 0.0) / aq.c[0]
             else:
-                h = self.head(x, y, t, layers=[layer - 1, layer], aq=aq)
+                h = self.head(x, y, t, layers=[layer - 1, layer], aq=aq, neglect_steady=True)
                 qz = (h[1, 0] - h[0, 0]) / aq.c[layer] # TO DO include storage in leaky layer
             vz = qz / aq.porll[layer]
         else: # in aquifer layer
-            h = self.head(x, y, t, layers=layer, aq=aq)
+            h = self.head(x, y, t, layers=layer, aq=aq, neglect_steady=True)
             qx, qy = self.disvec(x, y, t, aq=aq)
             vx = qx[layer, 0] / (aq.Haq[layer] * 
                                 (aq.poraq[layer] + aq.Saq[layer] * h[0, 0]))
-            vy = qy[layer, 0] / (aq.Haq[layer] * aq.poraq[layer])
+            vy = qy[layer, 0] / (aq.Haq[layer] * 
+                                (aq.poraq[layer] + aq.Saq[layer] * h[0, 0]))
             #
             h = np.zeros(3) # head above layer, in layer, and below layer
             if layer > 0:
                 if layer < aq.naq - 1: # there is a layer above and below
-                    h[:] = self.head(x, y, t, layers=[layer - 1, layer, layer + 1], aq=aq)[:, 0]
+                    h[:] = self.head(x, y, t, layers=[layer - 1, layer, layer + 1], aq=aq, neglect_steady=True)[:, 0]
                 else:
-                    h[:2] = self.head(x, y, t, layers=[layer - 1, layer], aq=aq)[:, 0]
+                    h[:2] = self.head(x, y, t, layers=[layer - 1, layer], aq=aq, neglect_steady=True)[:, 0]
             else: # layer = 0, so top layer
                 if aq.naq == 1: # only one layer
-                    h[1] = self.head(x, y, t, layers=[layer], aq=aq)[:, 0]
+                    h[1] = self.head(x, y, t, layers=[layer], aq=aq, neglect_steady=True)[:, 0]
                 else:
-                    h[1:] = self.head(x, y, t, layers=[layer, layer + 1], aq=aq)[:, 0]
+                    h[1:] = self.head(x, y, t, layers=[layer, layer + 1], aq=aq, neglect_steady=True)[:, 0]
             # this works because c[0] = 1e100 for impermeable top
             qztop = (h[1] - h[0]) / self.aq.c[layer] 
             # TO DO modify for infiltration in top aquifer
