@@ -56,7 +56,10 @@ class Calibrate:
                 p = self.model.aq.Saq[fromlay:tolay+1]
             elif name[0] == 'c':
                 p = self.model.aq.c[fromlay:tolay+1]
-            # TODO: set Sll
+            elif name[:3] == 'Sll':
+                p = self.model.aq.Sll[fromlay:tolay+1]
+            elif name[0:8] == 'kzoverkh':
+                p = self.model.aq.kzoverkh[fromlay:tolay+1]
         else:
             layer = np.int(layers_from_name[0])
             # Set, kaq, Saq, c
@@ -66,7 +69,10 @@ class Calibrate:
                 p = self.model.aq.Saq[layer:layer + 1]
             elif name[0] == 'c':
                 p = self.model.aq.c[layer:layer + 1]
-            # TODO: set Sll
+            elif name[:3] == 'Sll':
+                p = self.model.aq.Sll[layer:layer + 1]
+            elif name[0:8] == 'kzoverkh':
+                p = self.model.aq.kzoverkh[layer:layer + 1]
         if p is None:  # no parameter set
             print('parameter name not recognized or no parameter ref supplied')
             return
