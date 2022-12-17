@@ -117,7 +117,7 @@ class LineSinkBase(Element):
             
         """
         
-        return self.model.head(self.xc,self.yc,t)[self.layers] - \
+        return self.model.head(self.xc[0],self.yc[0],t)[self.layers] - \
                    self.resfach[:, np.newaxis] * self.discharge(t)
 
     def plot(self):
@@ -525,7 +525,76 @@ class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
         LineSinkStringBase.initialize(self)
         # set vresfac to zero, as I don't quite know what it would mean if 
         # it is not zero
-        self.vresfac = np.zeros_like(self.resfach)  
+        self.vresfac = np.zeros_like(self.resfach) 
+        
+class LineSinkDitchString2(LineSinkStringBase, MscreenDitchEquation):
+    """
+    Create ditch consisting of a string of line-sink.
+    The total discharge for the string is specified and divided over the
+    line-sinks such that the head at the center inside each line-sink is
+    equal. A width and resistance may optionally be specified.
+    Inflow per unit length of line-sink is computed as
+    
+    .. math::
+        \sigma = w(h_{aq} - h_{ls})/c
+    
+    where :math:`c` is the resistance of the bottom of the line-sink,
+    :math:`w` is the width over which water enters the line-sink,
+    :math:`h_{aq}` is the head in the aquifer at the center of the line-sink,
+    :math:`h_{ls}` is the specified head inside the line-sink
+    Note that all that matters is the conductance term :math:`w/c` but
+    both are specified separately
+    
+    Parameters
+    ----------
+    
+    model : Model object
+        Model to which the element is added
+    xy : array or list
+        list or array of (x,y) pairs of coordinates of end-points of
+        line-sinks in string
+    tsandQ : list or 2D array of (time, discharge) values
+        if list or 2D array: pairs of time and discharge after that time
+    res : scalar (default is 0)
+        resistance of line-sink
+    wh : scalar or str
+        distance over which water enters line-sink
+        if 'H': (default) distance is equal to the thickness of the aquifer 
+        layer (when flow comes mainly from one side)
+        if '2H': distance is twice the thickness of the aquifer layer (when 
+        flow comes from both sides)
+        if scalar: the width of the stream that partially penetrates the 
+        aquifer layer
+    layers : scalar, list or array
+        layer(s) in which element is placed
+        if scalar: element is placed in this layer
+        if list or array: element is placed in all these layers 
+    label: str or None
+        label of element
+        
+    """    
+    def __init__(self, model, xy=[(-1, 0), (1, 0)], tsandQ=[(0, 1)], res=0,
+                 wh='H', layers=0, Astorage=None, label=None):
+        self.storeinput(inspect.currentframe())
+        LineSinkStringBase.__init__(self, model, tsandbc=tsandQ, layers=layers,
+                                    type='v', name='LineSinkDitchString',
+                                    label=label)
+        xy = np.atleast_2d(xy).astype('d')
+        self.x,self.y = xy[:, 0], xy[:, 1]
+        self.nls = len(self.x) - 1
+        for i in range(self.nls):
+            self.lslist.append(
+                MscreenLineSink(model, x1=self.x[i], y1=self.y[i], 
+                                x2=self.x[i + 1], y2=self.y[i + 1], 
+                                tsandQ=tsandQ, res=res, wh=wh, layers=layers, 
+                                label=None, addtomodel=False))
+        self.Astorage = Astorage
+        self.model.addelement(self)
+    def initialize(self):
+        LineSinkStringBase.initialize(self)
+        # set vresfac to zero, as I don't quite know what it would mean if 
+        # it is not zero
+        self.vresfac = np.zeros_like(self.resfach) 
 
 class LineSinkHoBase(Element):
     '''Higher Order LineSink Base Class. All Higher Order Line Sink elements 

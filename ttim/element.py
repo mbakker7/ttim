@@ -195,10 +195,10 @@ class Element:
         if self.type == 'g':
             s = self.dischargeinflayers * self.model.p ** derivative
             for itime in range(self.ntstart):
-                time -=  self.tstart[itime]
+                t =  time - self.tstart[itime]
                 for i in range(self.nlayers):
                     rv[i] += self.bc[itime] * \
-                             self.model.inverseLapTran(s[i], time)
+                             self.model.inverseLapTran(s[i], t)
         else:
             s = np.sum(self.parameters[:, :, np.newaxis, :] * 
                        self.dischargeinf, 1)
