@@ -644,7 +644,7 @@ class Model3D(TimModel):
     """
     
     def __init__(self, kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, 
-                 poraq=0.3, topboundary='conf', phreatictop=True, 
+                 poraq=0.3, topboundary='conf', phreatictop=False, 
                  topres=0, topthick=0, topSll=0, toppor=0.3, 
                  tmin=1, tmax=10, tstart=0, M=10, timmlmodel=None):
         '''z must have the length of the number of layers + 1'''
