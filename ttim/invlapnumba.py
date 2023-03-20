@@ -21,7 +21,7 @@
 import numpy as np
 import numba
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def invlap(t, tmax, fp, M, alpha=1e-10, tol=1e-9):
     """Inverse Laplace tansform with algorithm of De Hoog, Knight and Stokes
 
@@ -130,7 +130,7 @@ def invlap(t, tmax, fp, M, alpha=1e-10, tol=1e-9):
 
     return result
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def compute_laplace_parameters_numba(tmax, M=20, alpha=1e-10, tol=1e-9):
     # 2*M+1 terms in approximation
     # desired tolerance (here simply related to alpha)
@@ -151,7 +151,7 @@ def invlaptest():
     print('approximate from invlap:', ft)
     print('exact:', t * np.exp(-t))
     
-#@numba.njit(nogil=True) 
+#@numba.njit(nogil=True, cache=True) 
 # got deprecation warning that needs fixing
 # I think it doesn't like a list of arrays as input
 def invlapcompold(time, pot, npint, M, tintervals, 
@@ -212,7 +212,7 @@ def invlapcompold(time, pot, npint, M, tintervals,
                 it = it + nt
     return rv
 
-@numba.njit(nogil=True) 
+@numba.njit(nogil=True, cache=True) 
 def invlapcomp(time, pot, npint, M, tintervals, 
                enumber, etstart, ebc, nlayers):
     '''

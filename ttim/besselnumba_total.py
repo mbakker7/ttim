@@ -89,7 +89,7 @@ xg[6] = 0.796666477413626
 xg[7] = 0.960289856497536
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def besselk0far(z, Nt):
     """
     implicit none
@@ -112,7 +112,7 @@ def besselk0far(z, Nt):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def besselk0near(z, Nt):
     """
     implicit none
@@ -134,7 +134,7 @@ def besselk0near(z, Nt):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def besselk1near(z, Nt):
     """
     implicit none
@@ -156,7 +156,7 @@ def besselk1near(z, Nt):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def besselk0cheb(z, Nt):
     """
     implicit none
@@ -204,7 +204,7 @@ def besselk0cheb(z, Nt):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def besselk1cheb(z, Nt):
     """
     implicit none
@@ -253,7 +253,7 @@ def besselk1cheb(z, Nt):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def besselk0(x, y, lab):
     """
     implicit none
@@ -273,7 +273,7 @@ def besselk0(x, y, lab):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def besselk1(x, y, lab):
     """
     implicit none
@@ -293,7 +293,7 @@ def besselk1(x, y, lab):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def k0bessel(z):
     """
     implicit none
@@ -311,7 +311,7 @@ def k0bessel(z):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def besselk0v(x, y, lab, nlab, omega):
     """
     implicit none
@@ -327,7 +327,7 @@ def besselk0v(x, y, lab, nlab, omega):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def k0besselv(z, nlab, omega):
     """
     implicit none
@@ -341,7 +341,7 @@ def k0besselv(z, nlab, omega):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def besselk0OLD(x, y, lab):
     """
     implicit none
@@ -365,7 +365,7 @@ def besselk0OLD(x, y, lab):
     return omega
 
 
-# @numba.njit(nogil=True)
+# @numba.njit(nogil=True, cache=True)
 # def besselcheb(z, Nt):
 #     """
 #     implicit none
@@ -379,7 +379,7 @@ def besselk0OLD(x, y, lab):
 #     return omega
 # 
 # 
-# @numba.njit(nogil=True)
+# @numba.njit(nogil=True, cache=True)
 # def ucheb(a, c, z, n0):
 #     """
 #     implicit none
@@ -424,7 +424,7 @@ def besselk0OLD(x, y, lab):
 #     return ufunc
 
 
-# @numba.njit(nogil=True)
+# @numba.njit(nogil=True, cache=True)
 # def besselk0complex(x, y):
 #     """
 #     implicit none
@@ -470,7 +470,7 @@ def besselk0OLD(x, y, lab):
 #     return phi
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def lapls_int_ho(x, y, z1, z2, order):
     """
     implicit none
@@ -519,7 +519,7 @@ def lapls_int_ho(x, y, z1, z2, order):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessellsreal(x, y, x1, y1, x2, y2, lab):
     """
     implicit none
@@ -578,7 +578,7 @@ def bessellsreal(x, y, x1, y1, x2, y2, lab):
     return phi
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessellsrealho(x, y, x1, y1, x2, y2, lab, order):
     """
     implicit none
@@ -656,7 +656,7 @@ def bessellsrealho(x, y, x1, y1, x2, y2, lab, order):
     return phi
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessells_int(x, y, z1, z2, lab):
     """
     implicit none
@@ -743,7 +743,7 @@ def bessells_int(x, y, z1, z2, lab):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessells_int_ho(x, y, z1, z2, lab, order, d1, d2):
     """
     implicit none
@@ -849,7 +849,7 @@ def bessells_int_ho(x, y, z1, z2, lab, order, d1, d2):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     """
     implicit none
@@ -970,7 +970,7 @@ def bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     return qxqy
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessells_gauss(x, y, z1, z2, lab):
     """
     implicit none
@@ -994,7 +994,7 @@ def bessells_gauss(x, y, z1, z2, lab):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessells_gauss_ho(x, y, z1, z2, lab, order):
     """
     implicit none
@@ -1027,7 +1027,7 @@ def bessells_gauss_ho(x, y, z1, z2, lab, order):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
     """
     Returns integral from d1 to d2 along real axis while strength is still Delta^order from -1 to +1
@@ -1056,7 +1056,7 @@ def bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessells_gauss_ho_qxqy(x, y, z1, z2, lab, order):
     """
     implicit none
@@ -1103,7 +1103,7 @@ def bessells_gauss_ho_qxqy(x, y, z1, z2, lab, order):
     return qxqy
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessells_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
     """
     Returns integral from d1 to d2 along real axis while strength is still Delta^order from -1 to +1
@@ -1136,7 +1136,7 @@ def bessells_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
     return qxqy
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessells(x, y, z1, z2, lab, order, d1in, d2in):
     """
     implicit none
@@ -1184,7 +1184,7 @@ def bessells(x, y, z1, z2, lab, order, d1in, d2in):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessellsv(x, y, z1, z2, lab, order, R, nlab):
     """
     implicit none
@@ -1208,7 +1208,7 @@ def bessellsv(x, y, z1, z2, lab, order, R, nlab):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessellsv2(x, y, z1, z2, lab, order, R, nlab):
     """
     implicit none
@@ -1230,7 +1230,7 @@ def bessellsv2(x, y, z1, z2, lab, order, R, nlab):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessellsqxqy(x, y, z1, z2, lab, order, d1in, d2in):
     """
     implicit none
@@ -1281,7 +1281,7 @@ def bessellsqxqy(x, y, z1, z2, lab, order, d1in, d2in):
     return qxqy
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessellsqxqyv(x, y, z1, z2, lab, order, R, nlab):
     """
     implicit none
@@ -1307,7 +1307,7 @@ def bessellsqxqyv(x, y, z1, z2, lab, order, R, nlab):
     return qxqy
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessellsqxqyv2(x, y, z1, z2, lab, order, R, nlab):
     """
     implicit none
@@ -1332,7 +1332,7 @@ def bessellsqxqyv2(x, y, z1, z2, lab, order, R, nlab):
     return qxqy
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessellsuni(x, y, z1, z2, lab):
     """
     # Uniform strength
@@ -1370,7 +1370,7 @@ def bessellsuni(x, y, z1, z2, lab):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessellsuniv(x, y, z1, z2, lab, nlab):
     """
     # Uniform strength
@@ -1389,7 +1389,7 @@ def bessellsuniv(x, y, z1, z2, lab, nlab):
 
 
 # %% Line Doublet Functions
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def lapld_int_ho(x, y, z1, z2, order):
     """
     ! Near field only
@@ -1432,7 +1432,7 @@ def lapld_int_ho(x, y, z1, z2, order):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2):
     """
     Near field only
@@ -1462,7 +1462,7 @@ def lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def lapld_int_ho_wdis(x, y, z1, z2, order):
     """
     # Near field only
@@ -1506,7 +1506,7 @@ def lapld_int_ho_wdis(x, y, z1, z2, order):
     return wdis
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def lapld_int_ho_wdis_d1d2(x, y, z1, z2, order, d1, d2):
     """
     # Near field only
@@ -1537,7 +1537,7 @@ def lapld_int_ho_wdis_d1d2(x, y, z1, z2, order, d1, d2):
     return wdis
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def besselld_int_ho(x, y, z1, z2, lab, order, d1, d2):
     """
     implicit none
@@ -1645,7 +1645,7 @@ def besselld_int_ho(x, y, z1, z2, lab, order, d1, d2):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def besselld_gauss_ho(x, y, z1, z2, lab, order):
     """
     implicit none
@@ -1679,7 +1679,7 @@ def besselld_gauss_ho(x, y, z1, z2, lab, order):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def besselld_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
     """
     # Returns integral from d1 to d2 along real axis while strength is still Delta^order from -1 to +1
@@ -1709,7 +1709,7 @@ def besselld_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def besselld(x, y, z1, z2, lab, order, d1in, d2in):
     """
     implicit none
@@ -1759,7 +1759,7 @@ def besselld(x, y, z1, z2, lab, order, d1in, d2in):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def besselldv(x, y, z1, z2, lab, order, R, nlab):
     """
     implicit none
@@ -1784,7 +1784,7 @@ def besselldv(x, y, z1, z2, lab, order, R, nlab):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def besselldv2(x, y, z1, z2, lab, order, R, nlab):
     """
     implicit none
@@ -1809,7 +1809,7 @@ def besselldv2(x, y, z1, z2, lab, order, R, nlab):
     return omega
 
 
-# @numba.njit(nogil=True)
+# @numba.njit(nogil=True, cache=True)
 def besselldpart(x, y, z1, z2, lab, order, d1, d2):
     """
     implicit none
@@ -1915,7 +1915,7 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
     return omega
 
 
-# @numba.njit(nogil=True)
+# @numba.njit(nogil=True, cache=True)
 def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     """
     implicit none
@@ -2072,7 +2072,7 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     return qxqy
 
 
-# @numba.njit(nogil=True)
+# @numba.njit(nogil=True, cache=True)
 def besselld_gauss_ho_qxqy(x, y, z1, z2, lab, order):
     """
     implicit none
@@ -2126,7 +2126,7 @@ def besselld_gauss_ho_qxqy(x, y, z1, z2, lab, order):
     return qxqy
 
 
-# @numba.njit(nogil=True)
+# @numba.njit(nogil=True, cache=True)
 def besselld_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
     """
     Returns integral from d1 to d2 along real axis while strength is still Delta^order from -1 to +1
@@ -2161,7 +2161,7 @@ def besselld_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
     return qxqy
 
 
-# @numba.njit(nogil=True)
+# @numba.njit(nogil=True, cache=True)
 def besselldqxqy(x, y, z1, z2, lab, order, d1in, d2in):
     """
     implicit none
@@ -2214,7 +2214,7 @@ def besselldqxqy(x, y, z1, z2, lab, order, d1in, d2in):
     return qxqy
 
 
-# @numba.njit(nogil=True)
+# @numba.njit(nogil=True, cache=True)
 def besselldqxqyv(x, y, z1, z2, lab, order, R, nlab):
     """
     implicit none
@@ -2242,7 +2242,7 @@ def besselldqxqyv(x, y, z1, z2, lab, order, R, nlab):
     return qxqy
 
 
-# @numba.njit(nogil=True)
+# @numba.njit(nogil=True, cache=True)
 def besselldqxqyv2(x, y, z1, z2, lab, order, R, nlab):
     """
     implicit none
@@ -2268,7 +2268,7 @@ def besselldqxqyv2(x, y, z1, z2, lab, order, R, nlab):
     return qxqy
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def bessells_circcheck(x, y, z1in, z2in, lab):
     """
     implicit none
@@ -2313,7 +2313,7 @@ def bessells_circcheck(x, y, z1in, z2in, lab):
     return omega
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def is_too_far(z1, z2, zc, R):
     """
     Checks whether zc is more than R away from oval
@@ -2335,7 +2335,7 @@ def is_too_far(z1, z2, zc, R):
                 rv = True
     return rv
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def circle_line_intersection(z1, z2, zc, R):
     """
     implicit none
@@ -2376,7 +2376,7 @@ def circle_line_intersection(z1, z2, zc, R):
     return xouta, youta, xoutb, youtb, N
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def find_d1d2(z1, z2, zc, R):
     """
     implicit none
@@ -2408,7 +2408,7 @@ def find_d1d2(z1, z2, zc, R):
     return d1, d2
 
 
-@numba.njit(nogil=True)
+@numba.njit(nogil=True, cache=True)
 def isinside(z1, z2, zc, R):
     """ Checks whether point zc is within oval with 'radius' R from line element
     implicit none
