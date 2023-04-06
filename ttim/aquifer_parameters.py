@@ -45,11 +45,11 @@ def param_maq(kaq=[1], z=[1, 0], c=[], Saq=[0.001], Sll=[0],
         Hll = H[1::2]
         assert np.all(Hll > 0), 'Error: Some thicknesses of leaky layers ' + \
                                 'are negative'
-        Hll = np.maximum(Hll, 1e-30) # make sure none are negative
+        Hll = np.maximum(Hll, 1e-20) # make sure none are negative
         c = np.hstack((1e100, c))  
-        Sll = np.hstack((1e-30, Sll)) 
-        Hll = np.hstack((1e-30, Hll))
-        porll = np.hstack((1e-30, porll))
+        Sll = np.hstack((1e-20, Sll)) 
+        Hll = np.hstack((1e-20, Hll))
+        porll = np.hstack((1e-20, porll))
         # layertype
         nlayers = len(z) - 1
         ltype = np.array(nlayers * ['a'])
