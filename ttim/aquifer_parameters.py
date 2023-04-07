@@ -43,9 +43,9 @@ def param_maq(kaq=[1], z=[1, 0], c=[], Saq=[0.001], Sll=[0],
         assert np.all(Haq > 0), 'Error: Some thicknesses of aquifer layers ' + \
                                 'are negative'
         Hll = H[1::2]
+        Hll = np.maximum(Hll, 1e-20) # make sure none are negative
         assert np.all(Hll > 0), 'Error: Some thicknesses of leaky layers ' + \
                                 'are negative'
-        Hll = np.maximum(Hll, 1e-20) # make sure none are negative
         c = np.hstack((1e100, c))  
         Sll = np.hstack((1e-20, Sll)) 
         Hll = np.hstack((1e-20, Hll))
