@@ -35,11 +35,11 @@ class Calibrate:
             name also supports layer ranges, entered by adding a '_' and a
             layer number, i.e. 'kaq0_3' denotes conductivity for layers 0 up to 
             and including 3.
-        initial : np.float, optional
+        initial : float, optional
             initial value for the parameter (the default is 0)
-        pmin : np.float, optional
+        pmin : float, optional
             lower bound for parameter value (the default is -np.inf)
-        pmax : np.float, optional
+        pmax : float, optional
             upper bound for paramater value (the default is np.inf)
         
         """
@@ -49,7 +49,7 @@ class Calibrate:
         layers_from_name = re.findall(r'\d+', name)
         p = None
         if "_" in name:
-            fromlay, tolay = [np.int(i) for i in layers_from_name]
+            fromlay, tolay = [int(i) for i in layers_from_name]
             if name[:3] == 'kaq':
                 p = self.model.aq.kaq[fromlay:tolay+1]
             elif name[:3] == 'Saq':
@@ -61,7 +61,7 @@ class Calibrate:
             elif name[0:8] == 'kzoverkh':
                 p = self.model.aq.kzoverkh[fromlay:tolay+1]
         else:
-            layer = np.int(layers_from_name[0])
+            layer = int(layers_from_name[0])
             # Set, kaq, Saq, c
             if name[:3] == 'kaq':
                 p = self.model.aq.kaq[layer:layer + 1]
@@ -91,11 +91,11 @@ class Calibrate:
         parameter : np.array
             array reference containing the parameter to be optimized. must be 
             specified as reference, i.e. w.rc[0:]  
-        initial : np.float, optional
+        initial : float, optional
             initial value for the parameter (the default is 0)
-        pmin : np.float, optional
+        pmin : float, optional
             lower bound for parameter value (the default is -np.inf)
-        pmax : np.float, optional
+        pmax : float, optional
             upper bound for paramater value (the default is np.inf)
         
         """
@@ -115,9 +115,9 @@ class Calibrate:
         ----------
         name : str
             name of series
-        x : np.float
+        x : float
             x-coordinate
-        y : np.float
+        y : float
             y-coordinate
         layer : int
             layer number, 0-indexed
@@ -260,7 +260,7 @@ class Calibrate:
         
         Returns
         -------
-        np.float
+        float
             return rmse value
         """
 
