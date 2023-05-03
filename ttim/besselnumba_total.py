@@ -169,9 +169,9 @@ def besselk0cheb(z, Nt):
     complex(kind=8) :: z1, z2, S, T
 
     """
-    cnp1 = np.complex(1., 0.)
-    cnp2 = np.complex(0., 0.)
-    cnp3 = np.complex(0., 0.)
+    cnp1 = complex(1., 0.)
+    cnp2 = complex(0., 0.)
+    cnp3 = complex(0., 0.)
     a = 0.5
     c = 1.
     b = 1. + a - c
@@ -395,9 +395,9 @@ def besselk0OLD(x, y, lab):
 # 
 #     """
 # 
-#     cnp1 = np.complex(1.)
-#     cnp2 = np.complex(0.)
-#     cnp3 = np.complex(0.)
+#     cnp1 = complex(1.)
+#     cnp2 = complex(0.)
+#     cnp3 = complex(0.)
 #     ts = (-1)**(n0+1)
 #     S = ts
 #     T = 1.
@@ -437,7 +437,7 @@ def besselk0OLD(x, y, lab):
 #     complex(kind=8), dimension(0:40) :: alpha, beta
 #     """
 #     d = 0.
-#     zeta = np.complex(x, y)
+#     zeta = complex(x, y)
 #     zetabar = np.conj(zeta)
 #     zminzbar = np.zeros(21, dtype=np.complex_)
 #     for n in range(21):
@@ -456,7 +456,7 @@ def besselk0OLD(x, y, lab):
 #         alpha[n:2*n+1] = alpha[n:2*n+1] + a[n] * gamnew[n, :n+1]
 #         beta[n:2*n+1] = beta[n:2*n+1] + b[n] * gamnew[n, :n+1]
 # 
-#     omega = np.complex(0., 0.)
+#     omega = complex(0., 0.)
 #     logdminzdminzbar = np.log((d-zeta) * (d-zetabar))
 #     dminzeta = d - zeta
 #     term = 1.
@@ -487,7 +487,7 @@ def lapls_int_ho(x, y, z1, z2, order):
     qm = np.empty((order+2,), dtype=np.complex_)
 
     L = np.abs(z2-z1)
-    z = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1)
+    z = (2 * complex(x, y) - (z1+z2)) / (z2-z1)
     zplus1 = z + 1
     zmin1 = z - 1
 
@@ -533,13 +533,13 @@ def bessellsreal(x, y, x1, y1, x2, y2, lab):
     """
     zminzbar = np.zeros(21, dtype=np.complex_)
 
-    z1 = np.complex(x1, y1)
-    z2 = np.complex(x2, y2)
+    z1 = complex(x1, y1)
+    z2 = complex(x2, y2)
     L = np.abs(z2-z1)
     biga = np.abs(lab)
     biglab = 2 * biga / L
 
-    zeta = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1) / biglab
+    zeta = (2 * complex(x, y) - (z1+z2)) / (z2-z1) / biglab
     zetabar = np.conj(zeta)
     for n in range(21):
         # Ordered from high power to low power
@@ -597,13 +597,13 @@ def bessellsrealho(x, y, x1, y1, x2, y2, lab, order):
     phi = np.zeros(order+1, dtype=np.float_)
     zminzbar = np.zeros(21, dtype=np.complex_)
 
-    z1 = np.complex(x1, y1)
-    z2 = np.complex(x2, y2)
+    z1 = complex(x1, y1)
+    z2 = complex(x2, y2)
     L = np.abs(z2-z1)
     biga = np.abs(lab)
     biglab = 2 * biga / L
 
-    zeta = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1) / biglab
+    zeta = (2 * complex(x, y) - (z1+z2)) / (z2-z1) / biglab
     zetabar = np.conj(zeta)
     for n in range(21):
         # Ordered from high power to low power
@@ -678,11 +678,11 @@ def bessells_int(x, y, z1, z2, lab):
 
     tol = 1e-12
 
-    exprange = np.exp(-np.complex(0, 2) * ang * nrange)
+    exprange = np.exp(-complex(0, 2) * ang * nrange)
     anew = a * exprange
-    bnew = (b - a * np.complex(0, 2) * ang) * exprange
+    bnew = (b - a * complex(0, 2) * ang) * exprange
 
-    zeta = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1) / biglab
+    zeta = (2 * complex(x, y) - (z1+z2)) / (z2-z1) / biglab
     zetabar = np.conj(zeta)
     # #for n in range(21):
     # #    zminzbar[n] = (zeta-zetabar)**(20-n)  # Ordered from high power to low power
@@ -716,9 +716,9 @@ def bessells_int(x, y, z1, z2, lab):
     d2minzeta = 1/biglab - zeta
 
     if (np.abs(d1minzeta) < tol):
-        d1minzeta = d1minzeta + np.complex(tol, 0)
+        d1minzeta = d1minzeta + complex(tol, 0)
     if (np.abs(d2minzeta) < tol):
-        d2minzeta = d2minzeta + np.complex(tol, 0)
+        d2minzeta = d2minzeta + complex(tol, 0)
 
     log1 = np.log(d1minzeta)
     log2 = np.log(d2minzeta)
@@ -766,11 +766,11 @@ def bessells_int_ho(x, y, z1, z2, lab, order, d1, d2):
 
     tol = 1e-12
 
-    exprange = np.exp(-np.complex(0, 2) * ang * nrange)
+    exprange = np.exp(-complex(0, 2) * ang * nrange)
     anew = a * exprange
-    bnew = (b - a * np.complex(0, 2) * ang) * exprange
+    bnew = (b - a * complex(0, 2) * ang) * exprange
 
-    zeta = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1) / biglab
+    zeta = (2 * complex(x, y) - (z1+z2)) / (z2-z1) / biglab
     zetabar = np.conj(zeta)
 
     # #for n in range(21):
@@ -805,9 +805,9 @@ def bessells_int_ho(x, y, z1, z2, lab, order, d1, d2):
     # #d1minzeta = -1/biglab - zeta
     # #d2minzeta = 1/biglab - zeta
     if (np.abs(d1minzeta) < tol):
-        d1minzeta = d1minzeta + np.complex(tol, 0)
+        d1minzeta = d1minzeta + complex(tol, 0)
     if (np.abs(d2minzeta) < tol):
-        d2minzeta = d2minzeta + np.complex(tol, 0)
+        d2minzeta = d2minzeta + complex(tol, 0)
     log1 = np.log(d1minzeta)
     log2 = np.log(d2minzeta)
 
@@ -873,7 +873,7 @@ def bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     zminzbar = np.zeros(21, dtype=np.complex_)
 
     L = np.abs(z2-z1)
-    bigz = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1)
+    bigz = (2 * complex(x, y) - (z1+z2)) / (z2-z1)
     bigx = bigz.real
     bigy = bigz.imag
     biga = np.abs(lab)
@@ -884,11 +884,11 @@ def bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
 
     tol = 1e-12
 
-    exprange = np.exp(-np.complex(0, 2) * ang * nrange)
+    exprange = np.exp(-complex(0, 2) * ang * nrange)
     anew = a1 * exprange
-    bnew = (b1 - a1 * np.complex(0, 2) * ang) * exprange
+    bnew = (b1 - a1 * complex(0, 2) * ang) * exprange
 
-    zeta = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1) / biglab
+    zeta = (2 * complex(x, y) - (z1+z2)) / (z2-z1) / biglab
     zetabar = np.conj(zeta)
     zminzbar[20] = 1
 
@@ -917,9 +917,9 @@ def bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     d2minzeta = d2 / biglab - zeta
 
     if (np.abs(d1minzeta) < tol):
-        d1minzeta = d1minzeta + np.complex(tol, 0)
+        d1minzeta = d1minzeta + complex(tol, 0)
     if (np.abs(d2minzeta) < tol):
-        d2minzeta = d2minzeta + np.complex(tol, 0)
+        d2minzeta = d2minzeta + complex(tol, 0)
     log1 = np.log(d1minzeta)
     log2 = np.log(d2minzeta)
 
@@ -984,8 +984,8 @@ def bessells_gauss(x, y, z1, z2, lab):
     """
     L = np.abs(z2-z1)
     biglab = 2 * lab / L
-    bigz = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1)
-    omega = np.complex(0, 0)
+    bigz = (2 * complex(x, y) - (z1+z2)) / (z2-z1)
+    omega = complex(0, 0)
     for n in range(1, 9):
         x0 = bigz.real - xg[n-1]
         omega = omega + wg[n-1] * besselk0(x0, bigz.imag, biglab)
@@ -1010,7 +1010,7 @@ def bessells_gauss_ho(x, y, z1, z2, lab, order):
     """
     L = np.abs(z2-z1)
     biglab = 2 * lab / L
-    bigz = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1)
+    bigz = (2 * complex(x, y) - (z1+z2)) / (z2-z1)
 
     k0 = np.zeros(8, dtype=np.complex_)
     for n in range(8):
@@ -1019,7 +1019,7 @@ def bessells_gauss_ho(x, y, z1, z2, lab, order):
 
     omega = np.zeros(order+1, dtype=np.complex_)
     for p in range(order+1):
-        omega[p] = np.complex(0, 0)
+        omega[p] = complex(0, 0)
         for n in range(8):
             omega[p] = omega[p] + wg[n] * xg[n]**p * k0[n]
         omega[p] = -L/(4*np.pi) * omega[p]
@@ -1043,8 +1043,8 @@ def bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
     """
     omega = np.zeros(order+1, dtype=np.complex_)
 
-    bigz1 = np.complex(d1, 0)
-    bigz2 = np.complex(d2, 0)
+    bigz1 = complex(d1, 0)
+    bigz2 = complex(d2, 0)
     z1p = 0.5 * (z2-z1) * bigz1 + 0.5 * (z1+z2)
     z2p = 0.5 * (z2-z1) * bigz2 + 0.5 * (z1+z2)
     omegac = bessells_gauss_ho(x, y, z1p, z2p, lab, order)
@@ -1079,7 +1079,7 @@ def bessells_gauss_ho_qxqy(x, y, z1, z2, lab, order):
 
     L = np.abs(z2-z1)
     biglab = 2 * lab / L
-    bigz = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1)
+    bigz = (2 * complex(x, y) - (z1+z2)) / (z2-z1)
     bigy = bigz.imag
     for n in range(8):
         xmind[n] = bigz.real - xg[n]
@@ -1119,8 +1119,8 @@ def bessells_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
     """
     qxqy = np.zeros(2*order+2, dtype=np.complex_)
 
-    bigz1 = np.complex(d1, 0.)
-    bigz2 = np.complex(d2, 0.)
+    bigz1 = complex(d1, 0.)
+    bigz2 = complex(d2, 0.)
     z1p = 0.5 * (z2-z1) * bigz1 + 0.5 * (z1+z2)
     z2p = 0.5 * (z2-z1) * bigz2 + 0.5 * (z1+z2)
     qxqyc = bessells_gauss_ho_qxqy(x, y, z1p, z2p, lab, order)
@@ -1153,7 +1153,7 @@ def bessells(x, y, z1, z2, lab, order, d1in, d2in):
     omega = np.zeros(order+1, dtype=np.complex_)
 
     Lnear = 3
-    z = np.complex(x, y)
+    z = complex(x, y)
     L = np.abs(z2-z1)
     if (L < Lnear*np.abs(lab)):  # No need to break integral up
         if (np.abs(z - 0.5*(z1+z2)) < 0.5 * Lnear * L):  # Do integration
@@ -1201,7 +1201,7 @@ def bessellsv(x, y, z1, z2, lab, order, R, nlab):
     omega = np.zeros(nlab*(order+1), dtype=np.complex_)
     # Check if endpoints need to be adjusted using
     # the largest lambda (the first one)
-    d1, d2 = find_d1d2(z1, z2, np.complex(x, y), R*np.abs(lab[0]))
+    d1, d2 = find_d1d2(z1, z2, complex(x, y), R*np.abs(lab[0]))
     for n in range(0, nlab):
         omega[n*nterms:(n+1)*nterms] = bessells(x, y, z1, z2, lab[n],
                                                   order, d1, d2)
@@ -1224,7 +1224,7 @@ def bessellsv2(x, y, z1, z2, lab, order, R, nlab):
     nterms = order+1
     omega = np.zeros((order+1, nlab), dtype=np.complex_)
     # Check if endpoints need to be adjusted using the largest lambda (the first one)
-    d1, d2 = find_d1d2(z1, z2, np.complex(x, y), R*np.abs(lab[0]))
+    d1, d2 = find_d1d2(z1, z2, complex(x, y), R*np.abs(lab[0]))
     for n in range(nlab):
         omega[:nterms+1, n] = bessells(x, y, z1, z2, lab[n], order, d1, d2)
     return omega
@@ -1245,7 +1245,7 @@ def bessellsqxqy(x, y, z1, z2, lab, order, d1in, d2in):
     complex(kind=8) :: z, delz, za, zb
     """
     Lnear = 3.
-    z = np.complex(x, y)
+    z = complex(x, y)
     qxqy = np.zeros(2*order+2, dtype=np.complex_)
     L = np.abs(z2-z1)
     # print *,'Lnear*np.abs(lab) ',Lnear*np.abs(lab)
@@ -1298,7 +1298,7 @@ def bessellsqxqyv(x, y, z1, z2, lab, order, R, nlab):
     qxqy = np.zeros(2*nlab*(order+1), dtype=np.complex_)
     nterms = order+1
     nhalf = nlab*(order+1)
-    d1, d2 = find_d1d2(z1, z2, np.complex(x, y), R*np.abs(lab[0]))
+    d1, d2 = find_d1d2(z1, z2, complex(x, y), R*np.abs(lab[0]))
     for n in range(nlab):
         qxqylab = bessellsqxqy(x, y, z1, z2, lab[n], order, d1, d2)
         qxqy[(n)*nterms:(n+1)*nterms] = qxqylab[0:order+1]
@@ -1324,7 +1324,7 @@ def bessellsqxqyv2(x, y, z1, z2, lab, order, R, nlab):
     qxqy = np.zeros((2*(order+1), nlab), dtype=np.complex_)
     nterms = order+1
     nhalf = nlab*(order+1)
-    d1, d2 = find_d1d2(z1, z2, np.complex(x, y), R*np.abs(lab[0]))
+    d1, d2 = find_d1d2(z1, z2, complex(x, y), R*np.abs(lab[0]))
     for n in range(nlab):
         qxqylab = bessellsqxqy(x, y, z1, z2, lab[n-1], order, d1, d2)
         qxqy[:nterms, n] = qxqylab[0:order+1]
@@ -1348,8 +1348,8 @@ def bessellsuni(x, y, z1, z2, lab):
     """
 
     Lnear = 3.
-    z = np.complex(x, y)
-    omega = np.complex(0., 0.)
+    z = complex(x, y)
+    omega = complex(0., 0.)
     L = np.abs(z2-z1)
     if (L < Lnear*np.abs(lab)):  # No need to break integral up
         if (np.abs(z - 0.5*(z1+z2)) < 0.5 * Lnear * L):  # Do integration
@@ -1407,7 +1407,7 @@ def lapld_int_ho(x, y, z1, z2, order):
     qm = np.zeros(order+1, dtype=np.complex_)
 
     L = np.abs(z2-z1)
-    z = (2. * np.complex(x, y) - (z1+z2)) / (z2-z1)
+    z = (2. * complex(x, y) - (z1+z2)) / (z2-z1)
     zplus1 = z + 1.
     zmin1 = z - 1.
     # Not sure if this gives correct answer at corner point (z also appears in qm); should really be caught in code that calls this function
@@ -1428,7 +1428,7 @@ def lapld_int_ho(x, y, z1, z2, order):
     for m in range(2, order+1, 2):
         qm[m] = qm[m-1] * z
 
-    omega = 1. / (np.complex(0., 2.) * np.pi) * (omega + qm)
+    omega = 1. / (complex(0., 2.) * np.pi) * (omega + qm)
     return omega
 
 
@@ -1448,8 +1448,8 @@ def lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2):
     """
     omega = np.zeros(order+1, dtype=np.complex_)
 
-    bigz1 = np.complex(d1, 0.)
-    bigz2 = np.complex(d2, 0.)
+    bigz1 = complex(d1, 0.)
+    bigz2 = complex(d2, 0.)
     z1p = 0.5 * (z2-z1) * bigz1 + 0.5 * (z1+z2)
     z2p = 0.5 * (z2-z1) * bigz2 + 0.5 * (z1+z2)
     omegac = lapld_int_ho(x, y, z1p, z2p, order)
@@ -1479,7 +1479,7 @@ def lapld_int_ho_wdis(x, y, z1, z2, order):
     qm = np.zeros(11, dtype=np.complex_)
     wdis = np.zeros(order+1, dtype=np.complex_)
 
-    z = (2. * np.complex(x, y) - (z1+z2)) / (z2-z1)
+    z = (2. * complex(x, y) - (z1+z2)) / (z2-z1)
     zplus1 = z + 1.
     zmin1 = z - 1.
     # Not sure if this gives correct answer at corner point (z also appears in qm); should really be caught in code that calls this function
@@ -1497,12 +1497,12 @@ def lapld_int_ho_wdis(x, y, z1, z2, order):
     term1 = 1. / zmin1 - 1. / zplus1
     term2 = np.log(zmin1/zplus1)
     wdis[0] = term1
-    zterm = np.complex(1., 0.)
+    zterm = complex(1., 0.)
     for m in range(1, order+1):
         wdis[m] = m * zterm * term2 + z * zterm * term1 + 2. * qm[m]
         zterm = zterm * z
 
-    wdis = - wdis / (np.pi*np.complex(0., 1.)*(z2-z1))
+    wdis = - wdis / (np.pi*complex(0., 1.)*(z2-z1))
     return wdis
 
 
@@ -1523,8 +1523,8 @@ def lapld_int_ho_wdis_d1d2(x, y, z1, z2, order, d1, d2):
 
     wdis = np.zeros(order+1, dtype=np.complex_)
 
-    bigz1 = np.complex(d1, 0.)
-    bigz2 = np.complex(d2, 0.)
+    bigz1 = complex(d1, 0.)
+    bigz2 = complex(d2, 0.)
     z1p = 0.5 * (z2-z1) * bigz1 + 0.5 * (z1+z2)
     z2p = 0.5 * (z2-z1) * bigz2 + 0.5 * (z1+z2)
     wdisc = lapld_int_ho_wdis(x, y, z1p, z2p, order)
@@ -1560,7 +1560,7 @@ def besselld_int_ho(x, y, z1, z2, lab, order, d1, d2):
     omega = np.zeros(order+1, dtype=np.complex_)
 
     L = np.abs(z2-z1)
-    bigz = (2. * np.complex(x, y) - (z1+z2)) / (z2-z1)
+    bigz = (2. * complex(x, y) - (z1+z2)) / (z2-z1)
     bigy = bigz.imag
     biga = np.abs(lab)
     ang = np.arctan2(lab.imag, lab.real)
@@ -1569,11 +1569,11 @@ def besselld_int_ho(x, y, z1, z2, lab, order, d1, d2):
 
     tol = 1e-12
 
-    exprange = np.exp(-np.complex(0, 2) * ang * nrange)
+    exprange = np.exp(-complex(0, 2) * ang * nrange)
     anew = a1 * exprange
-    bnew = (b1 - a1 * np.complex(0, 2) * ang) * exprange
+    bnew = (b1 - a1 * complex(0, 2) * ang) * exprange
 
-    zeta = (2. * np.complex(x, y) - (z1+z2)) / (z2-z1) / biglab
+    zeta = (2. * complex(x, y) - (z1+z2)) / (z2-z1) / biglab
     zetabar = np.conj(zeta)
     zminzbar[20] = 1.
     for n in range(1, 21):
@@ -1603,9 +1603,9 @@ def besselld_int_ho(x, y, z1, z2, lab, order, d1, d2):
     #d1minzeta = -1./biglab - zeta
     #d2minzeta = 1./biglab - zeta
     if (np.abs(d1minzeta) < tol):
-        d1minzeta = d1minzeta + np.complex(tol, 0.)
+        d1minzeta = d1minzeta + complex(tol, 0.)
     if (np.abs(d2minzeta) < tol):
-        d2minzeta = d2minzeta + np.complex(tol, 0.)
+        d2minzeta = d2minzeta + complex(tol, 0.)
     log1 = np.log(d1minzeta)
     log2 = np.log(d2minzeta)
 
@@ -1665,13 +1665,13 @@ def besselld_gauss_ho(x, y, z1, z2, lab, order):
 
     L = np.abs(z2-z1)
     biglab = 2. * lab / L
-    bigz = (2. * np.complex(x, y) - (z1+z2)) / (z2-z1)
+    bigz = (2. * complex(x, y) - (z1+z2)) / (z2-z1)
     for n in range(8):
         x0 = bigz.real - xg[n]
         r = np.sqrt(x0**2 + bigz.imag**2)
         k1overr[n] = besselk1(x0, bigz.imag, biglab) / r
     for p in range(order+1):
-        omega[p] = np.complex(0., 0.)
+        omega[p] = complex(0., 0.)
         for n in range(8):
             omega[p] = omega[p] + wg[n] * xg[n]**p * k1overr[n]
 
@@ -1695,8 +1695,8 @@ def besselld_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
 
     omega = np.zeros(order+1, dtype=np.complex_)
 
-    bigz1 = np.complex(d1, 0.)
-    bigz2 = np.complex(d2, 0.)
+    bigz1 = complex(d1, 0.)
+    bigz2 = complex(d2, 0.)
     z1p = 0.5 * (z2-z1) * bigz1 + 0.5 * (z1+z2)
     z2p = 0.5 * (z2-z1) * bigz2 + 0.5 * (z1+z2)
     omegac = besselld_gauss_ho(x, y, z1p, z2p, lab, order)
@@ -1727,7 +1727,7 @@ def besselld(x, y, z1, z2, lab, order, d1in, d2in):
     omega = np.zeros(order+1, dtype=np.complex_)
 
     Lnear = 3.
-    z = np.complex(x, y)
+    z = complex(x, y)
     L = np.abs(z2-z1)
     if (L < Lnear*np.abs(lab)):  # No need to break integral up
         if (np.abs(z - 0.5*(z1+z2)) < 0.5 * Lnear * L):  # Do integration
@@ -1777,7 +1777,7 @@ def besselldv(x, y, z1, z2, lab, order, R, nlab):
 
     nterms = order+1
     # Check if endpoints need to be adjusted using the largest lambda (the first one)
-    d1, d2 = find_d1d2(z1, z2, np.complex(x, y), R*np.abs(lab[0]))
+    d1, d2 = find_d1d2(z1, z2, complex(x, y), R*np.abs(lab[0]))
     for n in range(nlab):
         omega[(n)*nterms:(n+1)*nterms] = besselld(x, y, z1, z2,
                                                   lab[n], order, d1, d2)
@@ -1802,7 +1802,7 @@ def besselldv2(x, y, z1, z2, lab, order, R, nlab):
 
     nterms = order+1
     # Check if endpoints need to be adjusted using the largest lambda (the first one)
-    d1, d2 = find_d1d2(z1, z2, np.complex(x, y), R*np.abs(lab[0]))
+    d1, d2 = find_d1d2(z1, z2, complex(x, y), R*np.abs(lab[0]))
     for n in range(nlab):
         omega[:nterms+1, n] = besselld(x, y, z1, z2, lab[n], order, d1, d2)
 
@@ -1829,7 +1829,7 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
     zminzbar = np.zeros(21, dtype=np.complex_)
 
     L = np.abs(z2-z1)
-    bigz = (2. * np.complex(x, y) - (z1+z2)) / (z2-z1)
+    bigz = (2. * complex(x, y) - (z1+z2)) / (z2-z1)
     bigy = bigz.imag
     biga = np.abs(lab)
     ang = np.arctan2(lab.imag, lab.real)
@@ -1838,11 +1838,11 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
 
     tol = 1e-12
 
-    exprange = np.exp(-np.complex(0, 2) * ang * nrange)
+    exprange = np.exp(-complex(0, 2) * ang * nrange)
     anew = a1 * exprange
-    bnew = (b1 - a1 * np.complex(0, 2) * ang) * exprange
+    bnew = (b1 - a1 * complex(0, 2) * ang) * exprange
 
-    zeta = (2. * np.complex(x, y) - (z1+z2)) / (z2-z1) / biglab
+    zeta = (2. * complex(x, y) - (z1+z2)) / (z2-z1) / biglab
     zetabar = np.conj(zeta)
     zminzbar[-1] = 1.
     for n in range(1, 21):
@@ -1870,9 +1870,9 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
     d2minzeta = d2/biglab - zeta
 
     if (np.abs(d1minzeta) < tol):
-        d1minzeta = d1minzeta + np.complex(tol, 0.)
+        d1minzeta = d1minzeta + complex(tol, 0.)
     if (np.abs(d2minzeta) < tol):
-        d2minzeta = d2minzeta + np.complex(tol, 0.)
+        d2minzeta = d2minzeta + complex(tol, 0.)
     log1 = np.log(d1minzeta)
     log2 = np.log(d2minzeta)
 
@@ -1941,7 +1941,7 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     qxqy = np.zeros(2*order+2, dtype=np.complex_)
 
     L = np.abs(z2-z1)
-    bigz = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1)
+    bigz = (2 * complex(x, y) - (z1+z2)) / (z2-z1)
     bigy = bigz.imag
     biga = np.abs(lab)
     ang = np.arctan2(lab.imag, lab.real)
@@ -1951,9 +1951,9 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
 
     tol = 1e-12
 
-    exprange = np.exp(-np.complex(0, 2) * ang * nrange)
+    exprange = np.exp(-complex(0, 2) * ang * nrange)
     anew = a1 * exprange
-    bnew = (b1 - a1 * np.complex(0, 2) * ang) * exprange
+    bnew = (b1 - a1 * complex(0, 2) * ang) * exprange
     azero = anew[0]
 
     for n in range(20):
@@ -1963,7 +1963,7 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     anew[20] = 0  # This is a bit lazy
     bnew[20] = 0
 
-    zeta = (2 * np.complex(x, y) - (z1+z2)) / (z2-z1) / biglab
+    zeta = (2 * complex(x, y) - (z1+z2)) / (z2-z1) / biglab
     zetabar = np.conj(zeta)
     zminzbar[20] = 1
     for n in range(1, 21):
@@ -1994,9 +1994,9 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     # d1minzeta = -1/biglab - zeta
     # d2minzeta = 1/biglab - zeta
     if (np.abs(d1minzeta) < tol):
-        d1minzeta = d1minzeta + np.complex(tol, 0)
+        d1minzeta = d1minzeta + complex(tol, 0)
     if (np.abs(d2minzeta) < tol):
-        d2minzeta = d2minzeta + np.complex(tol, 0)
+        d2minzeta = d2minzeta + complex(tol, 0)
 
     log1 = np.log(d1minzeta)
     log2 = np.log(d2minzeta)
@@ -2033,32 +2033,32 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
                                    alphanew2[n] / (n+1)) * np.conj(term1) / (n+1)
 
     omegalap = lapld_int_ho_d1d2(
-        x, y, z1, z2, order, d1, d2) / np.complex(0, 1)
+        x, y, z1, z2, order, d1, d2) / complex(0, 1)
     omegaom = besselldpart(x, y, z1, z2, lab, order, d1, d2)
     wdis = lapld_int_ho_wdis_d1d2(x, y, z1, z2, order, d1, d2)
 
     rvz = -biglab * bigy / (2*np.pi*biglabcomplex**2) * (omega[1:order+1+1]/biglab - zetabar * omega[0:order+1]) + \
-        biglab * omegaom / np.complex(0, 2)
+        biglab * omegaom / complex(0, 2)
     rvzbar = -biglab * bigy / (2*np.pi*biglabcomplex**2) * (omega[1:order+1+1]/biglab - zeta * omega[0:order+1]) - \
-        biglab * omegaom / np.complex(0, 2)
+        biglab * omegaom / complex(0, 2)
     # qxqy[0:order+1] = -2.0 / L * ( rvz + rvzbar ) / biglab  # As we need to take derivative w.r.t. z not zeta
-    # qxqy[order+1:2*order+1+1] = -2.0 / L * np.complex(0,1) * (rvz-rvzbar) / biglab
+    # qxqy[order+1:2*order+1+1] = -2.0 / L * complex(0,1) * (rvz-rvzbar) / biglab
     #
     # qxqy[0:order+1] = qxqy[0:order+1] - 2.0 / L / biglabcomplex**2 * azero * ( omegalap + np.conj(omegalap) )
     # qxqy[order+1:2*order+1+1] = qxqy[order+1:2*order+1+1] -  \
-    #                          2.0 / L / biglabcomplex**2 * azero * np.complex(0,1) * (omegalap - np.conj(omegalap))
+    #                          2.0 / L / biglabcomplex**2 * azero * complex(0,1) * (omegalap - np.conj(omegalap))
     #
     # qxqy[0:order+1] = qxqy[0:order+1] + real(wdis)
     # qxqy[order+1:2*order+1+1] = qxqy[order+1:2*order+1+1] - aimag(wdis)
 
     # As we need to take derivative w.r.t. z not zeta
     qx = -2.0 / L * (rvz + rvzbar) / biglab
-    qy = -2.0 / L * np.complex(0, 1) * (rvz-rvzbar) / biglab
+    qy = -2.0 / L * complex(0, 1) * (rvz-rvzbar) / biglab
 
     qx = qx - 2.0 / L * bigy / biglabcomplex**2 * \
         azero * (omegalap + np.conj(omegalap))
     qy = qy - 2.0 / L * bigy / biglabcomplex**2 * azero * \
-        np.complex(0, 1) * (omegalap - np.conj(omegalap))
+        complex(0, 1) * (omegalap - np.conj(omegalap))
 
     # qx = qx + real(wdis * (z2-z1) / L)
     # qy = qy - aimag(wdis * (z2-z1) / L)
@@ -2097,7 +2097,7 @@ def besselld_gauss_ho_qxqy(x, y, z1, z2, lab, order):
 
     L = np.abs(z2-z1)
     biglab = 2. * lab / L
-    bigz = (2. * np.complex(x, y) - (z1+z2)) / (z2-z1)
+    bigz = (2. * complex(x, y) - (z1+z2)) / (z2-z1)
     bigy = bigz.imag
     for n in range(8):
         xmind[n] = bigz.real - xg[n]
@@ -2143,8 +2143,8 @@ def besselld_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
 
     qxqy = np.zeros(2*order+2, dtype=np.complex_)
 
-    bigz1 = np.complex(d1, 0)
-    bigz2 = np.complex(d2, 0)
+    bigz1 = complex(d1, 0)
+    bigz2 = complex(d2, 0)
     z1p = 0.5 * (z2-z1) * bigz1 + 0.5 * (z1+z2)
     z2p = 0.5 * (z2-z1) * bigz2 + 0.5 * (z1+z2)
     qxqyc = besselld_gauss_ho_qxqy(x, y, z1p, z2p, lab, order)
@@ -2177,8 +2177,8 @@ def besselldqxqy(x, y, z1, z2, lab, order, d1in, d2in):
 
     """
     Lnear = 3
-    z = np.complex(x, y)
-    qxqy = np.complex(0, 0)
+    z = complex(x, y)
+    qxqy = complex(0, 0)
     L = np.abs(z2-z1)
 
     # print *,'Lnear*np.abs(lab) ',Lnear*np.abs(lab)
@@ -2232,7 +2232,7 @@ def besselldqxqyv(x, y, z1, z2, lab, order, R, nlab):
 
     nterms = order+1
     nhalf = nlab*(order+1)
-    d1, d2 = find_d1d2(z1, z2, np.complex(x, y), R*np.abs(lab[0]))
+    d1, d2 = find_d1d2(z1, z2, complex(x, y), R*np.abs(lab[0]))
     for n in range(nlab):
         qxqylab = besselldqxqy(x, y, z1, z2, lab[n], order, d1, d2)
         qxqy[n*nterms:(n+1)*nterms] = qxqylab[0:order+1]
@@ -2260,7 +2260,7 @@ def besselldqxqyv2(x, y, z1, z2, lab, order, R, nlab):
 
     nterms = order+1
     nhalf = nlab*(order+1)
-    d1, d2 = find_d1d2(z1, z2, np.complex(x, y), R*np.abs(lab[0]))
+    d1, d2 = find_d1d2(z1, z2, complex(x, y), R*np.abs(lab[0]))
     for n in range(nlab):
         qxqylab = besselldqxqy(x, y, z1, z2, lab[n], order, d1, d2)
         qxqy[:nterms, n] = qxqylab[0:order+1]
@@ -2283,14 +2283,14 @@ def bessells_circcheck(x, y, z1in, z2in, lab):
     """
     Lnear = 3
     Lzero = 20
-    z = np.complex(x, y)
+    z = complex(x, y)
     x1, y1, x2, y2, Npt = circle_line_intersection(
         z1in, z2in, z, Lzero*np.abs(lab))
 
-    z1 = np.complex(x1, y1)
-    z2 = np.complex(x2, y2)
+    z1 = complex(x1, y1)
+    z2 = complex(x2, y2)
 
-    omega = np.complex(0, 0)
+    omega = complex(0, 0)
 
     if (Npt == 2):
         L = np.abs(z2-z1)
@@ -2347,8 +2347,8 @@ def circle_line_intersection(z1, z2, zc, R):
     complex(kind=8) :: bigz, za, zb
     """
     N = 0
-    za = np.complex(0, 0)
-    zb = np.complex(0, 0)
+    za = complex(0, 0)
+    zb = complex(0, 0)
 
     Lover2 = np.abs(z2-z1) / 2
     bigz = (2*zc - (z1+z2)) * Lover2 / (z2-z1)
