@@ -22,11 +22,11 @@ c = np.log(0.5) + 0.577215664901532860
 
 fac = 1.0
 
-nrange = np.arange(21, dtype=np.float_)
+nrange = np.arange(21, dtype=float)
 
-a = np.zeros(21, dtype=np.float_)
+a = np.zeros(21, dtype=float)
 a[0] = 1.0
-b = np.zeros(21, dtype=np.float_)
+b = np.zeros(21, dtype=float)
 
 for n in range(1, 21):
     fac = n*fac
@@ -36,39 +36,39 @@ for n in range(1, 21):
 b = (b - c) * a
 a = -a / 2.0
 
-gam = np.zeros((21, 21), dtype=np.float_)
+gam = np.zeros((21, 21), dtype=float)
 for n in range(21):
     for m in range(n+1):
         gam[n, m] = np.prod(nrange[m+1:n+1]) / np.prod(nrange[1:n-m+1])
 
-afar = np.zeros(21, dtype=np.float_)
+afar = np.zeros(21, dtype=float)
 afar[0] = np.sqrt(np.pi / 2.)
 
 for n in range(1, 21):
     afar[n] = -(2. * n - 1.)**2 / (n * 8) * afar[n-1]
 
 fac = 1.0
-bot = np.zeros(21, dtype=np.float_)
+bot = np.zeros(21, dtype=float)
 bot[0] = 4.0
 for n in range(1, 21):
     fac = n * fac
     bot[n] = fac * (n+1)*fac * 4.0**(n+1)
 
-psi = np.zeros(21, dtype=np.float_)
+psi = np.zeros(21, dtype=float)
 for n in range(2, 22):
     psi[n-1] = psi[n-2] + 1 / (n-1)
 psi = psi - 0.577215664901532860
 
-a1 = np.empty(21, dtype=np.float_)
-b1 = np.empty(21, dtype=np.float_)
+a1 = np.empty(21, dtype=float)
+b1 = np.empty(21, dtype=float)
 twologhalf = 2 * np.log(0.5)
 for n in range(21):
     a1[n] = 1 / bot[n]
     b1[n] = (twologhalf - (2.0 * psi[n] + 1 / (n+1))) / bot[n]
 
 
-wg = np.zeros(8, dtype=np.float_)
-xg = np.zeros(8, dtype=np.float_)
+wg = np.zeros(8, dtype=float)
+xg = np.zeros(8, dtype=float)
 
 wg[0] = 0.101228536290378
 wg[1] = 0.22238103445338
@@ -594,7 +594,7 @@ def bessellsrealho(x, y, x1, y1, x2, y2, lab, order):
     complex(kind=8), dimension(0:50) :: alphanew, betanew ! Maximum programmed order is 10
     integer :: n, m, p
     """
-    phi = np.zeros(order+1, dtype=np.float_)
+    phi = np.zeros(order+1, dtype=float)
     zminzbar = np.zeros(21, dtype=np.complex_)
 
     z1 = complex(x1, y1)
@@ -2089,8 +2089,8 @@ def besselld_gauss_ho_qxqy(x, y, z1, z2, lab, order):
     complex(kind=8), dimension(0:order) :: qx,qy
     """
 
-    xmind = np.zeros(8, dtype=np.float_)
-    r = np.zeros(8, dtype=np.float_)
+    xmind = np.zeros(8, dtype=float)
+    r = np.zeros(8, dtype=float)
     k0 = np.zeros(8, dtype=np.complex_)
     k1 = np.zeros(8, dtype=np.complex_)
     qxqy = np.zeros(2*order+2, dtype=np.complex_)
