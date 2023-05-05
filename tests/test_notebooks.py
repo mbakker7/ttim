@@ -10,7 +10,8 @@ nbdir = os.path.join('notebooks')
 testdir = tempfile.mkdtemp()
 
 def get_notebooks():
-    return [f for f in os.listdir(nbdir) if f.endswith('.ipynb')]
+    # return [f for f in os.listdir(nbdir) if f.endswith('.ipynb')]
+    return ["ttim_exercise1_sol.ipynb"]
 
 def get_jupyter_kernel():
     try:

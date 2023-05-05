@@ -431,8 +431,10 @@ class TimModel(PlotTtim):
         t = np.atleast_1d(t)
         rv = np.zeros(len(t))
         it = 0
+        print(f"{len(rv)=}")
         if t[-1] >= self.tmin:  # Otherwise all zero
-            if (t[0] < self.tmin): it = np.argmax( t >= self.tmin )  
+            if (t[0] < self.tmin): 
+                it = np.argmax( t >= self.tmin )
             for n in range(self.nint):
                 if n == self.nint-1:
                     tp = t[(t >= self.tintervals[n]) & 
@@ -441,12 +443,21 @@ class TimModel(PlotTtim):
                     tp = t[(t >= self.tintervals[n]) & 
                            (t < self.tintervals[n+1])]
                 nt = len(tp)
+                
+                print(f"{it=}")
+                print(f"{nt=}")
+
                 if nt > 0:  # if all values zero, don't do inverse transform
                     # Not needed anymore: if np.abs(pot[n*self.npint]) > 1e-20:
                     # If there is a zero item, zero should be returned; 
                     # funky enough this can be done with a 
                     # straight equal comparison
                     if not np.any(pot[n*self.npint:(n+1)*self.npint] == 0.0):
+                        # print(f"{t=}")
+                        # print(f"{tp=}")
+                        # print(f"{n=}")
+                        # print(f"{self.tintervals=}")
+                        # print(f"{rv=}")
                         rv[it : it + nt] = invlap(tp, 
                             self.tintervals[n + 1], 
                             pot[n * self.npint: (n + 1) * self.npint],
