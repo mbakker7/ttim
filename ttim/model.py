@@ -431,10 +431,17 @@ class TimModel(PlotTtim):
         t = np.atleast_1d(t)
         rv = np.zeros(len(t))
         it = 0
-        print(f"{len(rv)=}")
+        print("len(rv)", len(rv))
         if t[-1] >= self.tmin:  # Otherwise all zero
             if (t[0] < self.tmin): 
                 it = np.argmax( t >= self.tmin )
+
+            ti = 3
+            print("t[:2] =", t[:ti])
+            print("self.tmin =",self.tmin)
+            print("t[:2] > self.tmin =", t[:ti] > self.tmin)
+            print("t[:2] - self.tmin =", t[:ti] - self.tmin)
+
             for n in range(self.nint):
                 if n == self.nint-1:
                     tp = t[(t >= self.tintervals[n]) & 
@@ -444,8 +451,8 @@ class TimModel(PlotTtim):
                            (t < self.tintervals[n+1])]
                 nt = len(tp)
                 
-                print(f"{it=}")
-                print(f"{nt=}")
+                print("it=", it)
+                print("it + nt=", it + nt)
 
                 if nt > 0:  # if all values zero, don't do inverse transform
                     # Not needed anymore: if np.abs(pot[n*self.npint]) > 1e-20:
