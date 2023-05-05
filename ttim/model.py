@@ -438,6 +438,13 @@ class TimModel(PlotTtim):
 
             ti = 3
             
+            print("type self.tmin", type(self.tmin))
+            print("type t[0]", type(t[0]))
+            print("type t", t.dtype)
+
+            print("t[0] hex =", t[0].hex())
+            print("tmin hex =", self.tmin.hex())
+
             print("t[0] < self.tmin =", t[0] < self.tmin)
             print("t[0] - self.tmin =", t[0] - self.tmin)
             print("t[:3] =", t[:ti])
