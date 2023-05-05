@@ -437,10 +437,13 @@ class TimModel(PlotTtim):
                 it = np.argmax( t >= self.tmin )
 
             ti = 3
-            print("t[:2] =", t[:ti])
+            
+            print("t[0] < self.tmin =", t[0] < self.tmin)
+            print("t[0] - self.tmin =", t[0] - self.tmin)
+            print("t[:3] =", t[:ti])
             print("self.tmin =",self.tmin)
-            print("t[:2] > self.tmin =", t[:ti] > self.tmin)
-            print("t[:2] - self.tmin =", t[:ti] - self.tmin)
+            print("t[:3] > self.tmin =", t[:ti] > self.tmin)
+            print("t[:3] - self.tmin =", t[:ti] - self.tmin)
 
             for n in range(self.nint):
                 if n == self.nint-1:
