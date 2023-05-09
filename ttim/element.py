@@ -1,5 +1,6 @@
 import numpy as np
 import inspect # Used for storing the input
+from .invlapnumba import invlapcomp
 
 class Element:
     def __init__(self, model, nparam=1, nunknowns=0, layers=0, \
@@ -168,8 +169,44 @@ class Element:
         rvy = np.sum(qy[np.newaxis, :, :] * aq.eigvec, 1)
         return rvx[layers, :], rvy[layers, :]
     
-    # Other functions
     def discharge(self, t, derivative=0):
+        """The discharge in each layer
+        
+        Parameters
+        ----------
+        t : scalar, list or array
+            times at which discharge is computed.
+            t must be ordered and tmin <= t <= tmax
+        
+        Returns
+        -------
+        array of discharges (nlayers,len(t))
+            Discharge in each screen with zeros for layers that are not
+            screened
+            
+        """
+        # Could potentially be more efficient if s is pre-computed for 
+        # all elements, but may not be worthwhile to store as it is quick now
+        time = np.atleast_1d(t).astype('d')
+        rv = np.zeros((self.nlayers, len(time)))
+        if self.type == 'g':
+            s = self.dischargeinflayers * self.model.p ** derivative
+            rv = invlapcomp(time, s[np.newaxis, :], self.model.npint, 
+                            self.model.M, self.model.tintervals, 
+                            np.zeros(self.ntstart, dtype='int'), 
+                            self.tstart, self.bc, self.nlayers)            
+        else:
+            s = np.sum(self.parameters[:, :, np.newaxis, :] * 
+                       self.dischargeinf, 1)
+            s = np.sum(s[:, np.newaxis, :, :] * self.aq.eigvec, 2)
+            s = s[:, self.layers, :] * self.model.p ** derivative
+            rv = invlapcomp(time, s, self.model.npint, self.model.M, 
+                            self.model.tintervals, self.model.enumber, 
+                            self.model.etstart, self.model.ebc, self.nlayers)
+        return rv
+    
+    # this function is kept for testing of version 0.6.6
+    def dischargeold(self, t, derivative=0):
         """The discharge in each layer
         
         Parameters
