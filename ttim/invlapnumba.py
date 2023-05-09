@@ -150,67 +150,6 @@ def invlaptest():
     ft = invlap(t, 10, fp, 20, alpha=1e-10)
     print('approximate from invlap:', ft)
     print('exact:', t * np.exp(-t))
-    
-#@numba.njit(nogil=True, cache=True) 
-# got deprecation warning that needs fixing
-# I think it doesn't like a list of arrays as input
-def invlapcompold(time, pot, npint, M, tintervals, 
-               etstartlist, ebclist, nlayers):
-    '''
-    """Compute time domain solution for given laplace domain solution
-
-    Parameters
-    ----------
-    t : array or lis, must be ordered
-        times for which time domain solution is computed, must start at 0
-    pot : array of laplace domain solution
-    npint : int
-        number of p values per interval (=2M + 1)
-    M : int
-        order of the approximation
-    nlayers : integer or None (default)
-        number of layers
-    tstart : starting time
-    tintervals : time intervals
-    
-    Returns
-    -------
-    pot[naq, ntimes] if layers=None, 
-    otherwise pot[len(layers,Ntimes)]
-    t must be ordered '''
-    
-    nelements, naq, npval = pot.shape
-    nint = len(tintervals) - 1
-    rv = np.zeros((nlayers, len(time)))
-    if (time[0] < tintervals[0]) or (time[-1] > tintervals[-1]):
-        print('Warning, some of the times are smaller than tmin or', 
-              'larger than tmax; zeros are substituted')
-    #
-    for k in range(nelements):
-        for itime, tstart in enumerate(etstartlist[k]):
-            t = time - tstart
-            it = 0
-            # this can be smarter
-            if t[-1] < tintervals[0]:  # Otherwise all zero
-                continue
-            if (t[0] < tintervals[0]):
-                it = np.argmax(t >= tintervals[0]) # find_first  
-            for n in range(nint):
-                tp = t[(t >= tintervals[n]) & \
-                       (t < tintervals[n + 1])]
-                nt = len(tp)
-                #if nt > 0:  # if all zero, don't do the inv transform
-                if nt == 0:
-                    continue
-                for i in range(nlayers):
-                    # I used to check the first value only, but got to check if 
-                    # none of the values are zero
-                    if not np.any(pot[k, i, n * npint: (n + 1) * npint] == 0) : 
-                        rv[i, it: it + nt] += ebclist[k][itime] * \
-                        invlap(tp, tintervals[n + 1], 
-                               pot[k, i , n * npint: (n + 1) * npint], M)
-                it = it + nt
-    return rv
 
 @numba.njit(nogil=True, cache=True) 
 def invlapcomp(time, pot, npint, M, tintervals, 
@@ -242,7 +181,7 @@ def invlapcomp(time, pot, npint, M, tintervals,
     Returns
     -------
     pot[naq, ntimes] if layers=None, 
-    otherwise pot[len(layers,Ntimes)]
+    otherwise pot[len(layers) ,ntimes]
     t must be ordered '''
     
     print_tmin_warning = True # set to False if warning is printed once
@@ -298,4 +237,83 @@ def invlapcomp(time, pot, npint, M, tintervals,
                 print('a change in boundary condition. nans are substituted')
                 print_tmax_warning = False
             rv[:, it:] = np.nan
+    return rv
+
+# The following general function is currently not used but very useful
+# to do numerical Laplace transformation
+@numba.njit(nogil=True, cache=True)
+def invlapgen(time, pot, M, tintervals, tstart, ebc):
+    '''
+    Compute time domain solution for given Laplace domain solution
+
+    Parameters
+    ----------
+    time : array, must be ordered
+           times for which time domain solution is computed, must start at 0
+    pot : 1D array of laplace domain solution of length nint * (2M + 1)
+    M : int order of the approximation (i.e., (2M + 1) p values per interval)
+    tintervals : 1D array of time intervals, length nint + 1
+    tstart : 1D array with starting times of bc in element, length nstart
+    ebc : 1D array with change in boundary condition value, length nstart
+        
+    Method
+    ------
+    ebc is the difference with the previous value
+    
+    Returns
+    -------
+    rv[ntimes]
+    '''
+    
+    print_tmin_warning = True # set to False if warning is printed once
+    print_tmax_warning = True
+    npint = 2 * M + 1
+    nint = len(tintervals) - 1
+    rv = np.zeros(len(time))
+    #
+    # assuming that first time of all bc's is 0
+    for j in range(len(tstart)):
+        t = time - tstart[j]
+        it = 0
+        if t[0] <= 0:  # there are times before start of bc
+            if t[-1] <= 0:  # all times before start of bc, also for len(t)=1
+                continue
+            else:
+                # no effect for any t <= 0
+                it = np.argmax(t > 0) # find_first  
+        if (t[it] < tintervals[0]):  # there are times before first interval
+            if print_tmin_warning:
+                print('Warning, some of the times are smaller than tmin after')
+                print('a change in boundary condition. nans are substituted')
+                print_tmin_warning = False
+            if t[-1] < tintervals[0]: # all times before first interval
+                itnew = len(t)
+            else:
+                itnew = np.argmax(t >= tintervals[0]) # find_first
+            rv[it:itnew] = np.nan
+            it = itnew
+        for n in range(nint):
+            if n == 0:
+                tp = t[(t >= tintervals[n]) & \
+                       (t <= tintervals[n + 1])]
+            else:
+                tp = t[(t > tintervals[n]) & \
+                       (t <= tintervals[n + 1])]                
+            nt = len(tp)
+            #if nt > 0:  # if all zero, don't do the inv transform
+            if nt == 0:
+                continue
+            # I used to check the first value only, but got to check if 
+            # none of the values are zero
+            if not np.any(pot[n * npint: (n + 1) * npint] == 0) : 
+                rv[it: it + nt] += ebc[j] * \
+                invlap(tp, tintervals[n + 1], 
+                       pot[n * npint: (n + 1) * npint], M)
+            it = it + nt
+        if it < len(t):  # there are times above tintervals[-1]
+            if print_tmax_warning:
+                print('Warning, some of the times are larger than tmax after')
+                print('a change in boundary condition. nans are substituted')
+                print_tmax_warning = False
+            rv[it:] = np.nan
     return rv

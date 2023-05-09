@@ -111,7 +111,7 @@ class TimModel(PlotTtim):
     def potential(self, x, y, t, layers=None, aq=None, derivative=0, 
                   returnphi=0):
         '''Returns pot[naq, ntimes] if layers=None, 
-        otherwise pot[len(layers,Ntimes)]
+        otherwise pot[len(layers), ntimes]
         t must be ordered '''
         if aq is None: aq = self.aq.find_aquifer_data(x, y)
         if layers is None:
