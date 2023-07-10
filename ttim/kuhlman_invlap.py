@@ -52,8 +52,8 @@ class FixedTalbot(InverseLaplaceTransform):
         if r_default and self.degree in self.talbot_cache:
             self.theta,self.cot_theta,self.delta = self.talbot_cache[self.degree]
         else:
-            self.theta = np.linspace(0.0, np.pi, M+1, dtype=np.float64)
-            self.cot_theta = np.empty((M,), dtype=np.float64)
+            self.theta = np.linspace(0.0, np.pi, M+1, dtype=float)
+            self.cot_theta = np.empty((M,), dtype=float)
 
             self.cot_theta[0] = 0.0
             self.cot_theta[1:] = 1.0/np.tan(self.theta[1:-1])
@@ -146,7 +146,7 @@ class Stehfest(InverseLaplaceTransform):
         M = self.degree
         M2 = int(M/2.0) # checked earlier that M is even
 
-        V = np.empty((M,), dtype=np.float64)
+        V = np.empty((M,), dtype=float)
 
         fac = lambda x: float(factorial(x,exact=True))
         
@@ -155,7 +155,7 @@ class Stehfest(InverseLaplaceTransform):
         # if the precision is not high enough, there will be
         # catastrophic cancellation
         for k in range(1,M+1):
-            z = np.zeros((min(k,M2)+1,), dtype=np.float64)
+            z = np.zeros((min(k,M2)+1,), dtype=float)
             for j in range(int((k+1)/2.0),min(k,M2)+1):
                 z[j] = (j**M2*fac(2*j)/
                         (fac(M2-j)*fac(j)*fac(j-1)*fac(k-j)*fac(2*j-k)))
