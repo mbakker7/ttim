@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import least_squares
 import re
-import lmfit
+
 
 class Calibrate:
     
@@ -108,7 +108,7 @@ class Calibrate:
                                      'perc_std':None, 'pmin':pmin, 'pmax':pmax, 
                                      'initial':initial, 'parray':p[:]}
         
-    def series(self, name, x, y, layer, t, h):
+    def series(self, name, x, y, layer, t, h, weights=None):
         """method to add observations to Calibration object
         
         Parameters
@@ -128,7 +128,7 @@ class Calibrate:
         
         """
 
-        s = Series(x, y, layer, t, h)
+        s = Series(x, y, layer, t, h, weights=weights)
         self.seriesdict[name] = s
         
     def seriesinwell(self, name, element, t, h):
@@ -149,7 +149,7 @@ class Calibrate:
         e = SeriesInWell(element, t, h)
         self.seriesinwelldict[name] = e
         
-    def residuals(self, p, printdot=False):
+    def residuals(self, p, printdot=False, weighted=True, layers=None, series=None):
         """method to calculate residuals given certain parameters
         
         Parameters
@@ -173,17 +173,24 @@ class Calibrate:
         if printdot == 7:
             print(p)
         
+        if layers is None:
+            layers = range(self.model.aq.naq)
+
         for i, k in enumerate(self.parameters.index):
             # [:] needed to do set value in array
-            self.parameters.loc[k, 'parray'][:] = p[i]  
+            self.parameters.loc[k, 'parray'][:] = p[i] 
             
         self.model.solve(silent=True)
         
         rv = np.empty(0)
-        for key in self.seriesdict:
+        cal_series = self.seriesdict.keys() if series is None else series
+        for key in cal_series:
             s = self.seriesdict[key]
+            if s.layer not in layers:
+                continue
             h = self.model.head(s.x, s.y, s.t, layers=s.layer)
-            rv = np.append(rv, s.h - h)
+            w = s.weights if ((s.weights is not None) and weighted) else np.ones_like(h)
+            rv = np.append(rv, (s.h - h)*w)
         for key in self.seriesinwelldict:
             s = self.seriesinwelldict[key]
             h = s.element.headinside(s.t)[0]
@@ -255,7 +262,7 @@ class Calibrate:
         # current default fitting routine
         return self.fit_lmfit(report, printdot)
             
-    def rmse(self):
+    def rmse(self, weighted=True, layers=None):
         """calculate root-mean-squared-error
         
         Returns
@@ -264,16 +271,18 @@ class Calibrate:
             return rmse value
         """
 
-        r = self.residuals(self.parameters['optimal'].values)
+        r = self.residuals(self.parameters['optimal'].values, 
+                           weighted=weighted, layers=layers)
         return np.sqrt(np.mean(r ** 2))
     
 class Series:
-    def __init__(self, x, y, layer, t, h):
+    def __init__(self, x, y, layer, t, h, weights=None):
         self.x = x
         self.y = y
         self.layer = layer
         self.t = t
         self.h = h
+        self.weights = weights
         
 class SeriesInWell:
     def __init__(self, element, t, h):
