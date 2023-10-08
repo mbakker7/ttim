@@ -1,18 +1,19 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
 
 class PlotTtim:
     def plot(self, win=None, newfig=True, figsize=None):
         """Plot layout
-        
+
         Parameters
         ----------
-    
+
         win : list or tuple
             [x1, x2, y1, y2]
-            
+
         """
-        
+
         if newfig:
             plt.figure(figsize=figsize)
             ax1 = plt.subplot()
@@ -23,19 +24,32 @@ class PlotTtim:
             plt.sca(ax1)
             for e in self.elementlist:
                 e.plot()
-            plt.axis('scaled')
+            plt.axis("scaled")
             if win is not None:
                 plt.axis(win)
-    
-    def xsection(self, x1=0, x2=1, y1=0, y2=0, npoints=100, t=1, layers=0,
-                 sstart=0, color=None, lw=1, figsize=None, newfig=True,
-                 legend=True):
+
+    def xsection(
+        self,
+        x1=0,
+        x2=1,
+        y1=0,
+        y2=0,
+        npoints=100,
+        t=1,
+        layers=0,
+        sstart=0,
+        color=None,
+        lw=1,
+        figsize=None,
+        newfig=True,
+        legend=True,
+    ):
         layers = np.atleast_1d(layers)
         if newfig:
             plt.figure(figsize=figsize)
         x = np.linspace(x1, x2, npoints)
         y = np.linspace(y1, y2, npoints)
-        s = np.sqrt((x - x[0]) ** 2 + (y - y[0]) ** 2 ) + sstart
+        s = np.sqrt((x - x[0]) ** 2 + (y - y[0]) ** 2) + sstart
         h = self.headalongline(x, y, t, layers)
         nlayers, ntime, npoints = h.shape
         for i in range(nlayers):
@@ -45,18 +59,30 @@ class PlotTtim:
                 else:
                     plt.plot(s, h[i, j, :], color, lw=lw)
         if legend:
-            legendlist = ['layer ' + str(i) for i in layers]
+            legendlist = ["layer " + str(i) for i in layers]
             plt.legend(legendlist)
-        #plt.draw()
-        
-    def contour(self, win, ngr=20, t=1, layers=0, levels=20, layout=True, 
-                labels=False, decimals=0, color=None, newfig=True, 
-                figsize=None, legend=True):
+        # plt.draw()
+
+    def contour(
+        self,
+        win,
+        ngr=20,
+        t=1,
+        layers=0,
+        levels=20,
+        layout=True,
+        labels=False,
+        decimals=0,
+        color=None,
+        newfig=True,
+        figsize=None,
+        legend=True,
+    ):
         """Contour plot
-        
+
         Parameters
         ----------
-    
+
         win : list or tuple
             [x1, x2, y1, y2]
         ngr : scalar, tuple or list
@@ -83,9 +109,9 @@ class PlotTtim:
         legend : list or boolean (default True)
             add legend to figure
             if list of strings: use strings as names in legend
-            
+
         """
-        
+
         x1, x2, y1, y2 = win
         if np.isscalar(ngr):
             nx = ny = ngr
@@ -99,15 +125,15 @@ class PlotTtim:
             plt.figure(figsize=figsize)
         # color
         if color is None:
-            c = plt.rcParams['axes.prop_cycle'].by_key()['color']
+            c = plt.rcParams["axes.prop_cycle"].by_key()["color"]
         elif type(color) is str:
             c = len(layers) * [color]
         elif type(color) is list:
             c = color
         if len(c) < len(layers):
             n = np.ceil(self.aq.naq / len(c))
-            c = n * c 
-        
+            c = n * c
+
         # contour
         cslist = []
         cshandlelist = []
@@ -117,7 +143,7 @@ class PlotTtim:
             handles, labels = cs.legend_elements()
             cshandlelist.append(handles[0])
             if labels:
-                fmt = f'%1.{decimals}f'
+                fmt = f"%1.{decimals}f"
                 plt.clabel(cs, fmt=fmt)
         if type(legend) is list:
             plt.legend(cshandlelist, legend)

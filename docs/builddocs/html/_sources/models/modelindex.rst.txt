@@ -8,7 +8,7 @@ The top of the system can be either an aquifer or a leaky layer. The head is com
 
 .. code-block:: python
 
-   ml = ModelMaq(kaq=[10, 30, 20], z=[0, -5, -10, -20, -25, -35], \
+   ml = ttim.ModelMaq(kaq=[10, 30, 20], z=[0, -5, -10, -20, -25, -35], \
                  c=[2000, 5000], Saq=[0.1, 1e-4, 2e-4], \
                  Sll=[1e-4, 4e-4], phreatictop=True, \
                  tmin=0.01, tmax=10))

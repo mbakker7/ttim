@@ -1,140 +1,191 @@
-import numpy as np
+import inspect  # Used for storing the input
+
 import matplotlib.pyplot as plt
-import inspect # Used for storing the input
+import numpy as np
+
+from . import besselnumba
 from .element import Element
 from .equation import LeakyWallEquation
-from . import besselnumba
+
 
 class LineDoubletHoBase(Element):
-    '''Higher Order LineDoublet Base Class. 
-    All Higher Order Line Doublet elements are derived from this class'''
-    def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, tsandbc=
-                 [(0.0, 0.0)], res='imp', order=0, layers=0, type='', 
-                 name='LineDoubletHoBase', label=None, addtomodel=True):
-        Element.__init__(self, model, nparam=1, nunknowns=0, layers=layers,
-                         tsandbc=tsandbc, type=type, name=name, label=label)
+    """Higher Order LineDoublet Base Class.
+    All Higher Order Line Doublet elements are derived from this class"""
+
+    def __init__(
+        self,
+        model,
+        x1=-1,
+        y1=0,
+        x2=1,
+        y2=0,
+        tsandbc=[(0.0, 0.0)],
+        res="imp",
+        order=0,
+        layers=0,
+        type="",
+        name="LineDoubletHoBase",
+        label=None,
+        addtomodel=True,
+    ):
+        Element.__init__(
+            self,
+            model,
+            nparam=1,
+            nunknowns=0,
+            layers=layers,
+            tsandbc=tsandbc,
+            type=type,
+            name=name,
+            label=label,
+        )
         self.order = order
         self.nparam = (self.order + 1) * len(self.layers)
         self.x1 = float(x1)
         self.y1 = float(y1)
         self.x2 = float(x2)
         self.y2 = float(y2)
-        if res == 'imp':
+        if res == "imp":
             self.res = np.inf
         else:
             self.res = float(res)
-        if addtomodel: self.model.addelement(self)
+        if addtomodel:
+            self.model.addelement(self)
 
     def __repr__(self):
-        return self.name + ' from ' + str((self.x1, self.y1)) +\
-                           ' to ' + str((self.x2, self.y2))
+        return (
+            self.name
+            + " from "
+            + str((self.x1, self.y1))
+            + " to "
+            + str((self.x2, self.y2))
+        )
 
     def initialize(self):
         self.ncp = self.order + 1
         self.z1 = self.x1 + 1j * self.y1
         self.z2 = self.x2 + 1j * self.y2
         self.L = np.abs(self.z1 - self.z2)
-        self.thetanormOut = np.arctan2(self.y2 - self.y1, self.x2 - self.x1) \
-                            - np.pi / 2
+        self.thetanormOut = np.arctan2(self.y2 - self.y1, self.x2 - self.x1) - np.pi / 2
         self.cosout = np.cos(self.thetanormOut) * np.ones(self.ncp)
         self.sinout = np.sin(self.thetanormOut) * np.ones(self.ncp)
         #
-        thetacp = np.arange(np.pi, 0, -np.pi / self.ncp) \
-                  - 0.5 * np.pi / self.ncp
-        Zcp = np.zeros(self.ncp, 'D')
+        thetacp = np.arange(np.pi, 0, -np.pi / self.ncp) - 0.5 * np.pi / self.ncp
+        Zcp = np.zeros(self.ncp, "D")
         Zcp.real = np.cos(thetacp)
         # control point just on positive site (this is handy later on)
-        Zcp.imag = 1e-6  
+        Zcp.imag = 1e-6
         zcp = Zcp * (self.z2 - self.z1) / 2 + 0.5 * (self.z1 + self.z2)
         self.xc = zcp.real
         self.yc = zcp.imag
-        # control point just on negative side 
+        # control point just on negative side
         # (this is needed for building the system of equations)
-        Zcp.imag = -1e-6  
+        Zcp.imag = -1e-6
         zcp = Zcp * (self.z2 - self.z1) / 2 + 0.5 * (self.z1 + self.z2)
         self.xcneg = zcp.real
-        self.ycneg = zcp.imag  # control points just on negative side     
+        self.ycneg = zcp.imag  # control points just on negative side
         #
         self.aq = self.model.aq.find_aquifer_data(self.xc[0], self.yc[0])
         self.setbc()
         coef = self.aq.coef[self.layers, :]
         self.setflowcoef()
         # shape (self.nlayers,self.aq.naq,self.model.npvalval)
-        self.term = self.flowcoef * coef  
-        self.term2 = self.term.reshape(self.nlayers, self.aq.naq, 
-                                       self.model.nint, self.model.npint)
+        self.term = self.flowcoef * coef
+        self.term2 = self.term.reshape(
+            self.nlayers, self.aq.naq, self.model.nint, self.model.npint
+        )
         self.resfac = self.aq.Haq[self.layers] / self.res
         self.dischargeinf = self.flowcoef * coef
-        self.dischargeinflayers = np.sum(self.dischargeinf * 
-                                         self.aq.eigvec[self.layers, :, :], 1)
+        self.dischargeinflayers = np.sum(
+            self.dischargeinf * self.aq.eigvec[self.layers, :, :], 1
+        )
 
     def setflowcoef(self):
-        '''Separate function so that this can be overloaded for other types'''
+        """Separate function so that this can be overloaded for other types"""
         self.flowcoef = 1.0 / self.model.p  # Step function
 
-    def potinf(self,x,y,aq=None):
-        '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.nint, 
-                       self.model.npint), 'D')
+    def potinf(self, x, y, aq=None):
+        """Can be called with only one x,y value"""
+        if aq is None:
+            aq = self.model.aq.find_aquifer_data(x, y)
+        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
         if aq == self.aq:
-            pot = np.zeros((self.order+1,self.model.npint),'D')
+            pot = np.zeros((self.order + 1, self.model.npint), "D")
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    if besselnumba.isinside(self.z1, self.z2, x+y*1j, 
-                                       self.rzero*self.aq.lababs[i, j]):
-                        pot[:,:] = besselnumba.besselldv2(x, y, 
-                            self.z1, self.z2, self.aq.lab2[i, j, :], 
-                            self.order, 
-                            self.rzero * self.aq.lababs[i, j]) / self.L 
+                    if besselnumba.isinside(
+                        self.z1, self.z2, x + y * 1j, self.rzero * self.aq.lababs[i, j]
+                    ):
+                        pot[:, :] = (
+                            besselnumba.besselldv2(
+                                x,
+                                y,
+                                self.z1,
+                                self.z2,
+                                self.aq.lab2[i, j, :],
+                                self.order,
+                                self.rzero * self.aq.lababs[i, j],
+                            )
+                            / self.L
+                        )
                         for k in range(self.nlayers):
-                            rv[k::self.nlayers, i, j, :] = \
+                            rv[k :: self.nlayers, i, j, :] = (
                                 self.term2[k, i, j, :] * pot
+                            )
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
 
-    def disvecinf(self,x,y,aq=None):
-        '''Can be called with only one x,y value'''
-        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
-        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, 
-                        self.model.npint), 'D')
-        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, 
-                        self.model.npint), 'D')
+    def disvecinf(self, x, y, aq=None):
+        """Can be called with only one x,y value"""
+        if aq is None:
+            aq = self.model.aq.find_aquifer_data(x, y)
+        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
         if aq == self.aq:
-            qxqy = np.zeros((2*(self.order+1),self.model.npint),'D')
+            qxqy = np.zeros((2 * (self.order + 1), self.model.npint), "D")
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    if besselnumba.isinside(self.z1, self.z2, x+y*1j, 
-                                       self.rzero*self.aq.lababs[i, j]):
-                        qxqy[:,:] = besselnumba.besselldqxqyv2(x, y, 
-                            self.z1, self.z2,self.aq.lab2[i, j, :], 
-                            self.order, 
-                            self.rzero * self.aq.lababs[i, j]) / self.L
+                    if besselnumba.isinside(
+                        self.z1, self.z2, x + y * 1j, self.rzero * self.aq.lababs[i, j]
+                    ):
+                        qxqy[:, :] = (
+                            besselnumba.besselldqxqyv2(
+                                x,
+                                y,
+                                self.z1,
+                                self.z2,
+                                self.aq.lab2[i, j, :],
+                                self.order,
+                                self.rzero * self.aq.lababs[i, j],
+                            )
+                            / self.L
+                        )
                         for k in range(self.nlayers):
-                            rvx[k::self.nlayers, i, j, :] = \
-                                self.term2[k, i, j, :] * \
-                                qxqy[:self.order + 1,:]
-                            rvy[k::self.nlayers, i, j, :] = \
-                                self.term2[k, i, j, :] * \
-                                qxqy[self.order + 1:,:]
-                            
+                            rvx[k :: self.nlayers, i, j, :] = (
+                                self.term2[k, i, j, :] * qxqy[: self.order + 1, :]
+                            )
+                            rvy[k :: self.nlayers, i, j, :] = (
+                                self.term2[k, i, j, :] * qxqy[self.order + 1 :, :]
+                            )
+
         rvx.shape = (self.nparam, aq.naq, self.model.npval)
         rvy.shape = (self.nparam, aq.naq, self.model.npval)
         return rvx, rvy
 
     def plot(self):
-        plt.plot([self.x1, self.x2], [self.y1, self.y2], 'k')
-    
+        plt.plot([self.x1, self.x2], [self.y1, self.y2], "k")
+
+
 class LeakyLineDoublet(LineDoubletHoBase, LeakyWallEquation):
     """
     Create a segment of a leaky wall, which is
     simulated with a line-doublet. The specific discharge through
     the wall is equal to the head difference across the wall
-    divided by the resistance of the wall. 
-    
+    divided by the resistance of the wall.
+
     Parameters
     ----------
-    
+
     model : Model object
         Model to which the element is added
     x1 : scalar
@@ -154,40 +205,64 @@ class LeakyLineDoublet(LineDoubletHoBase, LeakyWallEquation):
     layers : scalar, list or array
         layer(s) in which element is placed
         if scalar: element is placed in this layer
-        if list or array: element is placed in all these layers 
+        if list or array: element is placed in all these layers
     label: str or None
         label of element
-    
+
     See Also
     --------
-    
+
     :class:`.LeakyLineDoubletString`
-    
+
     """
-    
-    def __init__(self, model, x1=-1, y1=0, x2=1, y2=0, res='imp', order=0,
-                 layers=0, label=None, addtomodel=True):
+
+    def __init__(
+        self,
+        model,
+        x1=-1,
+        y1=0,
+        x2=1,
+        y2=0,
+        res="imp",
+        order=0,
+        layers=0,
+        label=None,
+        addtomodel=True,
+    ):
         self.storeinput(inspect.currentframe())
-        LineDoubletHoBase.__init__(self, model, x1=x1, y1=y1, x2=x2, y2=y2,
-                                   tsandbc=[(0, 0)], res=res, order=order,
-                                   layers=layers, type='z', 
-                                   name='LeakyLineDoublet', 
-                                   label=label, addtomodel=addtomodel)
+        LineDoubletHoBase.__init__(
+            self,
+            model,
+            x1=x1,
+            y1=y1,
+            x2=x2,
+            y2=y2,
+            tsandbc=[(0, 0)],
+            res=res,
+            order=order,
+            layers=layers,
+            type="z",
+            name="LeakyLineDoublet",
+            label=label,
+            addtomodel=addtomodel,
+        )
         self.nunknowns = self.nparam
 
     def initialize(self):
         LineDoubletHoBase.initialize(self)
-        self.parameters = np.zeros((self.model.ngvbc, self.nparam, 
-                                    self.model.npval), 'D')
-        
+        self.parameters = np.zeros(
+            (self.model.ngvbc, self.nparam, self.model.npval), "D"
+        )
+
+
 class LeakyLineDoubletString(Element, LeakyWallEquation):
     """
     Create a string of leaky wall segements consisting
     of line-doublets
-    
+
     Parameters
     ----------
-    
+
     model : Model object
         Model to which the element is added
     xy : array or list
@@ -205,56 +280,73 @@ class LeakyLineDoubletString(Element, LeakyWallEquation):
         if list or array: element is placed in all these layers
     label: str or None
         label of element
-    
+
     See Also
     --------
-    
+
     :class:`.LeakyLineDoublet`
-    
+
     """
-    
-    def __init__(self, model, xy=[(-1, 0), (1, 0)], res='imp', order=0,
-                 layers=0, label=None):
+
+    def __init__(
+        self, model, xy=[(-1, 0), (1, 0)], res="imp", order=0, layers=0, label=None
+    ):
         self.storeinput(inspect.currentframe())
-        Element.__init__(self, model, nparam=1, nunknowns=0, layers=layers, 
-                         tsandbc=[(0, 0)], type='z', 
-                         name='LeakyLineDoubletString', label=label)
+        Element.__init__(
+            self,
+            model,
+            nparam=1,
+            nunknowns=0,
+            layers=layers,
+            tsandbc=[(0, 0)],
+            type="z",
+            name="LeakyLineDoubletString",
+            label=label,
+        )
         self.res = res
         self.order = order
         self.ldlist = []
-        xy = np.atleast_2d(xy).astype('d')
-        self.x,self.y = xy[:,0], xy[:,1]
+        xy = np.atleast_2d(xy).astype("d")
+        self.x, self.y = xy[:, 0], xy[:, 1]
         self.nld = len(self.x) - 1
         for i in range(self.nld):
-            self.ldlist.append(LeakyLineDoublet(model, 
-                                   x1=self.x[i], y1=self.y[i],
-                                   x2=self.x[i + 1], y2=self.y[i + 1],
-                                   res=self.res, order=self.order,
-                                   layers=layers, label=label,
-                                   addtomodel=False))
+            self.ldlist.append(
+                LeakyLineDoublet(
+                    model,
+                    x1=self.x[i],
+                    y1=self.y[i],
+                    x2=self.x[i + 1],
+                    y2=self.y[i + 1],
+                    res=self.res,
+                    order=self.order,
+                    layers=layers,
+                    label=label,
+                    addtomodel=False,
+                )
+            )
         self.model.addelement(self)
 
     def __repr__(self):
-        return self.name + ' with nodes ' + str(zip(self.x,self.y))
+        return self.name + " with nodes " + str(zip(self.x, self.y))
 
     def initialize(self):
         for ld in self.ldlist:
             ld.initialize()
         # Same order for all elements in string
-        self.ncp = self.nld * self.ldlist[0].ncp  
+        self.ncp = self.nld * self.ldlist[0].ncp
         self.nparam = self.nld * self.ldlist[0].nparam
         self.nunknowns = self.nparam
-        self.xld,self.yld = np.empty((self.nld,2)), np.empty((self.nld,2))
-        for i,ld in enumerate(self.ldlist):
-            self.xld[i,:] = [ld.x1,ld.x2]
-            self.yld[i,:] = [ld.y1,ld.y2]
+        self.xld, self.yld = np.empty((self.nld, 2)), np.empty((self.nld, 2))
+        for i, ld in enumerate(self.ldlist):
+            self.xld[i, :] = [ld.x1, ld.x2]
+            self.yld[i, :] = [ld.y1, ld.y2]
         # Only used for layout when it is a continuous string
-        self.xldlayout = np.hstack((self.xld[:,0],self.xld[-1,1])) 
-        self.yldlayout = np.hstack((self.yld[:,0],self.yld[-1,1]))
-        self.aq = self.model.aq.find_aquifer_data(self.ldlist[0].xc, 
-                                                  self.ldlist[0].yc)
-        self.parameters = np.zeros((self.model.ngvbc, self.nparam, 
-                                    self.model.npval), 'D')
+        self.xldlayout = np.hstack((self.xld[:, 0], self.xld[-1, 1]))
+        self.yldlayout = np.hstack((self.yld[:, 0], self.yld[-1, 1]))
+        self.aq = self.model.aq.find_aquifer_data(self.ldlist[0].xc, self.ldlist[0].yc)
+        self.parameters = np.zeros(
+            (self.model.ngvbc, self.nparam, self.model.npval), "D"
+        )
         self.setbc()
         # As parameters are only stored for the element not the list,
         # we need to combine the following
@@ -262,32 +354,34 @@ class LeakyLineDoubletString(Element, LeakyWallEquation):
         self.xc, self.yc = np.zeros(self.ncp), np.zeros(self.ncp)
         self.xcneg, self.ycneg = np.zeros(self.ncp), np.zeros(self.ncp)
         self.cosout, self.sinout = np.zeros(self.ncp), np.zeros(self.ncp)
-        for i,ld in enumerate(self.ldlist):
-            self.xc[i * ld.ncp: (i + 1) * ld.ncp] = ld.xc
-            self.yc[i * ld.ncp: (i + 1) * ld.ncp] = ld.yc
-            self.xcneg[i * ld.ncp: (i + 1) * ld.ncp] = ld.xcneg
-            self.ycneg[i * ld.ncp: (i + 1) * ld.ncp] = ld.ycneg
-            self.cosout[i * ld.ncp: (i + 1) * ld.ncp] = ld.cosout
-            self.sinout[i * ld.ncp: (i + 1) * ld.ncp] = ld.sinout
+        for i, ld in enumerate(self.ldlist):
+            self.xc[i * ld.ncp : (i + 1) * ld.ncp] = ld.xc
+            self.yc[i * ld.ncp : (i + 1) * ld.ncp] = ld.yc
+            self.xcneg[i * ld.ncp : (i + 1) * ld.ncp] = ld.xcneg
+            self.ycneg[i * ld.ncp : (i + 1) * ld.ncp] = ld.ycneg
+            self.cosout[i * ld.ncp : (i + 1) * ld.ncp] = ld.cosout
+            self.sinout[i * ld.ncp : (i + 1) * ld.ncp] = ld.sinout
 
     def potinf(self, x, y, aq=None):
-        '''Returns array (nunknowns,nperiods)'''
-        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
-        for i,ld in enumerate(self.ldlist):
-            rv[i*ld.nparam:(i+1)*ld.nparam,:] = ld.potinf(x,y,aq)
+        """Returns array (nunknowns,nperiods)"""
+        if aq is None:
+            aq = self.model.aq.find_aquifer_data(x, y)
+        rv = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
+        for i, ld in enumerate(self.ldlist):
+            rv[i * ld.nparam : (i + 1) * ld.nparam, :] = ld.potinf(x, y, aq)
         return rv
 
     def disvecinf(self, x, y, aq=None):
-        '''Returns array (nunknowns,nperiods)'''
-        if aq is None: aq = self.model.aq.find_aquifer_data(x, y)
-        rvx = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
-        rvy = np.zeros((self.nparam, aq.naq, self.model.npval), 'D')
-        for i,ld in enumerate(self.ldlist):
-            qx,qy = ld.disvecinf(x,y,aq)
-            rvx[i*ld.nparam:(i+1)*ld.nparam,:] = qx
-            rvy[i*ld.nparam:(i+1)*ld.nparam,:] = qy
-        return rvx,rvy
-    
+        """Returns array (nunknowns,nperiods)"""
+        if aq is None:
+            aq = self.model.aq.find_aquifer_data(x, y)
+        rvx = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
+        rvy = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
+        for i, ld in enumerate(self.ldlist):
+            qx, qy = ld.disvecinf(x, y, aq)
+            rvx[i * ld.nparam : (i + 1) * ld.nparam, :] = qx
+            rvy[i * ld.nparam : (i + 1) * ld.nparam, :] = qy
+        return rvx, rvy
+
     def plot(self):
-        plt.plot(self.xldlayout, self.yldlayout, 'k')
+        plt.plot(self.xldlayout, self.yldlayout, "k")
