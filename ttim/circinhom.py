@@ -530,19 +530,19 @@ class CircInhomRadial(Element, InhomEquation):
 
 
 # ml = ttim.ModelMaq(kaq=[10,5],z=[4,2,1,0],c=[100],Saq=[1e-3,1e-4],Sll=[1e-6],tmin=.1,tmax=10)
-# w1 = Well(ml,0,2,.1,tsandQ=[(0,10)],layers=[1])
+# w1 = ttim.Well(ml,0,2,.1,tsandQ=[(0,10)],layers=[1])
 # ls2 = ZeroHeadLineSinkString(ml,xy=[(-10,-2),(0,-4),(4,0)],layers=[1])
 # ls1 = MscreenLineSinkDitchString(ml,xy=[(-10,0),(0,0),(10,10)],tsandQ=[(0.0,7.0)],res=0.0,wh='H',layers=[2],label=None)
 # ml.solve()
 
 # ml = ttim.ModelMaq([1,20,2],[25,20,18,10,8,0],c=[1000,2000],Saq=[0.1,1e-4,1e-4],Sll=[0,0],phreatictop=True,tmin=1e-6,tmax=10,M=30)
-# w1 = Well(ml,0,0,.1,tsandQ=[(0,1000)],layers=[2])
+# w1 = ttim.Well(ml,0,0,.1,tsandQ=[(0,1000)],layers=[2])
 # ls1 = ZeroMscreenLineSink(ml,10,-5,10,5,layers=[1,2,3],res=0.5,wh=1,vres=3,wv=1)
 # w2 = ZeroMscreenWell(ml,10,0,res=1.0,layers=[1,2,3],vres=1.0)
-# w3 = Well(ml,0,-10,.1,tsandQ=[(0,700)],layers=[2])
+# w3 = ttim.Well(ml,0,-10,.1,tsandQ=[(0,700)],layers=[2])
 # ml.solve()
 ##ml1 = ttim.ModelMaq([1,20,2],[25,20,18,10,8,0],c=[1000,2000],Saq=[1e-4,1e-4,1e-4],Sll=[0,0],tmin=0.1,tmax=10000,M=30)
-##w1 = Well(ml1,0,0,.1,tsandQ=[(0,1000)],layers=[2],res=0.1)
+##w1 = ttim.Well(ml1,0,0,.1,tsandQ=[(0,1000)],layers=[2],res=0.1)
 ##ml1.solve()
 # t = np.logspace(-1,3,100)
 # h0 = ml.head(50,0,t)
@@ -552,7 +552,7 @@ class CircInhomRadial(Element, InhomEquation):
 ##y = [-500,-300,-200,-100,-50,0,50,100,200,300,500]
 ##x = 50 * np.ones(len(y))
 ##ls = ZeroHeadLineSinkString(ml,xy=zip(x,y),layers=[1])
-##w = Well(ml,0,0,.1,tsandQ=[(0,1000),(100,0)],layers=[2])
+##w = ttim.Well(ml,0,0,.1,tsandQ=[(0,1000),(100,0)],layers=[2])
 ##ml.solve()
 
 
@@ -614,8 +614,8 @@ class CircInhomRadial(Element, InhomEquation):
 ##lss = HeadLineSinkString(ml,[(-10,5),(-5,5),(0,5)],tsandh=[(0,0.02),(3,0.01)],res=0.0,layers=[1,2])
 ##ls3 = ZeroMscreenLineSink(ml,-10,5,0,5,res=1.0,layers=[1,2])
 # ml = ttim.ModelMaq(kaq=[10,5],z=[4,2,1,0],c=[100],Saq=[1e-3,1e-4],Sll=[1e-6],tmin=.1,tmax=10,M=15)
-# w1 = Well(ml,0,0,.1,tsandQ=[(0,5),(1,2)],res=1.0,layers=[1,2])
-# w2 = Well(ml,100,0,.1,tsandQ=[(0,3),(2,7)],layers=[1])
+# w1 = ttim.Well(ml,0,0,.1,tsandQ=[(0,5),(1,2)],res=1.0,layers=[1,2])
+# w2 = ttim.Well(ml,100,0,.1,tsandQ=[(0,3),(2,7)],layers=[1])
 ##w3 = MscreenWell(ml,0,100,.1,tsandQ=[(0,2),(3,1)],res=2.0,layers=[1,2])
 # w3 = ZeroMscreenWell(ml,0,100,.1,res=2.0,layers=[1,2])
 ##w3 = ZeroHeadWell(ml,0,100,.1,res=1.0,layers=[1,2])
