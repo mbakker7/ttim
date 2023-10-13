@@ -4,7 +4,6 @@ import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
-from tqdm.auto import trange
 
 from .aquifer import Aquifer
 from .aquifer_parameters import param_3d, param_maq
@@ -480,10 +479,10 @@ class TimModel(PlotTtim):
             nlayers = len(np.atleast_1d(layers))
         t = np.atleast_1d(t)
         h = np.empty((nlayers, len(t), ny, nx))
-        for j in trange(ny):
+        for j in range(ny):
             if printrow:
                 print(".", end="", flush=True)
-            for i in trange(nx):
+            for i in range(nx):
                 h[:, :, j, i] = self.head(xg[i], yg[j], t, layers)
         return h
 
