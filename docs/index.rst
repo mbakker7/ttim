@@ -53,7 +53,7 @@ Quick Example
             river = ttim.HeadLineSinkString(ml, xy=list(zip(xls, yls)), tsandh='fixed')
             
             # Add a well
-            well = Well(ml, 0.0, 0.0, rw=0.3, tsandQ=[(0, 1000)])
+            well = ttim.Well(ml, 0.0, 0.0, rw=0.3, tsandQ=[(0, 1000)])
             
             # Solve model
             ml.solve()
