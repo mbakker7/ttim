@@ -7,6 +7,6 @@ This section contains the basic concepts of building groundwater models with TTi
 .. toctree::
     :maxdepth: 1
 
-    getting_started
+    getting_started/index.rst
     elements/index.rst
     

@@ -18,7 +18,7 @@ There are two ways to start a model:
         tmin=0.01, tmax=10
     )
 
-.. figure:: ../_static/modelmaq.png
+.. figure:: ../../_static/modelmaq.png
 
     A `ModelMaq` example with three aquifers and two leaky layers. Top layer is phreatic.
     Minimum time is 0.01 day, maximum time is 10 days.
@@ -38,7 +38,7 @@ There are two ways to start a model:
         tmax=10
     )
 
-.. figure:: ../_static/model3d.png
+.. figure:: ../../_static/model3d.png
 
     A `Model3D` example consisting of five layers all treated as aquifers and a vertical anisotropy of 0.1
     Minimum time is 0.01 day, maximum time is 10 days.
