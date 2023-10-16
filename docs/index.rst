@@ -48,7 +48,7 @@ Quick Example
             ml = ttim.ModelMaq(kaq=10, z=[20, 0], Saq=[0.1], phreatictop=True, tmin=1e-3, tmax=100)
             
             # Add a river with a fixed water level
-            yls = np.arange(-100.0, -101, 20)
+            yls = np.arange(-100.0, 101, 20)
             xls = 50.0 * np.ones_like(yls)
             river = ttim.HeadLineSinkString(ml, xy=list(zip(xls, yls)), tsandh='fixed')
             
