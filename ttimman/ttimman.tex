@@ -513,13 +513,13 @@ this is the discharge (units L$^3$/T), for a line-sink this is the discharge of 
 \item M. Bakker. 2013a. Analytic modeling of transient multi-layer flow. In: {\it Advances in Hydrogeology}, edited by P Mishra and K Kuhlman, Springer, Heidelberg, 95-114.
 \item M. Bakker. 2013b. Semi-analytic modeling of transient multi-layer flow with TTim.  {\it Hydrogeology Journal} 21: 935-943.
 \item M. Bakker and K.L. Kuhlman. 2011. Computational issues and applications of line-elements to model subsurface flow governed by the modified Helmholtz equation. {\it Advances in Water Resources} 34: 1186-1194.
-\item F.R. De Hoog, J.H. Knight, and A.N. Stokes. 1982. An improved method for numerical inversion of Laplace transforms. {\it SIAM Journal on ScientiÞc and Statistical Computing}, 3(3):357-366. 
-\item C.J. Hemker and C. Maas. 1987. Unsteady ßow to wells in layered and Þssured aquifer systems. 
+\item F.R. De Hoog, J.H. Knight, and A.N. Stokes. 1982. An improved method for numerical inversion of Laplace transforms. {\it SIAM Journal on Scientiï¿½c and Statistical Computing}, 3(3):357-366. 
+\item C.J. Hemker and C. Maas. 1987. Unsteady ï¿½ow to wells in layered and ï¿½ssured aquifer systems. 
 {\it Journal of Hydrology}, 90:231-249.
 \item G.P. Kruseman and N.A. de Ridder. 1990. Analysis and evaluation
 of pumping test data. International Institute for Land Reclamation and Improvement (ILRI) Bulletin 11, Wageningen.
 \item  K.L. Kuhlman and S.P. Neuman. 2009. Laplace-transform analytic-element method for transient 
-porous-media ßow. {\it Journal of Engineering Mathematics}, 64(2):113-130. 
+porous-media ï¿½ow. {\it Journal of Engineering Mathematics}, 64(2):113-130. 
 \item A. Louwyck, A. Vandenbohede, M. Bakker, L. Lebbe. 2012. Simulation of axi-symmetric flow towards wells: A finite-difference approach. {\it Computers \& Geosciences}, 44, 136-145.
 \item S.P. Neuman. 1972. Theory flow in unconfined aquifers considering delayed response of the water table. {\it Water Resources Research}, 8(4):1031-1045. 
 
@@ -640,16 +640,16 @@ In [1]:
 \end{verbatim}
 At the Python command prompt, import the ttim.py file:
 \begin{verbatim}
-In [1]: from ttim import *
+In [1]: import ttim
 \end{verbatim}
 Now we can begin to enter model data. First define the model:
 \begin{verbatim}
-In [2]: ml = ModelMaq(kaq=[1.0,5.0],z=[3,2,1,0],c=[10.],
+In [2]: ml = ttim.ModelMaq(kaq=[1.0,5.0],z=[3,2,1,0],c=[10.],
 Saq=[0.3,0.01], Sll=[0.001], tmin=0.001, tmax=1000000.0, M=20)
 \end{verbatim}
 Next enter the data for the pumping well:
 \begin{verbatim}
-In [3]: Well(ml,xw=0.,yw=0,rw=1e-5,tsandQ=[(0,1)],layers=[1],label='well 1')
+In [3]: ttim.Well(ml,xw=0.,yw=0,rw=1e-5,tsandQ=[(0,1)],layers=[1],label='well 1')
 \end{verbatim}
 Finally solve the model:
 \begin{verbatim}
