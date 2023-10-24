@@ -46,7 +46,7 @@ To uninstall TTim type:
     
 ## Documentation
 
-* The manual is available from the docs directory or can be viewed [here](http://mbakker7.github.io/ttim/docs/builddocs/html/index.html).
+* The documentation is hosted on [readthedocs](https://ttim.readthedocs.io).
 * Example Notebooks are available from the notebooks directory on github, of from [here](https://github.com/mbakker7/ttim/tree/master/notebooks).
 
 ## Citation
