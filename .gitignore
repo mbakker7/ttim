@@ -106,3 +106,7 @@ Info.plist
 
 # pytest
 .pytest_cache/
+
+# docs
+_build
+/docs/api/generated/
