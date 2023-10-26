@@ -67,6 +67,9 @@ class TimModel(PlotTtim):
         self.name = "TimModel"
         self.modelname = "ml"  # Used for writing out input
         self.timmlmodel = timmlmodel
+        if self.timmlmodel is not None:
+            self.timmlmodel.solve()
+        
 
     def __repr__(self):
         return "Model"
