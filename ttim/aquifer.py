@@ -1,6 +1,3 @@
-import inspect  # Used for storing the input
-
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -23,8 +20,7 @@ class AquiferData:
         kzoverkh=None,
         model3d=False,
     ):
-        """kzoverkh and model3d only need to be specified when model
-        is model3d"""
+        """Kzoverkh and model3d only need to be specified when model is model3d."""
         self.model = model
         self.kaq = np.atleast_1d(kaq).astype("d")
         self.z = np.atleast_1d(z).astype("d")
@@ -68,15 +64,12 @@ class AquiferData:
         return "Inhom T: " + str(self.T)
 
     def initialize(self):
-        """
-        eigval[naq, npval]: Array with eigenvalues
-        lab[naq, npval]: Array with lambda values
-        lab2[naq, nint, npint]: Array with lambda values reorganized per
-        interval
-        eigvec[naq, naq, npval]: Array with eigenvector matrices
-        coef[naq ,naq, npval]: Array with coefficients;
-        coef[ilayers, :, np] are the coefficients if the element is in
-        ilayers belonging to Laplace parameter number np
+        """Eigval[naq, npval]: Array with eigenvalues lab[naq, npval]: Array with lambda
+        values lab2[naq, nint, npint]: Array with lambda values reorganized per interval
+        eigvec[naq, naq, npval]: Array with eigenvector matrices coef[naq ,naq, npval]:
+
+        Array with coefficients; coef[ilayers, :, np] are the coefficients if the
+        element is in ilayers belonging to Laplace parameter number np.
         """
         # Recompute T for when kaq is changed
         self.T = self.kaq * self.Haq
@@ -165,10 +158,13 @@ class AquiferData:
         return True
 
     def inWhichLayer(self, z):
-        """Returns -9999 if above top of system,
-        +9999 if below bottom of system,
-        negative for in leaky layer.
-        leaky layer -n is on top of aquifer n"""
+        """Get layer given elevation z.
+
+        Returns -9999 if above top of system, +9999 if below bottom of system, negative
+        for in leaky layer.
+
+        leaky layer -n is on top of aquifer n
+        """
         if z > self.zt[0]:
             return -9999
         for i in range(self.naq - 1):
@@ -181,8 +177,7 @@ class AquiferData:
         return +9999
 
     def findlayer(self, z):
-        """
-        Returns layer-number, layer-type and model-layer-number"""
+        """Returns layer-number, layer-type and model-layer-number."""
         if z > self.z[0]:
             modellayer = -1
             ltype = "above"

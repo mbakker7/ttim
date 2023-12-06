@@ -10,7 +10,9 @@ from .equation import LeakyWallEquation
 
 class LineDoubletHoBase(Element):
     """Higher Order LineDoublet Base Class.
-    All Higher Order Line Doublet elements are derived from this class"""
+
+    All Higher Order Line Doublet elements are derived from this class
+    """
 
     def __init__(
         self,
@@ -101,11 +103,11 @@ class LineDoubletHoBase(Element):
         )
 
     def setflowcoef(self):
-        """Separate function so that this can be overloaded for other types"""
+        """Separate function so that this can be overloaded for other types."""
         self.flowcoef = 1.0 / self.model.p  # Step function
 
     def potinf(self, x, y, aq=None):
-        """Can be called with only one x,y value"""
+        """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
@@ -136,7 +138,7 @@ class LineDoubletHoBase(Element):
         return rv
 
     def disvecinf(self, x, y, aq=None):
-        """Can be called with only one x,y value"""
+        """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
@@ -177,10 +179,8 @@ class LineDoubletHoBase(Element):
 
 
 class LeakyLineDoublet(LineDoubletHoBase, LeakyWallEquation):
-    """
-    Create a segment of a leaky wall, which is
-    simulated with a line-doublet. The specific discharge through
-    the wall is equal to the head difference across the wall
+    """Create a segment of a leaky wall, which is simulated with a line-doublet. The
+    specific discharge through the wall is equal to the head difference across the wall
     divided by the resistance of the wall.
 
     Parameters
@@ -213,7 +213,6 @@ class LeakyLineDoublet(LineDoubletHoBase, LeakyWallEquation):
     --------
 
     :class:`.LeakyLineDoubletString`
-
     """
 
     def __init__(
@@ -256,9 +255,7 @@ class LeakyLineDoublet(LineDoubletHoBase, LeakyWallEquation):
 
 
 class LeakyLineDoubletString(Element, LeakyWallEquation):
-    """
-    Create a string of leaky wall segements consisting
-    of line-doublets
+    """Create a string of leaky wall segements consisting of line-doublets.
 
     Parameters
     ----------
@@ -285,7 +282,6 @@ class LeakyLineDoubletString(Element, LeakyWallEquation):
     --------
 
     :class:`.LeakyLineDoublet`
-
     """
 
     def __init__(

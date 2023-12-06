@@ -84,8 +84,8 @@ class FixedTalbot(InverseLaplaceTransform):
         theta = self.theta
         delta = self.delta
         M = self.degree
-        p = self.p
-        r = self.r
+        # p = self.p
+        # r = self.r
 
         ans = np.empty((M,), dtype=np.complex64)
         ans[0] = np.exp(delta[0]) * fp[0] / 2.0
@@ -139,8 +139,8 @@ class Stehfest(InverseLaplaceTransform):
         # NB: p is real
 
     def _coeff(self):
-        r"""Salzer summation weights (aka, "Stehfest coefficients")
-        only depend on the approximation order (M) and the precision"""
+        r"""Salzer summation weights (aka, "Stehfest coefficients") only depend on the
+        approximation order (M) and the precision."""
 
         import numpy as np
         from scipy.misc import factorial
@@ -199,7 +199,7 @@ class deHoog(InverseLaplaceTransform):
         self.degree = int(kwargs.get("degree", 17))
 
         # 2*M+1 terms in approximation
-        M = self.degree
+        # M = self.degree
 
         self.alpha = kwargs.get("alpha", 1.0e-16)
 
@@ -295,7 +295,7 @@ _de_hoog = deHoog()
 
 def invertlaplace(f, t, **kwargs):
     rule = kwargs.get("method", "dehoog")
-    if type(rule) is str:
+    if isinstance(rule, str):
         lrule = rule.lower()
         if lrule == "talbot":
             rule = _fixed_talbot

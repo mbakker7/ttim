@@ -49,14 +49,14 @@ html_theme_options = {
     "github_url": "https://github.com/mbakker7/ttim",
     "use_edit_page_button": True,
     "header_links_before_dropdown": 6,
-    "icon_links": [
-        {
-            "name": "GitHub",  # Label for this link
-            "url": "https://github.com/mbakker7/ttim",  # required
-            "icon": "fab fa-github-square",
-            "type": "fontawesome",  # Default is fontawesome
-        }
-    ],
+    # "icon_links": [
+    #     {
+    #         "name": "GitHub",  # Label for this link
+    #         "url": "https://github.com/mbakker7/ttim",  # required
+    #         "icon": "fab fa-github-square",
+    #         "type": "fontawesome",  # Default is fontawesome
+    #     }
+    # ],
 }
 
 html_context = {
