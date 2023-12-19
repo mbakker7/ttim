@@ -44,9 +44,11 @@ def get_jupyter_kernel():
 
 @pytest.mark.notebooks
 @pytest.mark.parametrize("fn", get_notebooks())
-def test_notebook(fn):
+def test_notebook(pth):
     kernel = get_jupyter_kernel()
     print("available jupyter kernel {}".format(kernel))
+
+    fn = os.path.basename(pth)
 
     cmd = (
         "jupyter "
@@ -55,7 +57,7 @@ def test_notebook(fn):
         + "--to "
         + "notebook "
         + "--execute "
-        + "{} ".format(fn)
+        + "{} ".format(pth)
         + "--output-dir "
         + "{} ".format(testdir)
         + "--output "
