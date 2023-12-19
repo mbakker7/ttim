@@ -35,8 +35,14 @@ point in the aquifer system and at any time.
 
         TTim example notebooks.
 
+    .. grid-item-card:: Pumping tests
+        :link: 04pumpingtests/index
+        :link-type: doc
+
+        TTim pumping test benchmark notebooks.
+
     .. grid-item-card:: Code reference
-        :link: 04api/index
+        :link: 05api/index
         :link-type: doc
 
         TTim code reference.
@@ -96,4 +102,6 @@ approximated as vertical.
     How-to guides <01howto/index>
     Concepts <02concepts/index>
     Examples <03examples/index>
-    Code reference <04api/index>
+    Pumping tests <04pumpingtests/index>
+    Code reference <05api/index>
+    Cite <06about/index>
