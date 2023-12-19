@@ -66,6 +66,7 @@ docs = [
     "pydata-sphinx-theme",
     "numpydoc",
     "myst_nb",
+    "sphinxcontrib-bibtex",
 ]
 
 [tool.setuptools]
