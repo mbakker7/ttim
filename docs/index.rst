@@ -83,6 +83,8 @@ Quick Example
 
     .. tab-item:: Result
 
+        In this example a well is modelled near a river in a single aquifer.
+
         .. figure:: _static/example_output.png
             :figwidth: 500px
 
