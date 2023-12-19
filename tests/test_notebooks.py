@@ -6,7 +6,8 @@ import tempfile
 import pytest
 
 nbdirs = [
-    os.path.join("docs/examples"),
+    # os.path.join("docs/00tutorials"),
+    os.path.join("docs/03examples"),
     os.path.join("notebooks"),
 ]
 
