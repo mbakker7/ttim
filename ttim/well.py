@@ -2,7 +2,7 @@ import inspect  # Used for storing the input
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.special import iv  # Needed for K1 in Well class, and in CircInhom
+# from scipy.special import iv  # Needed for K1 in Well class, and in CircInhom
 from scipy.special import kv
 
 from .element import Element
@@ -10,7 +10,10 @@ from .equation import HeadEquation, WellBoreStorageEquation
 
 
 class WellBase(Element):
-    """Well Base Class. All Well elements are derived from this class"""
+    """Well Base Class.
+
+    All Well elements are derived from this class
+    """
 
     def __init__(
         self,
@@ -74,11 +77,11 @@ class WellBase(Element):
         self.resfacp = self.resfach * self.aq.T[self.layers]
 
     def setflowcoef(self):
-        """Separate function so that this can be overloaded for other types"""
+        """Separate function so that this can be overloaded for other types."""
         self.flowcoef = 1.0 / self.model.p  # Step function
 
     def potinf(self, x, y, aq=None):
-        """Can be called with only one x,y value"""
+        """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
@@ -98,7 +101,7 @@ class WellBase(Element):
         return rv
 
     def potinfone(self, x, y, jtime, aq=None):
-        """Can be called with only one x,y value for time interval jtime"""
+        """Can be called with only one x,y value for time interval jtime."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.nparam, aq.naq, self.model.npint), "D")
@@ -115,7 +118,7 @@ class WellBase(Element):
         return rv
 
     def disvecinf(self, x, y, aq=None):
-        """Can be called with only one x,y value"""
+        """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         qx = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
@@ -123,7 +126,7 @@ class WellBase(Element):
         if aq == self.aq:
             qr = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
             r = np.sqrt((x - self.xw) ** 2 + (y - self.yw) ** 2)
-            pot = np.zeros(self.model.npint, "D")
+            # pot = np.zeros(self.model.npint, "D")
             if r < self.rw:
                 r = self.rw  # If at well, set to at radius
             for i in range(self.aq.naq):
@@ -140,8 +143,7 @@ class WellBase(Element):
         return qx, qy
 
     def headinside(self, t, derivative=0):
-        """Returns head inside the well for the layers that
-        the well is screened in.
+        """Returns head inside the well for the layers that the well is screened in.
 
         Parameters
         ----------
@@ -151,7 +153,6 @@ class WellBase(Element):
         -------
         Q : array of size `nscreens, ntimes`
             nsreens is the number of layers with a well screen
-
         """
 
         return self.model.head(self.xc[0], self.yc[0], t, derivative=derivative)[
@@ -195,13 +196,13 @@ class WellBase(Element):
 
 
 class DischargeWell(WellBase):
-    """
-    Create a well with a specified discharge for each layer that the well
-    is screened in. This is not very common and is likely only used for testing
-    and comparison with other codes. The discharge
-    must be specified for each screened layer. The resistance of the screen may
-    be specified. The head is computed such that the discharge :math:`Q_i`
-    in layer :math:`i` is computed as
+    """Create a well with a specified discharge for each layer that the well is screened
+    in.
+
+    This is not very common and is likely only used for testing and comparison with
+    other codes. The discharge must be specified for each screened layer. The resistance
+    of the screen may be specified. The head is computed such that the discharge
+    :math:`Q_i` in layer :math:`i` is computed as
 
     .. math::
         Q_i = 2\pi r_wH_i(h_i - h_w)/c
@@ -235,7 +236,6 @@ class DischargeWell(WellBase):
     discharge after time 200.
 
     >>> Well(ml, tsandQ=[(10, 100), (50, 20), (200, 0)])
-
     """
 
     def __init__(
@@ -258,14 +258,12 @@ class DischargeWell(WellBase):
 
 
 class Well(WellBase, WellBoreStorageEquation):
-    """
-    Create a well with a specified discharge.
-    The well may be screened in multiple layers. The discharge is
-    distributed across the layers such that the head inside the well
-    is the same in all screened layers.
-    Wellbore storage and skin effect may be taken into account.
-    The head is computed such that the discharge :math:`Q_i`
-    in layer :math:`i` is computed as
+    """Create a well with a specified discharge.
+
+    The well may be screened in multiple layers. The discharge is distributed across
+    the layers such that the head inside the well is the same in all screened layers.
+    Wellbore storage and skin effect may be taken into account. The head is computed
+    such that the discharge :math:`Q_i` in layer :math:`i` is computed as
 
     .. math::
         Q_i = 2\pi r_wH_i(h_i - h_w)/c
@@ -297,7 +295,6 @@ class Well(WellBase, WellBoreStorageEquation):
         'slug': volume of water instantaneously taken out of the well
     label : string (default: None)
         label of the well
-
     """
 
     def __init__(
@@ -349,7 +346,7 @@ class Well(WellBase, WellBoreStorageEquation):
         )
 
     def setflowcoef(self):
-        """Separate function so that this can be overloaded for other types"""
+        """Separate function so that this can be overloaded for other types."""
         if self.wbstype == "pumping":
             self.flowcoef = 1.0 / self.model.p  # Step function
         elif self.wbstype == "slug":
@@ -357,11 +354,11 @@ class Well(WellBase, WellBoreStorageEquation):
 
 
 class HeadWell(WellBase, HeadEquation):
-    """
-    Create a well with a specified head inside the well.
-    The well may be screened in multiple layers. The resistance of the screen
-    may be specified. The head is computed such that the discharge :math:`Q_i`
-    in layer :math:`i` is computed as
+    """Create a well with a specified head inside the well.
+
+    The well may be screened in multiple layers. The resistance of the screen may be
+    specified. The head is computed such that the discharge :math:`Q_i` in layer
+    :math:`i` is computed as
 
     .. math::
         Q_i = 2\pi r_wH_i(h_i - h_w)/c
@@ -387,7 +384,6 @@ class HeadWell(WellBase, HeadEquation):
         layer (int) or layers (list or array) where well is screened
     label : string (default: None)
         label of the well
-
     """
 
     def __init__(
@@ -448,5 +444,5 @@ class WellTest(WellBase):
         self.fp = fp
 
     def setflowcoef(self):
-        """Separate function so that this can be overloaded for other types"""
+        """Separate function so that this can be overloaded for other types."""
         self.flowcoef = self.fp

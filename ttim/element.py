@@ -66,12 +66,13 @@ class Element:
         self.ntstart = len(self.tstart)
 
     def initialize(self):
-        """Initialization of terms that cannot be initialized before other
-        elements or the aquifer is defined.
-        As we don't want to require a certain order of entering elements,
-        these terms are initialized when Model.solve is called
-        The initialization class needs to be overloaded
-        by all derived classes"""
+        """Initialization of terms that cannot be initialized before other elements or
+        the aquifer is defined.
+
+        As we don't want to require a certain order of entering elements, these terms
+        are initialized when Model.solve is called The initialization class needs to be
+        overloaded by all derived classes
+        """
         pass
 
     def potinf(self, x, y, aq=None):
@@ -85,15 +86,15 @@ class Element:
         return np.sum(self.parameters[:, :, np.newaxis, :] * self.potinf(x, y, aq), 1)
 
     def unitpotential(self, x, y, aq=None):
-        """Returns complex array of size (naq, npval)
-        Can be more efficient for given elements"""
+        """Returns complex array of size (naq, npval) Can be more efficient for given
+        elements."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum(self.potinf(x, y, aq), 0)
 
     def unitpotentialone(self, x, y, jtime, aq=None):
-        """Returns complex array of size (naq, npval)
-        Can be more efficient for given elements"""
+        """Returns complex array of size (naq, npval) Can be more efficient for given
+        elements."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum(self.potinfone(x, y, jtime, aq), 0)
@@ -112,8 +113,8 @@ class Element:
         )
 
     def unitdisvec(self, x, y, aq=None):
-        """Returns 2 complex arrays of size (naq, npval)
-        Can be more efficient for given elements"""
+        """Returns 2 complex arrays of size (naq, npval) Can be more efficient for given
+        elements."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.disvecinf(x, y, aq)
@@ -121,9 +122,10 @@ class Element:
 
     # Functions used to build equations
     def potinflayers(self, x, y, layers=0, aq=None):
-        """layers can be scalar, list, or array.
-        returns array of size (len(layers),nparam,npval)
-        only used in building equations"""
+        """Layers can be scalar, list, or array.
+
+        returns array of size (len(layers),nparam,npval) only used in building equations
+        """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         pot = self.potinf(x, y, aq)
@@ -133,8 +135,8 @@ class Element:
         return rv[layers, :]
 
     def potentiallayers(self, x, y, layers=0, aq=None):
-        """Returns complex array of size (ngvbc, len(layers),npval)
-        only used in building equations"""
+        """Returns complex array of size (ngvbc, len(layers),npval) only used in
+        building equations."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         pot = self.potential(x, y, aq)
@@ -142,8 +144,8 @@ class Element:
         return phi[:, layers, :]
 
     def unitpotentiallayers(self, x, y, layers=0, aq=None):
-        """Returns complex array of size (len(layers), npval)
-        only used in building equations"""
+        """Returns complex array of size (len(layers), npval) only used in building
+        equations."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         pot = self.unitpotential(x, y, aq)
@@ -151,9 +153,11 @@ class Element:
         return phi[layers, :]
 
     def disvecinflayers(self, x, y, layers=0, aq=None):
-        """layers can be scalar, list, or array.
-        returns 2 arrays of size (len(layers),nparam,npval)
-        only used in building equations"""
+        """Layers can be scalar, list, or array.
+
+        returns 2 arrays of size (len(layers),nparam,npval) only used in building
+        equations
+        """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.disvecinf(x, y, aq)
@@ -165,8 +169,8 @@ class Element:
         return rvx[layers, :], rvy[layers, :]
 
     def disveclayers(self, x, y, layers=0, aq=None):
-        """Returns 2 complex array of size (ngvbc, len(layers), npval)
-        only used in building equations"""
+        """Returns 2 complex array of size (ngvbc, len(layers), npval) only used in
+        building equations."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.disvec(x, y, aq)
@@ -175,8 +179,8 @@ class Element:
         return rvx[:, layers, :], rvy[:, layers, :]
 
     def unitdisveclayers(self, x, y, layers=0, aq=None):
-        """Returns complex array of size (len(layers), npval)
-        only used in building equations"""
+        """Returns complex array of size (len(layers), npval) only used in building
+        equations."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.unitdisvec(x, y, aq)
@@ -185,7 +189,7 @@ class Element:
         return rvx[layers, :], rvy[layers, :]
 
     def discharge(self, t, derivative=0):
-        """The discharge in each layer
+        """The discharge in each layer.
 
         Parameters
         ----------
@@ -198,7 +202,6 @@ class Element:
         array of discharges (nlayers,len(t))
             Discharge in each screen with zeros for layers that are not
             screened
-
         """
         # Could potentially be more efficient if s is pre-computed for
         # all elements, but may not be worthwhile to store as it is quick now
@@ -236,7 +239,7 @@ class Element:
 
     # this function is kept for testing of version 0.6.6
     def dischargeold(self, t, derivative=0):
-        """The discharge in each layer
+        """The discharge in each layer.
 
         Parameters
         ----------
@@ -249,7 +252,6 @@ class Element:
         array of discharges (nlayers,len(t))
             Discharge in each screen with zeros for layers that are not
             screened
-
         """
         # Could potentially be more efficient if s is pre-computed for
         # all elements, but may not be worthwhile to store as it is quick now
@@ -304,9 +306,11 @@ class Element:
         return rv
 
     def run_after_solve(self):
-        """function to run after a solution is completed.
-        for most elements nothing needs to be done,
-        but for strings of elements some arrays may need to be filled"""
+        """Function to run after a solution is completed.
+
+        for most elements nothing needs to be done, but for strings of elements some
+        arrays may need to be filled
+        """
         pass
 
     def plot(self):

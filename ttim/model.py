@@ -1,8 +1,6 @@
 # from .invlap import *
 import inspect  # Used for storing the input
-import sys
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 from .aquifer import Aquifer
@@ -149,9 +147,10 @@ class TimModel(PlotTtim):
         self.aq.initialize()
 
     def potential(self, x, y, t, layers=None, aq=None, derivative=0, returnphi=0):
-        """Returns pot[naq, ntimes] if layers=None,
-        otherwise pot[len(layers), ntimes]
-        t must be ordered"""
+        """Returns pot[naq, ntimes] if layers=None, otherwise pot[len(layers), ntimes].
+
+        t must be ordered.
+        """
         if aq is None:
             aq = self.aq.find_aquifer_data(x, y)
         if layers is None:
@@ -185,9 +184,10 @@ class TimModel(PlotTtim):
         return rv
 
     def potentialone(self, x, y, time, layers=None, aq=None, derivative=0, returnphi=0):
-        """Returns pot[naq] if layers=None,
-        otherwise pot[len(layers)]
-        time is one value"""
+        """Returns pot[naq] if layers=None, otherwise pot[len(layers)].
+
+        time is one value.
+        """
         if aq is None:
             aq = self.aq.find_aquifer_data(x, y)
         if layers is None:
@@ -224,8 +224,10 @@ class TimModel(PlotTtim):
 
     def disvec(self, x, y, t, layers=None, aq=None, derivative=0):
         """Returns qx[naq, ntimes], qy[naq, ntimes] if layers=None, otherwise
-        qx[len(layers,Ntimes)],qy[len(layers, ntimes)]
-        t must be ordered"""
+        qx[len(layers,Ntimes)],qy[len(layers, ntimes)].
+
+        t must be ordered.
+        """
         if aq is None:
             aq = self.aq.find_aquifer_data(x, y)
         if layers is None:
@@ -276,7 +278,7 @@ class TimModel(PlotTtim):
         return rvx, rvy
 
     def head(self, x, y, t, layers=None, aq=None, derivative=0, neglect_steady=False):
-        """Head at x, y, t where t can be multiple times
+        """Head at x, y, t where t can be multiple times.
 
         Parameters
         ----------
@@ -291,7 +293,6 @@ class TimModel(PlotTtim):
         Returns
         -------
         h : array size `nlayers, ntimes`
-
         """
 
         if aq is None:
@@ -413,7 +414,7 @@ class TimModel(PlotTtim):
         return self.elementdict[elabel].strength(t - self.tstart)
 
     def headalongline(self, x, y, t, layers=None):
-        """Head along line or curve
+        """Head along line or curve.
 
         Parameters
         ----------
@@ -429,7 +430,6 @@ class TimModel(PlotTtim):
         Returns
         -------
         h : array size `nlayers, ntimes, nx`
-
         """
 
         xg = np.atleast_1d(x)
@@ -448,7 +448,7 @@ class TimModel(PlotTtim):
         return h
 
     def headgrid(self, xg, yg, t, layers=None, printrow=False):
-        """Grid of heads
+        """Grid of heads.
 
         Parameters
         ----------
@@ -471,7 +471,6 @@ class TimModel(PlotTtim):
         --------
 
         :func:`~ttim.model.Model.headgrid2`
-
         """
 
         nx = len(xg)
@@ -490,7 +489,7 @@ class TimModel(PlotTtim):
         return h
 
     def headgrid2(self, x1, x2, nx, y1, y2, ny, t, layers=None, printrow=False):
-        """Grid of heads
+        """Grid of heads.
 
         Parameters
         ----------
@@ -513,7 +512,6 @@ class TimModel(PlotTtim):
         --------
 
         :func:`~ttim.model.Model.headgrid`
-
         """
 
         xg = np.linspace(x1, x2, nx)
@@ -521,8 +519,8 @@ class TimModel(PlotTtim):
         return self.headgrid(xg, yg, t, layers, printrow)
 
     def inverseLapTran(self, pot, t):
-        """returns array of potentials of len(t)
-        t must be ordered and tmin <= t <= tmax"""
+        """Returns array of potentials of len(t) t must be ordered and tmin <= t <=
+        tmax."""
         t = np.atleast_1d(t)
         rv = np.zeros(len(t))
         it = 0
@@ -551,7 +549,7 @@ class TimModel(PlotTtim):
         return rv
 
     def solve(self, printmat=0, sendback=0, silent=False):
-        """Compute solution"""
+        """Compute solution."""
 
         # Initialize elements
         self.initialize()
@@ -622,9 +620,8 @@ class TimModel(PlotTtim):
 
 
 class ModelMaq(TimModel):
-    """
-    Create a Model object by specifying a mult-aquifer sequence of
-    aquifer-leakylayer-aquifer-leakylayer-aquifer etc
+    """Create a Model object by specifying a mult-aquifer sequence of aquifer-
+    leakylayer-aquifer-leakylayer-aquifer etc.
 
     Parameters
     ----------
@@ -673,7 +670,6 @@ class ModelMaq(TimModel):
         more terms may be needed, but this seldom happens.
     timmlmodel : optional instance of a solved TimML model
         a timml model may be included to add steady-state flow
-
     """
 
     def __init__(
@@ -721,10 +717,11 @@ class ModelMaq(TimModel):
 
 
 class Model3D(TimModel):
-    """
-    Create a multi-layer model object consisting of
-    many aquifer layers. The resistance between the layers is computed
-    from the vertical hydraulic conductivity of the layers.
+    """Create a multi-layer model object consisting of many aquifer layers.
+
+    The
+    resistance between the layers is computed from the vertical hydraulic conductivity
+    of the layers.
 
     Parameters
     ----------
@@ -772,7 +769,6 @@ class Model3D(TimModel):
         more terms may be needed, but this seldom happens.
     timmlmodel : optional instance of a solved TimML model
         a timml model may be included to add steady-state flow
-
     """
 
     def __init__(
@@ -794,7 +790,7 @@ class Model3D(TimModel):
         M=10,
         timmlmodel=None,
     ):
-        """z must have the length of the number of layers + 1"""
+        """Z must have the length of the number of layers + 1."""
         self.storeinput(inspect.currentframe())
         kaq, Haq, Hll, c, Saq, Sll, poraq, porll, ltype, z = param_3d(
             kaq,

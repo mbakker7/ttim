@@ -230,7 +230,7 @@ class CircInhomRadial(Element, InhomEquation):
         self.parameters = np.zeros((self.model.Ngvbc, self.Nparam, self.model.Np), "D")
 
     def potinf(self, x, y, aq=None):
-        """Can be called with only one x,y value"""
+        """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.findAquiferData(x, y)
         rv = np.zeros((self.nparam, aq.naq, self.model.nin, self.model.npin), "D")
@@ -266,7 +266,7 @@ class CircInhomRadial(Element, InhomEquation):
         return rv
 
     def disinf(self, x, y, aq=None):
-        """Can be called with only one x,y value"""
+        """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.findAquiferData(x, y)
         qx = np.zeros((self.nparam, aq.naq, self.model.np), "D")

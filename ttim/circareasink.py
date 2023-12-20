@@ -8,11 +8,8 @@ from .element import Element
 
 
 class CircAreaSink(Element):
-    """
-    Create a circular area-sink with uniform infiltration rate in aquifer
-    layer 0.
-    Infiltration rate in length / time, positive for water entering
-    the aquifer.
+    """Create a circular area-sink with uniform infiltration rate in aquifer layer 0.
+    Infiltration rate in length / time, positive for water entering the aquifer.
 
     Parameters
     ----------
@@ -27,7 +24,6 @@ class CircAreaSink(Element):
         tuples of starting time and infiltration rate after starting time
     label : string or None (default: None)
         label of the area-sink
-
     """
 
     def __init__(
@@ -73,17 +69,17 @@ class CircAreaSink(Element):
         )
 
     def setflowcoef(self):
-        """Separate function so that this can be overloaded for other types"""
+        """Separate function so that this can be overloaded for other types."""
         self.flowcoef = 1.0 / self.model.p  # Step function
 
     def potinf(self, x, y, aq=None):
-        """Can be called with only one x,y value"""
+        """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
         if aq == self.aq:
             r = np.sqrt((x - self.xc) ** 2 + (y - self.yc) ** 2)
-            pot = np.zeros(self.model.npint, "D")
+            # pot = np.zeros(self.model.npint, "D")
             if r < self.R:
                 for i in range(self.aq.naq):
                     for j in range(self.model.nint):
@@ -103,7 +99,7 @@ class CircAreaSink(Element):
         return rv
 
     def disvecinf(self, x, y, aq=None):
-        """Can be called with only one x,y value"""
+        """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         qx = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
