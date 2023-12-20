@@ -1,7 +1,7 @@
-User Guide
-==========
+How To Guides
+=============
 
-This section contains the basic concepts of building groundwater models with TTim.
+This section contains how to guides on building groundwater models with TTim.
 
 
 .. toctree::
@@ -9,4 +9,4 @@ This section contains the basic concepts of building groundwater models with TTi
 
     getting_started/index.rst
     elements/index.rst
-    
+    howto_pumpingtest
