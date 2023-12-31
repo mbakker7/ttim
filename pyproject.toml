@@ -1,0 +1,84 @@
+[build-system]
+# Minimum requirements for the build system to execute
+requires = ["setuptools>64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ttim"
+dynamic = ["version"]
+description = "Transient multi-layer AEM Model"
+license = { file = "LICENSE" }
+readme = "README.md"
+authors = [{ name = "Mark Bakker" }]
+maintainers = [
+    { name = "Mark Bakker", email = "markbak@gmail.com" },
+    { name = "Davíd Brakenhoff", email = "d.brakenhoff@artesia-water.nl" },
+]
+requires-python = ">= 3.8"
+dependencies = [
+    "numpy>=1.17",
+    "scipy>=1.5",
+    "numba>=0.5",
+    "matplotlib>=3.1",
+    "lmfit>=1.0",
+    "pandas>=1.1",
+]
+
+keywords = ["hydrology", "groundwater", "model", "analytic element method"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Other Audience",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Hydrology",
+]
+
+[project.urls]
+homepage = "https://github.com/mbakker7/ttim"
+repository = "https://github.com/mbakker7/ttim"
+documentation = "http://mbakker7.github.io/ttim/docs/builddocs/html/index.html"
+
+[project.optional-dependencies]
+ci = [
+    "pytest>=4.6",
+    "pytest-cov",
+    "jupyter>=1.0.0",
+    "shapely",
+    "flake8",
+    "coveralls",
+]
+docs = [
+    "ttim[ci]",
+    "sphinx>=3.1, <6.0",
+    "sphinx-design",
+    "pydata-sphinx-theme",
+    "numpydoc",
+    "myst_nb",
+    "sphinxcontrib-bibtex",
+]
+
+[tool.setuptools]
+packages = ["ttim"]
+
+[tool.setuptools.dynamic]
+version = { attr = "ttim.version.__version__" }
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+src_paths = ["ttim"]
+line_length = 88

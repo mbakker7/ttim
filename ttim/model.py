@@ -1,20 +1,39 @@
+# from .invlap import *
+import inspect  # Used for storing the input
+
 import numpy as np
-import matplotlib.pyplot as plt
-#from .invlap import *
-import inspect # Used for storing the input
-import sys
-from .aquifer_parameters import param_3d, param_maq
+
 from .aquifer import Aquifer
-#from .bessel import *
+from .aquifer_parameters import param_3d, param_maq
+
+# from .bessel import *
 from .invlapnumba import compute_laplace_parameters_numba, invlap, invlapcomp
 from .util import PlotTtim
 
+
 class TimModel(PlotTtim):
-    def __init__(self, kaq=[1, 1], z=[3, 2, 1], Haq=[1, 1], Hll=[0], 
-                 c=[1e100, 100], Saq=[1e-4, 1e-4], Sll=[0], 
-                 poraq=0.3, porll=0.3, ltype=['a', 'a'], topboundary='conf', 
-                 phreatictop=False, tmin=1, tmax=10, tstart=0, M=10, 
-                 kzoverkh=None, model3d=False, timmlmodel=None):
+    def __init__(
+        self,
+        kaq=[1, 1],
+        z=[3, 2, 1],
+        Haq=[1, 1],
+        Hll=[0],
+        c=[1e100, 100],
+        Saq=[1e-4, 1e-4],
+        Sll=[0],
+        poraq=0.3,
+        porll=0.3,
+        ltype=["a", "a"],
+        topboundary="conf",
+        phreatictop=False,
+        tmin=1,
+        tmax=10,
+        tstart=0,
+        M=10,
+        kzoverkh=None,
+        model3d=False,
+        timmlmodel=None,
+    ):
         self.elementlist = []
         self.elementdict = {}
         self.vbclist = []  # variable boundary condition 'v' elements
@@ -25,21 +44,39 @@ class TimModel(PlotTtim):
         self.tmax = tmax
         self.tstart = tstart
         self.M = M
-        self.aq = Aquifer(self, kaq, z, Haq, Hll, c, Saq, Sll, poraq, porll,
-                          ltype, topboundary, phreatictop, kzoverkh, model3d)
+        self.aq = Aquifer(
+            self,
+            kaq,
+            z,
+            Haq,
+            Hll,
+            c,
+            Saq,
+            Sll,
+            poraq,
+            porll,
+            ltype,
+            topboundary,
+            phreatictop,
+            kzoverkh,
+            model3d,
+        )
         self.compute_laplace_parameters()
-        self.name = 'TimModel'
-        self.modelname = 'ml' # Used for writing out input
+        self.name = "TimModel"
+        self.modelname = "ml"  # Used for writing out input
         self.timmlmodel = timmlmodel
+        if self.timmlmodel is not None:
+            self.timmlmodel.solve()
         
+
     def __repr__(self):
-        return 'Model'
-    
+        return "Model"
+
     def initialize(self):
         self.gvbclist = self.gbclist + self.vbclist
         self.vzbclist = self.vbclist + self.zbclist
         # Given elements are first in list
-        self.elementlist = self.gbclist + self.vbclist + self.zbclist  
+        self.elementlist = self.gbclist + self.vbclist + self.zbclist
         self.ngbc = len(self.gbclist)
         self.nvbc = len(self.vbclist)
         self.nzbc = len(self.zbclist)
@@ -59,66 +96,68 @@ class TimModel(PlotTtim):
         self.enumber = np.array(enumber)
         self.etstart = np.array(etstart)
         self.ebc = np.array(ebc)
-            
+
     def addelement(self, e):
-        if e.label is not None: self.elementdict[e.label] = e
-        if e.type == 'g':
+        if e.label is not None:
+            self.elementdict[e.label] = e
+        if e.type == "g":
             self.gbclist.append(e)
-        elif e.type == 'v':
+        elif e.type == "v":
             self.vbclist.append(e)
-        elif e.type == 'z':
+        elif e.type == "z":
             self.zbclist.append(e)
-            
+
     def removeelement(self, e):
-        if e.label is not None: self.elementdict.pop(e.label)
-        if e.type == 'g':
+        if e.label is not None:
+            self.elementdict.pop(e.label)
+        if e.type == "g":
             self.gbclist.remove(e)
-        elif e.type == 'v':
+        elif e.type == "v":
             self.vbclist.remove(e)
-        elif e.type == 'z':
+        elif e.type == "z":
             self.zbclist.remove(e)
-            
+
     def addinhom(self, inhom):
         self.aq.inhomlist.append(inhom)
-        
+
     def compute_laplace_parameters(self):
-        '''
+        """
         nint: Number of time intervals
         npint: Number of p values per interval
         npval: Total number of p values (nint * npint)
         p[npval]: Array with p values
-        '''
+        """
         itmin = np.floor(np.log10(self.tmin))
         itmax = np.ceil(np.log10(self.tmax))
-        self.tintervals = 10.0 ** np.arange(itmin, itmax+1)
-        # lower and upper limit are adjusted to prevent any problems from t 
+        self.tintervals = 10.0 ** np.arange(itmin, itmax + 1)
+        # lower and upper limit are adjusted to prevent any problems from t
         # exactly at the beginning and end of the interval
         # also, you cannot count on t >= 10 ** log10(t) for all possible t
-        self.tintervals[0] = self.tintervals[0] * (1 - 1e-12)
-        self.tintervals[-1] = self.tintervals[-1] * (1 + 1e-12)
-        self.nint = len(self.tintervals) - 1 # number of p-intervals
-        self.npint = 2 * self.M + 1 # number of p values in an interval
+        self.tintervals[0] = self.tintervals[0] * (1 - 1e-8)
+        self.tintervals[-1] = self.tintervals[-1] * (1 + 1e-8)
+        self.nint = len(self.tintervals) - 1  # number of p-intervals
+        self.npint = 2 * self.M + 1  # number of p values in an interval
         self.npval = self.nint * self.npint
-        # numba 
+        # numba
         self.p = np.zeros((self.nint, self.npint), dtype=np.complex128)
         for i in range(self.nint):
-            self.p[i] = compute_laplace_parameters_numba(
-                                        self.tintervals[i + 1], self.M)
-        #TODO: make self.p a 2D array
+            self.p[i] = compute_laplace_parameters_numba(self.tintervals[i + 1], self.M)
+        # TODO: make self.p a 2D array
         self.p = np.ravel(self.p)
         self.aq.initialize()
-    
-    def potential(self, x, y, t, layers=None, aq=None, derivative=0, 
-                  returnphi=0):
-        '''Returns pot[naq, ntimes] if layers=None, 
-        otherwise pot[len(layers,Ntimes)]
-        t must be ordered '''
-        if aq is None: aq = self.aq.find_aquifer_data(x, y)
+
+    def potential(self, x, y, t, layers=None, aq=None, derivative=0, returnphi=0):
+        """Returns pot[naq, ntimes] if layers=None, otherwise pot[len(layers), ntimes].
+
+        t must be ordered.
+        """
+        if aq is None:
+            aq = self.aq.find_aquifer_data(x, y)
         if layers is None:
             layers = range(aq.naq)
         nlayers = len(layers)
-        time = np.atleast_1d(t) - self.tstart # used to be ).copy()
-        pot = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
+        time = np.atleast_1d(t) - self.tstart  # used to be ).copy()
+        pot = np.zeros((self.ngvbc, aq.naq, self.npval), "D")
         for i in range(self.ngbc):
             pot[i, :] += self.gbclist[i].unitpotential(x, y, aq)
         for e in self.vzbclist:
@@ -127,28 +166,37 @@ class TimModel(PlotTtim):
             pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec, 2)
         else:
             pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec[layers, :], 2)
-        if derivative > 0: 
-            pot *= self.p ** derivative
+        if derivative > 0:
+            pot *= self.p**derivative
         if returnphi:
             return pot
-        rv = invlapcomp(time, pot, self.npint, self.M, self.tintervals, 
-                        self.enumber, self.etstart, self.ebc, nlayers)
+        rv = invlapcomp(
+            time,
+            pot,
+            self.npint,
+            self.M,
+            self.tintervals,
+            self.enumber,
+            self.etstart,
+            self.ebc,
+            nlayers,
+        )
         return rv
-    
-    def potentialone(self, x, y, time, layers=None, aq=None, derivative=0, 
-                  returnphi=0):
-        '''Returns pot[naq] if layers=None, 
-        otherwise pot[len(layers)]
-        time is one value'''
-        if aq is None: 
+
+    def potentialone(self, x, y, time, layers=None, aq=None, derivative=0, returnphi=0):
+        """Returns pot[naq] if layers=None, otherwise pot[len(layers)].
+
+        time is one value.
+        """
+        if aq is None:
             aq = self.aq.find_aquifer_data(x, y)
         if layers is None:
             layers = range(aq.naq)
         nlayers = len(layers)
-        time = np.atleast_1d(time) - self.tstart # used to be ).copy()
+        time = np.atleast_1d(time) - self.tstart  # used to be ).copy()
         jtime = np.searchsorted(self.tintervals, time)[0] - 1
-        assert 0 <= jtime <= len(self.tintervals), 'time not in tintervals'
-        pot = np.zeros((self.ngvbc, aq.naq, self.npint), 'D')
+        assert 0 <= jtime <= len(self.tintervals), "time not in tintervals"
+        pot = np.zeros((self.ngvbc, aq.naq, self.npint), "D")
         for i in range(self.ngbc):
             pot[i, :] += self.gbclist[i].unitpotentialone(x, y, jtime, aq)
         for e in self.vzbclist:
@@ -157,26 +205,37 @@ class TimModel(PlotTtim):
             pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec2[:, :, jtime], 2)
         else:
             pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec2[layers, :, jtime], 2)
-        if derivative > 0: 
-            pot *= self.p ** derivative
+        if derivative > 0:
+            pot *= self.p**derivative
         if returnphi:
             return pot
-        rv = invlapcomp(time, pot[:, :, :], self.npint, self.M, 
-                        self.tintervals[jtime: jtime + 2], 
-                        self.enumber, self.etstart, self.ebc, nlayers)
+        rv = invlapcomp(
+            time,
+            pot[:, :, :],
+            self.npint,
+            self.M,
+            self.tintervals[jtime : jtime + 2],
+            self.enumber,
+            self.etstart,
+            self.ebc,
+            nlayers,
+        )
         return rv
-    
+
     def disvec(self, x, y, t, layers=None, aq=None, derivative=0):
-        '''Returns qx[naq, ntimes], qy[naq, ntimes] if layers=None, otherwise
-        qx[len(layers,Ntimes)],qy[len(layers, ntimes)]
-        t must be ordered '''
-        if aq is None: aq = self.aq.find_aquifer_data(x, y)
+        """Returns qx[naq, ntimes], qy[naq, ntimes] if layers=None, otherwise
+        qx[len(layers,Ntimes)],qy[len(layers, ntimes)].
+
+        t must be ordered.
+        """
+        if aq is None:
+            aq = self.aq.find_aquifer_data(x, y)
         if layers is None:
             layers = range(aq.naq)
         nlayers = len(layers)
         time = np.atleast_1d(t) - self.tstart
-        disx = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
-        disy = np.zeros((self.ngvbc, aq.naq, self.npval), 'D')
+        disx = np.zeros((self.ngvbc, aq.naq, self.npval), "D")
+        disy = np.zeros((self.ngvbc, aq.naq, self.npval), "D")
         for i in range(self.ngbc):
             qx, qy = self.gbclist[i].unitdisvec(x, y, aq)
             disx[i, :] += qx
@@ -192,17 +251,35 @@ class TimModel(PlotTtim):
             disx = np.sum(disx[:, np.newaxis, :, :] * aq.eigvec[layers, :], 2)
             disy = np.sum(disy[:, np.newaxis, :, :] * aq.eigvec[layers, :], 2)
         if derivative > 0:
-            disx *= self.p ** derivative
-            disy *= self.p ** derivative
-        rvx = invlapcomp(time, disx, self.npint, self.M, self.tintervals, 
-                         self.enumber, self.etstart, self.ebc, nlayers)
-        rvy = invlapcomp(time, disy, self.npint, self.M, self.tintervals, 
-                         self.enumber, self.etstart, self.ebc, nlayers)
+            disx *= self.p**derivative
+            disy *= self.p**derivative
+        rvx = invlapcomp(
+            time,
+            disx,
+            self.npint,
+            self.M,
+            self.tintervals,
+            self.enumber,
+            self.etstart,
+            self.ebc,
+            nlayers,
+        )
+        rvy = invlapcomp(
+            time,
+            disy,
+            self.npint,
+            self.M,
+            self.tintervals,
+            self.enumber,
+            self.etstart,
+            self.ebc,
+            nlayers,
+        )
         return rvx, rvy
-    
-    def head(self, x, y, t, layers=None, aq=None, derivative=0):
-        """Head at x, y, t where t can be multiple times
-        
+
+    def head(self, x, y, t, layers=None, aq=None, derivative=0, neglect_steady=False):
+        """Head at x, y, t where t can be multiple times.
+
         Parameters
         ----------
         x : float
@@ -212,14 +289,14 @@ class TimModel(PlotTtim):
         layers : integer, list or array, optional
             layers for which grid is returned
             if None: all layers are returned
-        
+
         Returns
         -------
         h : array size `nlayers, ntimes`
-
         """
-        
-        if aq is None: aq = self.aq.find_aquifer_data(x, y)
+
+        if aq is None:
+            aq = self.aq.find_aquifer_data(x, y)
         if layers is None:
             layers = range(aq.naq)
         else:
@@ -227,13 +304,14 @@ class TimModel(PlotTtim):
         pot = self.potential(x, y, t, layers, aq, derivative)
         h = aq.potential_to_head(pot, layers)
         if self.timmlmodel is not None:
-            htimml = self.timmlmodel.head(x, y, layers=layers)
-            h += htimml[:, np.newaxis]
+            if not neglect_steady:
+                htimml = self.timmlmodel.head(x, y, layers=layers)
+                h += htimml[:, np.newaxis]
         return h
-    
+
     def velocompold(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
         # implemented for one layer
-        if aq is None: 
+        if aq is None:
             aq = self.aq.find_aquifer_data(x, y)
         assert z <= aq.z[0] and z >= aq.z[-1], "z value not inside aquifer"
         if layer_ltype is None:
@@ -246,61 +324,84 @@ class TimModel(PlotTtim):
         vy = qy[layer] / (aq.Haq[layer] * aq.poraq[layer])
         vz = np.zeros_like(vx)
         return vx, vy, vz
-    
+
     def velocomp(self, x, y, z, t, aq=None, layer_ltype=None):
         # compute velocity for one point x, y, z, t
-        if aq is None: 
+        if aq is None:
             aq = self.aq.find_aquifer_data(x, y)
         assert z <= aq.z[0] and z >= aq.z[-1], "z value not inside aquifer"
         if layer_ltype is None:
             layer, ltype, dummy = aq.findlayer(z)
         else:
-            layer, ltype = layer_ltype            
-        if ltype == 'l': # inside leaky layer
+            layer, ltype = layer_ltype
+        if ltype == "l":  # inside leaky layer
             vx = 0.0
             vy = 0.0
             if layer == 0:
-                h = self.head(x, y, t, layers=layer, aq=aq)
+                h = self.head(x, y, t, layers=layer, aq=aq, neglect_steady=True)
                 qz = (h[0, 0] - 0.0) / aq.c[0]
             else:
-                h = self.head(x, y, t, layers=[layer - 1, layer], aq=aq)
-                qz = (h[1, 0] - h[0, 0]) / aq.c[layer] # TO DO include storage in leaky layer
+                h = self.head(
+                    x, y, t, layers=[layer - 1, layer], aq=aq, neglect_steady=True
+                )
+                qz = (h[1, 0] - h[0, 0]) / aq.c[
+                    layer
+                ]  # TO DO include storage in leaky layer
             vz = qz / aq.porll[layer]
-        else: # in aquifer layer
+        else:  # in aquifer layer
+            h = self.head(x, y, t, layers=layer, aq=aq, neglect_steady=True)
             qx, qy = self.disvec(x, y, t, aq=aq)
-            vx = qx[layer, 0] / (aq.Haq[layer] * aq.poraq[layer])
-            vy = qy[layer, 0] / (aq.Haq[layer] * aq.poraq[layer])
+            vx = qx[layer, 0] / (
+                aq.Haq[layer] * (aq.poraq[layer] + aq.Saq[layer] * h[0, 0])
+            )
+            vy = qy[layer, 0] / (
+                aq.Haq[layer] * (aq.poraq[layer] + aq.Saq[layer] * h[0, 0])
+            )
             #
-            h = np.zeros(3) # head above layer, in layer, and below layer
+            h = np.zeros(3)  # head above layer, in layer, and below layer
             if layer > 0:
-                if layer < aq.naq - 1: # there is a layer above and below
-                    h[:] = self.head(x, y, t, layers=[layer - 1, layer, layer + 1], aq=aq)[:, 0]
+                if layer < aq.naq - 1:  # there is a layer above and below
+                    h[:] = self.head(
+                        x,
+                        y,
+                        t,
+                        layers=[layer - 1, layer, layer + 1],
+                        aq=aq,
+                        neglect_steady=True,
+                    )[:, 0]
                 else:
-                    h[:2] = self.head(x, y, t, layers=[layer - 1, layer], aq=aq)[:, 0]
-            else: # layer = 0, so top layer
-                if aq.naq == 1: # only one layer
-                    h[1] = self.head(x, y, t, layers=[layer], aq=aq)[:, 0]
+                    h[:2] = self.head(
+                        x, y, t, layers=[layer - 1, layer], aq=aq, neglect_steady=True
+                    )[:, 0]
+            else:  # layer = 0, so top layer
+                if aq.naq == 1:  # only one layer
+                    h[1] = self.head(
+                        x, y, t, layers=[layer], aq=aq, neglect_steady=True
+                    )[:, 0]
                 else:
-                    h[1:] = self.head(x, y, t, layers=[layer, layer + 1], aq=aq)[:, 0]
+                    h[1:] = self.head(
+                        x, y, t, layers=[layer, layer + 1], aq=aq, neglect_steady=True
+                    )[:, 0]
             # this works because c[0] = 1e100 for impermeable top
-            qztop = (h[1] - h[0]) / self.aq.c[layer] 
+            qztop = (h[1] - h[0]) / self.aq.c[layer]
             # TO DO modify for infiltration in top aquifer
-            #if layer == 0:
-            #    qztop += self.qztop(x, y)   
+            # if layer == 0:
+            #    qztop += self.qztop(x, y)
             if layer < aq.naq - 1:
                 qzbot = (h[2] - h[1]) / self.aq.c[layer + 1]
             else:
                 qzbot = 0.0
-            vz = (qzbot + (z - aq.zaqbot[layer]) / aq.Haq[layer] * \
-                 (qztop - qzbot)) / aq.poraq[layer]   
+            vz = (
+                qzbot + (z - aq.zaqbot[layer]) / aq.Haq[layer] * (qztop - qzbot)
+            ) / aq.poraq[layer]
         velo = np.array([vx, vy, vz])
-        
+
         if self.timmlmodel is not None:
             velotimml = self.timmlmodel.velocity(x, y, z)
             velo += velotimml
 
         return velo
-    
+
     def velo_one(self, x, y, z, t, aq=None, layer_ltype=[0, 0]):
         # implemented for one layer and one time
         vx, vy, vz = self.velocomp(x, y, z, t, aq, layer_ltype)
@@ -308,13 +409,13 @@ class TimModel(PlotTtim):
 
     def headinside(self, elabel, t):
         return self.elementdict[elabel].headinside(t - self.tstart)
-    
-    def strength(self,elabel,t):
+
+    def strength(self, elabel, t):
         return self.elementdict[elabel].strength(t - self.tstart)
-    
+
     def headalongline(self, x, y, t, layers=None):
-        """Head along line or curve
-        
+        """Head along line or curve.
+
         Parameters
         ----------
         x : 1D array or list
@@ -325,13 +426,12 @@ class TimModel(PlotTtim):
             times for which grid is returned
         layers : integer, list or array, optional
             layers for which grid is returned
-        
+
         Returns
         -------
         h : array size `nlayers, ntimes, nx`
-
         """
-        
+
         xg = np.atleast_1d(x)
         yg = np.atleast_1d(y)
         if layers is None:
@@ -342,14 +442,14 @@ class TimModel(PlotTtim):
         if len(yg) == 1:
             yg = yg * np.ones(nx)
         t = np.atleast_1d(t)
-        h = np.zeros( (Nlayers,len(t),nx) )
+        h = np.zeros((Nlayers, len(t), nx))
         for i in range(nx):
-            h[:,:,i] = self.head(xg[i], yg[i], t, layers)
+            h[:, :, i] = self.head(xg[i], yg[i], t, layers)
         return h
-    
+
     def headgrid(self, xg, yg, t, layers=None, printrow=False):
-        """Grid of heads
-        
+        """Grid of heads.
+
         Parameters
         ----------
         xg : array
@@ -362,18 +462,17 @@ class TimModel(PlotTtim):
             layers for which grid is returned
         printrow : boolean, optional
             prints dot to screen for each row of grid if set to `True`
-        
+
         Returns
         -------
         h : array size `nlayers, ntimes, ny, nx`
-        
+
         See also
         --------
-        
-        :func:`~ttim.model.Model.headgrid2`
 
+        :func:`~ttim.model.Model.headgrid2`
         """
-        
+
         nx = len(xg)
         ny = len(yg)
         if layers is None:
@@ -381,17 +480,17 @@ class TimModel(PlotTtim):
         else:
             nlayers = len(np.atleast_1d(layers))
         t = np.atleast_1d(t)
-        h = np.empty( (nlayers,len(t),ny,nx) )
+        h = np.empty((nlayers, len(t), ny, nx))
         for j in range(ny):
             if printrow:
-                print('.', end='', flush=True)
+                print(".", end="", flush=True)
             for i in range(nx):
                 h[:, :, j, i] = self.head(xg[i], yg[j], t, layers)
         return h
-    
+
     def headgrid2(self, x1, x2, nx, y1, y2, ny, t, layers=None, printrow=False):
-        """Grid of heads
-        
+        """Grid of heads.
+
         Parameters
         ----------
         xg : array
@@ -404,73 +503,73 @@ class TimModel(PlotTtim):
             layers for which grid is returned
         printrow : boolean, optional
             prints dot to screen for each row of grid if set to `True`
-        
+
         Returns
         -------
         h : array size `nlayers, ntimes, ny, nx`
-        
+
         See also
         --------
-        
-        :func:`~ttim.model.Model.headgrid`
 
+        :func:`~ttim.model.Model.headgrid`
         """
-        
+
         xg = np.linspace(x1, x2, nx)
         yg = np.linspace(y1, y2, ny)
         return self.headgrid(xg, yg, t, layers, printrow)
-    
+
     def inverseLapTran(self, pot, t):
-        '''returns array of potentials of len(t)
-        t must be ordered and tmin <= t <= tmax'''
+        """Returns array of potentials of len(t) t must be ordered and tmin <= t <=
+        tmax."""
         t = np.atleast_1d(t)
         rv = np.zeros(len(t))
         it = 0
         if t[-1] >= self.tmin:  # Otherwise all zero
-            if (t[0] < self.tmin): it = np.argmax( t >= self.tmin )  
+            if t[0] < self.tmin:
+                it = np.argmax(t >= self.tmin)
             for n in range(self.nint):
-                if n == self.nint-1:
-                    tp = t[(t >= self.tintervals[n]) & 
-                           (t <= self.tintervals[n+1])]
+                if n == self.nint - 1:
+                    tp = t[(t >= self.tintervals[n]) & (t <= self.tintervals[n + 1])]
                 else:
-                    tp = t[(t >= self.tintervals[n]) & 
-                           (t < self.tintervals[n+1])]
+                    tp = t[(t >= self.tintervals[n]) & (t < self.tintervals[n + 1])]
                 nt = len(tp)
                 if nt > 0:  # if all values zero, don't do inverse transform
                     # Not needed anymore: if np.abs(pot[n*self.npint]) > 1e-20:
-                    # If there is a zero item, zero should be returned; 
-                    # funky enough this can be done with a 
+                    # If there is a zero item, zero should be returned;
+                    # funky enough this can be done with a
                     # straight equal comparison
-                    if not np.any(pot[n*self.npint:(n+1)*self.npint] == 0.0):
-                        rv[it : it + nt] = invlap(tp, 
-                            self.tintervals[n + 1], 
-                            pot[n * self.npint: (n + 1) * self.npint],
-                            self.M)
+                    if not np.any(pot[n * self.npint : (n + 1) * self.npint] == 0.0):
+                        rv[it : it + nt] = invlap(
+                            tp,
+                            self.tintervals[n + 1],
+                            pot[n * self.npint : (n + 1) * self.npint],
+                            self.M,
+                        )
                     it = it + nt
         return rv
-    
+
     def solve(self, printmat=0, sendback=0, silent=False):
-        """Compute solution
-        
-        """
-        
+        """Compute solution."""
+
         # Initialize elements
         self.initialize()
         # Compute number of equations
         self.neq = np.sum([e.nunknowns for e in self.elementlist])
         if silent is False:
-            print('self.neq ', self.neq)
+            print("self.neq ", self.neq)
         if self.neq == 0:
             if silent is False:
-                print('No unknowns. Solution complete')
+                print("No unknowns. Solution complete")
             return
-        mat = np.empty((self.neq, self.neq, self.npval), 'D')
-        rhs = np.empty((self.neq, self.ngvbc, self.npval), 'D')
+        mat = np.empty((self.neq, self.neq, self.npval), "D")
+        rhs = np.empty((self.neq, self.ngvbc, self.npval), "D")
         ieq = 0
         for e in self.elementlist:
             if e.nunknowns > 0:
-                mat[ieq: ieq + e.nunknowns, :, :], \
-                rhs[ieq: ieq + e.nunknowns, :, :] = e.equation()
+                (
+                    mat[ieq : ieq + e.nunknowns, :, :],
+                    rhs[ieq : ieq + e.nunknowns, :, :],
+                ) = e.equation()
                 ieq += e.nunknowns
         if printmat:
             return mat, rhs
@@ -483,43 +582,47 @@ class TimModel(PlotTtim):
                     icount += 1
                 e.run_after_solve()
         if silent is False:
-            print('solution complete')
-        elif (silent == 'dot') or (silent == '.'):
-            print('.', end='', flush=True)
+            print("solution complete")
+        elif (silent == "dot") or (silent == "."):
+            print(".", end="", flush=True)
         if sendback:
             return sol
         return
-    
-    def storeinput(self,frame):
+
+    def storeinput(self, frame):
         self.inputargs, _, _, self.inputvalues = inspect.getargvalues(frame)
-        
+
     def write(self):
-        rv = self.modelname + ' = '+self.name+'(\n'
+        rv = self.modelname + " = " + self.name + "(\n"
         for key in self.inputargs[1:]:  # The first argument (self) is ignored
-            if isinstance(self.inputvalues[key],np.ndarray):
-                rv += key + ' = ' + np.array2string(self.inputvalues[key],
-                                                    separator=',') + ',\n'
-            elif isinstance(self.inputvalues[key],str):                
+            if isinstance(self.inputvalues[key], np.ndarray):
+                rv += (
+                    key
+                    + " = "
+                    + np.array2string(self.inputvalues[key], separator=",")
+                    + ",\n"
+                )
+            elif isinstance(self.inputvalues[key], str):
                 rv += key + " = '" + self.inputvalues[key] + "',\n"
             else:
-                rv += key + ' = ' + str(self.inputvalues[key]) + ',\n'
-        rv += ')\n'
+                rv += key + " = " + str(self.inputvalues[key]) + ",\n"
+        rv += ")\n"
         return rv
-    
-    def writemodel(self,fname):
+
+    def writemodel(self, fname):
         self.initialize()  # So that model can be written without solving first
-        f = open(fname,'w')
-        f.write('from ttim import *\n')
-        f.write( self.write() )
+        f = open(fname, "w")
+        f.write("from ttim import *\n")
+        f.write(self.write())
         for e in self.elementlist:
-            f.write( e.write() )
+            f.write(e.write())
         f.close()
-        
+
+
 class ModelMaq(TimModel):
-    """
-    Create a Model object by specifying a mult-aquifer sequence of
-    aquifer-leakylayer-aquifer-leakylayer-aquifer etc
-    
+    """Create a Model object by specifying a mult-aquifer sequence of aquifer-
+    leakylayer-aquifer-leakylayer-aquifer etc.
+
     Parameters
     ----------
     kaq : float, array or list
@@ -564,31 +667,62 @@ class ModelMaq(TimModel):
     M : integer
         the number of terms to be used in the numerical inversion algorithm.
         10 is usually sufficient. If drawdown curves appear to oscillate,
-        more terms may be needed, but this seldom happens. 
-    timmlmodel : optional instance of a solved TimML model 
+        more terms may be needed, but this seldom happens.
+    timmlmodel : optional instance of a solved TimML model
         a timml model may be included to add steady-state flow
-    
     """
-    
-    def __init__(self, kaq=[1], z=[1,0], c=[], Saq=[0.001], Sll=[0],
-                 poraq=[0.3], porll=[0.3],
-                 topboundary='conf', phreatictop=False,
-                 tmin=1, tmax=10, tstart=0, M=10, timmlmodel=None):
+
+    def __init__(
+        self,
+        kaq=[1],
+        z=[1, 0],
+        c=[],
+        Saq=[0.001],
+        Sll=[0],
+        poraq=[0.3],
+        porll=[0.3],
+        topboundary="conf",
+        phreatictop=False,
+        tmin=1,
+        tmax=10,
+        tstart=0,
+        M=10,
+        timmlmodel=None,
+    ):
         self.storeinput(inspect.currentframe())
         kaq, Haq, Hll, c, Saq, Sll, poraq, porll, ltype = param_maq(
-                kaq, z, c, Saq, Sll, poraq, porll, topboundary, phreatictop)
-        TimModel.__init__(self, kaq, z, Haq, Hll, c, Saq, Sll, 
-                          poraq, porll, ltype,
-                          topboundary, phreatictop, tmin, tmax, tstart, M,
-                          timmlmodel=timmlmodel)
-        self.name = 'ModelMaq'
-        
+            kaq, z, c, Saq, Sll, poraq, porll, topboundary, phreatictop
+        )
+        TimModel.__init__(
+            self,
+            kaq,
+            z,
+            Haq,
+            Hll,
+            c,
+            Saq,
+            Sll,
+            poraq,
+            porll,
+            ltype,
+            topboundary,
+            phreatictop,
+            tmin,
+            tmax,
+            tstart,
+            M,
+            timmlmodel=timmlmodel,
+        )
+        self.name = "ModelMaq"
+
+
 class Model3D(TimModel):
-    """
-    Create a multi-layer model object consisting of
-    many aquifer layers. The resistance between the layers is computed
-    from the vertical hydraulic conductivity of the layers.
-    
+    """Create a multi-layer model object consisting of many aquifer layers.
+
+    The
+    resistance between the layers is computed from the vertical hydraulic conductivity
+    of the layers.
+
     Parameters
     ----------
     kaq : float, array or list
@@ -632,23 +766,65 @@ class Model3D(TimModel):
     M : integer (default 10)
         the number of terms to be used in the numerical inversion algorithm.
         10 is usually sufficient. If drawdown curves appear to oscillate,
-        more terms may be needed, but this seldom happens. 
-    timmlmodel : optional instance of a solved TimML model 
+        more terms may be needed, but this seldom happens.
+    timmlmodel : optional instance of a solved TimML model
         a timml model may be included to add steady-state flow
-        
     """
-    
-    def __init__(self, kaq=1, z=[4, 3, 2, 1], Saq=0.001, kzoverkh=0.1, 
-                 poraq=0.3, topboundary='conf', phreatictop=True, 
-                 topres=0, topthick=0, topSll=0, toppor=0.3, 
-                 tmin=1, tmax=10, tstart=0, M=10, timmlmodel=None):
-        '''z must have the length of the number of layers + 1'''
+
+    def __init__(
+        self,
+        kaq=1,
+        z=[4, 3, 2, 1],
+        Saq=0.001,
+        kzoverkh=0.1,
+        poraq=0.3,
+        topboundary="conf",
+        phreatictop=False,
+        topres=0,
+        topthick=0,
+        topSll=0,
+        toppor=0.3,
+        tmin=1,
+        tmax=10,
+        tstart=0,
+        M=10,
+        timmlmodel=None,
+    ):
+        """Z must have the length of the number of layers + 1."""
         self.storeinput(inspect.currentframe())
         kaq, Haq, Hll, c, Saq, Sll, poraq, porll, ltype, z = param_3d(
-            kaq, z, Saq, kzoverkh, poraq, phreatictop, topboundary, topres, 
-            topthick, topSll, toppor)
-        TimModel.__init__(self, kaq, z, Haq, Hll, c, Saq, Sll, 
-                          poraq, porll, ltype, 
-                          topboundary, phreatictop, tmin, tmax, tstart, M, 
-                          kzoverkh, model3d=True, timmlmodel=timmlmodel)
-        self.name = 'Model3D'
+            kaq,
+            z,
+            Saq,
+            kzoverkh,
+            poraq,
+            phreatictop,
+            topboundary,
+            topres,
+            topthick,
+            topSll,
+            toppor,
+        )
+        TimModel.__init__(
+            self,
+            kaq,
+            z,
+            Haq,
+            Hll,
+            c,
+            Saq,
+            Sll,
+            poraq,
+            porll,
+            ltype,
+            topboundary,
+            phreatictop,
+            tmin,
+            tmax,
+            tstart,
+            M,
+            kzoverkh,
+            model3d=True,
+            timmlmodel=timmlmodel,
+        )
+        self.name = "Model3D"

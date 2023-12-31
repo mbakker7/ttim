@@ -1,5 +1,6 @@
-[![Linux+/+macOS](https://travis-ci.org/mbakker7/ttim.svg?branch=master)](https://travis-ci.org/mbakker7/ttim)
+[![ttim](https://github.com/mbakker7/ttim/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mbakker7/ttim/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/mbakker7/ttim/badge.svg?branch=master)](https://coveralls.io/github/mbakker7/ttim?branch=master)
+![PyPI](https://img.shields.io/pypi/v/ttim?color=green)
 
 # TTim, A Multi-Layer, Transient, Analytic Element Model
 
@@ -16,7 +17,7 @@ TTim is coded in Python and uses numba to speed up evaluation of the line elemen
 
 ## Latest version
 New in version 0.5:
-* FORTRAN extension has been ported to Python and numba (many thanks to Davíd Brakenhoff)
+* FORTRAN extension has been ported to Python and numba (many thanks to DavÃ­d Brakenhoff)
 * Python invlap routine (again with numba) ported from routine by Kris Kuhlman
 * New invlap routine requires fewer terms in inverse Laplace transform (M=10 is usually enough)
 * Calibrate now works on ranges of parameters.
@@ -39,19 +40,19 @@ To update TTim type:
 
     pip install ttim --upgrade
 
-To uninstall TTi type:
+To uninstall TTim type:
 
     pip uninstall ttim
     
 ## Documentation
 
-* The manual is available from the docs directory or can be viewed [here](http://mbakker7.github.io/ttim/docs/builddocs/html/index.html).
+* The documentation is hosted on [readthedocs](https://ttim.readthedocs.io).
 * Example Notebooks are available from the notebooks directory on github, of from [here](https://github.com/mbakker7/ttim/tree/master/notebooks).
 
 ## Citation
 
 Some of the papers that you may want to cite when using TTim are:
 
-* M. Bakker. 2013. Semi-analytic modeling of transient multi-layer flow with TTim. Hydrogeology Journal, 21: 935Ð943.
+* M. Bakker. 2013. Semi-analytic modeling of transient multi-layer flow with TTim. Hydrogeology Journal, 21: 935ï¿½943.
 * M .Bakker. 2013. Analytic modeling of transient multi-layer flow. In: Advances in Hydrogeology, edited by P Mishra and K Kuhlman, Springer, Heidelberg, 95-114.
 
