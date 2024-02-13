@@ -67,7 +67,6 @@ class TimModel(PlotTtim):
         self.timmlmodel = timmlmodel
         if self.timmlmodel is not None:
             self.timmlmodel.solve()
-        
 
     def __repr__(self):
         return "Model"
