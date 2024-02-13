@@ -155,7 +155,7 @@ def invlaptest():
 
 @numba.njit(nogil=True, cache=True)
 def invlapcomp(time, pot, npint, M, tintervals, enumber, etstart, ebc, nlayers):
-    """Compute time domain solution for given laplace domain solution
+    """Compute time domain solution for given laplace domain solution.
 
     Parameters
     ----------
