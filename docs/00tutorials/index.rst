@@ -5,5 +5,6 @@ TTim tutorials.
 
 .. toctree::
     :maxdepth: 3
-    :hidden:
     :glob:
+
+    models.rst
