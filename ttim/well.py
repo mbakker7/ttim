@@ -2,6 +2,7 @@ import inspect  # Used for storing the input
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 # from scipy.special import iv  # Needed for K1 in Well class, and in CircInhom
 from scipy.special import kv
 

@@ -201,7 +201,7 @@ class MscreenEquation:
                     )
                     mat[
                         istart : istart + self.nlayers - 1, ieq : ieq + e.nunknowns, :
-                    ] = (head[:-1, :] - head[1:, :])
+                    ] = head[:-1, :] - head[1:, :]
                     if e == self:
                         for i in range(self.nlayers - 1):
                             mat[istart + i, ieq + istart + i, :] -= (
@@ -271,9 +271,7 @@ class MscreenDitchEquation:
                             istart : istart + self.nlayers - 1,
                             ieq : ieq + e.nunknowns,
                             :,
-                        ] = (
-                            head[:-1, :] - head[1:, :]
-                        )
+                        ] = head[:-1, :] - head[1:, :]
                     # Store head in top layer in 2nd to last equation
                     # of this control point
                     mat[istart + self.nlayers - 1, ieq : ieq + e.nunknowns, :] = head[
@@ -400,9 +398,7 @@ class InhomEquation:
                         :,
                     ] = (qxin - qxout) * np.cos(self.thetacp[icp]) + (
                         qyin - qyout
-                    ) * np.sin(
-                        self.thetacp[icp]
-                    )
+                    ) * np.sin(self.thetacp[icp])
                     ieq += e.nunknowns
             for i in range(self.model.ngbc):
                 rhs[istart : istart + self.nlayers, i, :] -= (
