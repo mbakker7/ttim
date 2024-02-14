@@ -16,19 +16,21 @@ New analytic elements may be added to the code without making any changes in the
 TTim is coded in Python and uses numba to speed up evaluation of the line elements and inverse laplace transforms.
 
 ## Latest version
-New in version 0.5:
-* FORTRAN extension has been ported to Python and numba (many thanks to Davíd Brakenhoff)
-* Python invlap routine (again with numba) ported from routine by Kris Kuhlman
-* New invlap routine requires fewer terms in inverse Laplace transform (M=10 is usually enough)
-* Calibrate now works on ranges of parameters.
-* Calibrate now adjusts c values between layers when calibrating for hydraulic conductivity in Model3D
+New in version 0.6.6:
+* Many documentation improvements: new look, better organization, tutorials, how-to guides, etc. Check it out [here](https://ttim.readthedocs.io)!
 
 ## Installation
 
 **Python versions and dependencies**
 
-TTim requires **Python** >= 3.6 and can be installed from PyPI.
-Required packages: **NumPy** >=1.12, **Scipy** >=0.19 and **matplotlib** >=2.0, **numba>=0.4**, **lmfit>=1.0**
+TTim requires Python >= 3.8 and can be installed from PyPI.
+
+Required packages: 
+* numpy
+* scipy
+* matplotlib 
+* numba
+* lmfit
 
 **Installation:**
 

@@ -3,10 +3,12 @@ import numpy as np
 
 class HeadEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for head-specified conditions.
-        (really written as constant potential element)
+        """Mix-in class that returns matrix rows for head-specified conditions. (really
+        written as constant potential element)
+
         Works for nunknowns = 1
-        Returns matrix part nunknowns,neq,npval, complex
+        Returns matrix part nunknowns,neq,npval, complex.
+
         Returns rhs part nunknowns,nvbc,npval, complex
         Phi_out - c*T*q_s = Phi_in
         Well: q_s = Q / (2*pi*r_w*H)
@@ -45,10 +47,8 @@ class HeadEquation:
 
 class WellBoreStorageEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for multi-aquifer element with
-        total given discharge, uniform but unknown head and
-        InternalStorageEquation
-        """
+        """Mix-in class that returns matrix rows for multi-aquifer element with total
+        given discharge, uniform but unknown head and InternalStorageEquation."""
         mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), "D")
         rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
         ieq = 0
@@ -103,9 +103,9 @@ class WellBoreStorageEquation:
 class HeadEquationNores:
     def equation(self):
         """Mix-in class that returns matrix rows for head-specified conditions.
-        (really written as constant potential element)
-        Returns matrix part nunknowns, neq, npval, complex
-        Returns rhs part nunknowns, nvbc, npval, complex
+
+        (really written as constant potential element) Returns matrix part nunknowns,
+        neq, npval, complex Returns rhs part nunknowns, nvbc, npval, complex
         """
         mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), "D")
         rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
@@ -133,10 +133,9 @@ class HeadEquationNores:
 
 class LeakyWallEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for leaky-wall condition
-        Returns matrix part nunknowns,neq,npval, complex
-        Returns rhs part nunknowns,nvbc,npval, complex
-        """
+        """Mix-in class that returns matrix rows for leaky-wall condition Returns matrix
+        part nunknowns,neq,npval, complex Returns rhs part nunknowns,nvbc,npval,
+        complex."""
         mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), "D")
         rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
         for icp in range(self.ncp):
@@ -180,13 +179,14 @@ class LeakyWallEquation:
 
 class MscreenEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for multi-screen conditions
-        where total discharge is specified.
-        Works for nunknowns = 1
-        Returns matrix part nunknowns, neq, npval, complex
+        """Mix-in class that returns matrix rows for multi-screen conditions where total
+        discharge is specified. Works for nunknowns = 1 Returns matrix part nunknowns,
+        neq, npval, complex.
+
         Returns rhs part nunknowns, nvbc, npval, complex
         head_out - c * q_s = h_in
-        Set h_i - h_(i + 1) = 0 and Sum Q_i = Q"""
+        Set h_i - h_(i + 1) = 0 and Sum Q_i = Q
+        """
         mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), "D")
         rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
         ieq = 0
@@ -201,7 +201,7 @@ class MscreenEquation:
                     )
                     mat[
                         istart : istart + self.nlayers - 1, ieq : ieq + e.nunknowns, :
-                    ] = (head[:-1, :] - head[1:, :])
+                    ] = head[:-1, :] - head[1:, :]
                     if e == self:
                         for i in range(self.nlayers - 1):
                             mat[istart + i, ieq + istart + i, :] -= (
@@ -242,9 +242,9 @@ class MscreenEquation:
 
 class MscreenDitchEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for multi-screen conditions
-        where total discharge is specified.
-        Returns matrix part nunknowns,neq,npval, complex
+        """Mix-in class that returns matrix rows for multi-screen conditions where total
+        discharge is specified. Returns matrix part nunknowns,neq,npval, complex.
+
         Returns rhs part nunknowns,nvbc,npval, complex
         head_out - c*q_s = h_in
         Set h_i - h_(i+1) = 0 and Sum Q_i = Q
@@ -271,9 +271,7 @@ class MscreenDitchEquation:
                             istart : istart + self.nlayers - 1,
                             ieq : ieq + e.nunknowns,
                             :,
-                        ] = (
-                            head[:-1, :] - head[1:, :]
-                        )
+                        ] = head[:-1, :] - head[1:, :]
                     # Store head in top layer in 2nd to last equation
                     # of this control point
                     mat[istart + self.nlayers - 1, ieq : ieq + e.nunknowns, :] = head[
@@ -370,7 +368,7 @@ class MscreenDitchEquation:
 
 class InhomEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for inhomogeneity conditions"""
+        """Mix-in class that returns matrix rows for inhomogeneity conditions."""
         mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), "D")
         rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
         for icp in range(self.ncp):
@@ -400,9 +398,7 @@ class InhomEquation:
                         :,
                     ] = (qxin - qxout) * np.cos(self.thetacp[icp]) + (
                         qyin - qyout
-                    ) * np.sin(
-                        self.thetacp[icp]
-                    )
+                    ) * np.sin(self.thetacp[icp])
                     ieq += e.nunknowns
             for i in range(self.model.ngbc):
                 rhs[istart : istart + self.nlayers, i, :] -= (

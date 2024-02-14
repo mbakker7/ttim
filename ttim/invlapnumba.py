@@ -24,7 +24,7 @@ import numpy as np
 
 @numba.njit(nogil=True, cache=True)
 def invlap(t, tmax, fp, M, alpha=1e-10, tol=1e-9):
-    """Inverse Laplace tansform with algorithm of De Hoog, Knight and Stokes
+    """Inverse Laplace tansform with algorithm of De Hoog, Knight and Stokes.
 
     Parameters
     ----------
@@ -46,14 +46,13 @@ def invlap(t, tmax, fp, M, alpha=1e-10, tol=1e-9):
         time domain solution for specified times
 
     Reference
-    --------
+    ---------
 
     de Hoog, F., J. Knight, A. Stokes (1982). An improved method for
     numerical inversion of Laplace transforms. SIAM Journal of Scientific
     and Statistical Computing 3:357-366, http://dx.doi.org/10.1137/0903022
 
     https://bitbucket.org/klkuhlm/invlap/src/default/invlap.py
-
     """
     # return zeros if all fp equal to zero
     if np.all(np.abs(fp) == 0):
@@ -156,8 +155,7 @@ def invlaptest():
 
 @numba.njit(nogil=True, cache=True)
 def invlapcomp(time, pot, npint, M, tintervals, enumber, etstart, ebc, nlayers):
-    '''
-    """Compute time domain solution for given laplace domain solution
+    """Compute time domain solution for given laplace domain solution.
 
     Parameters
     ----------
@@ -175,8 +173,8 @@ def invlapcomp(time, pot, npint, M, tintervals, enumber, etstart, ebc, nlayers):
     nlayers : integer or None (default)
         number of layers
 
-    Method
-    ------
+    Notes
+    -----
     enumber, etstart, and ebc are used because numba cannot deal with a list
     of arrays of different lengths (makes sense, actually)
 
@@ -184,8 +182,8 @@ def invlapcomp(time, pot, npint, M, tintervals, enumber, etstart, ebc, nlayers):
     -------
     pot[naq, ntimes] if layers=None,
     otherwise pot[len(layers) ,ntimes]
-    t must be ordered'''
-
+    t must be ordered
+    """
     print_tmin_warning = True  # set to False if warning is printed once
     print_tmax_warning = True
     nelements, naq, npval = pot.shape
@@ -246,8 +244,7 @@ def invlapcomp(time, pot, npint, M, tintervals, enumber, etstart, ebc, nlayers):
 # to do numerical Laplace transformation
 @numba.njit(nogil=True, cache=True)
 def invlapgen(time, pot, M, tintervals, tstart, ebc):
-    """
-    Compute time domain solution for given Laplace domain solution
+    """Compute time domain solution for given Laplace domain solution.
 
     Parameters
     ----------
@@ -259,8 +256,8 @@ def invlapgen(time, pot, M, tintervals, tstart, ebc):
     tstart : 1D array with starting times of bc in element, length nstart
     ebc : 1D array with change in boundary condition value, length nstart
 
-    Method
-    ------
+    Notes
+    -----
     ebc is the difference with the previous value
 
     Returns

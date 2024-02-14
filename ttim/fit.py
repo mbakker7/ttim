@@ -1,21 +1,19 @@
 import re
 
-import lmfit
+# import lmfit
 import numpy as np
 import pandas as pd
-from scipy.linalg import svd
 from scipy.optimize import least_squares
 
 
 class Calibrate:
     def __init__(self, model):
-        """initialize Calibration class
+        """Initialize Calibration class.
 
         Parameters
         ----------
         model : ttim.Model
             model to calibrate
-
         """
 
         self.model = model
@@ -26,7 +24,7 @@ class Calibrate:
         self.seriesinwelldict = {}
 
     def set_parameter(self, name=None, initial=0, pmin=-np.inf, pmax=np.inf):
-        """set parameter to be optimized
+        """Set parameter to be optimized.
 
         Parameters
         ----------
@@ -44,10 +42,9 @@ class Calibrate:
             lower bound for parameter value (the default is -np.inf)
         pmax : float, optional
             upper bound for paramater value (the default is np.inf)
-
         """
 
-        assert type(name) == str, "Error: name must be string"
+        assert isinstance(name, str), "Error: name must be string"
         # find numbers in name str for support layer ranges
         layers_from_name = re.findall(r"\d+", name)
         p = None
@@ -92,7 +89,7 @@ class Calibrate:
     def set_parameter_by_reference(
         self, name=None, parameter=None, initial=0, pmin=-np.inf, pmax=np.inf
     ):
-        """set parameter to be optimized
+        """Set parameter to be optimized.
 
         Parameters
         ----------
@@ -107,9 +104,8 @@ class Calibrate:
             lower bound for parameter value (the default is -np.inf)
         pmax : float, optional
             upper bound for paramater value (the default is np.inf)
-
         """
-        assert type(name) == str, "Error: name must be string"
+        assert isinstance(name, str), "Error: name must be string"
         if parameter is not None:
             assert isinstance(
                 parameter, np.ndarray
@@ -126,7 +122,7 @@ class Calibrate:
         }
 
     def series(self, name, x, y, layer, t, h, weights=None):
-        """method to add observations to Calibration object
+        """Method to add observations to Calibration object.
 
         Parameters
         ----------
@@ -142,14 +138,13 @@ class Calibrate:
             array containing timestamps of timeseries
         h : np.array
             array containing timeseries values, i.e. head observations
-
         """
 
         s = Series(x, y, layer, t, h, weights=weights)
         self.seriesdict[name] = s
 
     def seriesinwell(self, name, element, t, h):
-        """method to add observations to Calibration object
+        """Method to add observations to Calibration object.
 
         Parameters
         ----------
@@ -160,14 +155,13 @@ class Calibrate:
             array containing timestamps of timeseries
         h : np.array
             array containing timeseries values, i.e. head observations
-
         """
 
         e = SeriesInWell(element, t, h)
         self.seriesinwelldict[name] = e
 
     def residuals(self, p, printdot=False, weighted=True, layers=None, series=None):
-        """method to calculate residuals given certain parameters
+        """Method to calculate residuals given certain parameters.
 
         Parameters
         ----------
@@ -180,7 +174,6 @@ class Calibrate:
         -------
         np.array
             array containing all residuals
-
         """
 
         if printdot:
@@ -291,7 +284,7 @@ class Calibrate:
         return self.fit_lmfit(report, printdot)
 
     def rmse(self, weighted=True, layers=None):
-        """calculate root-mean-squared-error
+        """Calculate root-mean-squared-error.
 
         Returns
         -------

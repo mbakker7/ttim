@@ -1047,8 +1047,8 @@ def bessells_gauss_ho(x, y, z1, z2, lab, order):
 
 @numba.njit(nogil=True, cache=True)
 def bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
-    """
-    Returns integral from d1 to d2 along real axis while strength is still Delta^order from -1 to +1
+    """Returns integral from d1 to d2 along real axis while strength is still
+    Delta^order from -1 to +1.
 
     implicit none
     integer, intent(in) :: order
@@ -1123,8 +1123,8 @@ def bessells_gauss_ho_qxqy(x, y, z1, z2, lab, order):
 
 @numba.njit(nogil=True, cache=True)
 def bessells_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
-    """
-    Returns integral from d1 to d2 along real axis while strength is still Delta^order from -1 to +1
+    """Returns integral from d1 to d2 along real axis while strength is still
+    Delta^order from -1 to +1.
 
     implicit none
     integer, intent(in) :: order
@@ -2088,9 +2088,7 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     qx = -2.0 / L * (rvz + rvzbar) / biglab
     qy = -2.0 / L * complex(0, 1) * (rvz - rvzbar) / biglab
 
-    qx = qx - 2.0 / L * bigy / biglabcomplex**2 * azero * (
-        omegalap + np.conj(omegalap)
-    )
+    qx = qx - 2.0 / L * bigy / biglabcomplex**2 * azero * (omegalap + np.conj(omegalap))
     qy = qy - 2.0 / L * bigy / biglabcomplex**2 * azero * complex(0, 1) * (
         omegalap - np.conj(omegalap)
     )
@@ -2165,8 +2163,8 @@ def besselld_gauss_ho_qxqy(x, y, z1, z2, lab, order):
 
 # @numba.njit(nogil=True, cache=True)
 def besselld_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
-    """
-    Returns integral from d1 to d2 along real axis while strength is still Delta^order from -1 to +1
+    """Returns integral from d1 to d2 along real axis while strength is still
+    Delta^order from -1 to +1.
 
     implicit none
     integer, intent(in) :: order
@@ -2351,10 +2349,7 @@ def bessells_circcheck(x, y, z1in, z2in, lab):
 
 @numba.njit(nogil=True, cache=True)
 def is_too_far(z1, z2, zc, R):
-    """
-    Checks whether zc is more than R away from oval
-    surrounding line element
-    """
+    """Checks whether zc is more than R away from oval surrounding line element."""
 
     Lover2 = np.abs(z2 - z1) / 2
     bigz = (2 * zc - (z1 + z2)) / (z2 - z1)

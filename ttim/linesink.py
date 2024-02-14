@@ -14,7 +14,10 @@ from .equation import (
 
 
 class LineSinkBase(Element):
-    """LineSink Base Class. All LineSink elements are derived from this class"""
+    """LineSink Base Class.
+
+    All LineSink elements are derived from this class
+    """
 
     def __init__(
         self,
@@ -83,7 +86,7 @@ class LineSinkBase(Element):
         self.dischargeinflayers = np.sum(
             self.dischargeinf * self.aq.eigvec[self.layers, :, :], 1
         )
-        if type(self.wh) is str:
+        if isinstance(self.wh, str):
             if self.wh == "H":
                 self.wh = self.aq.Haq[self.layers]
             elif self.wh == "2H":
@@ -96,11 +99,11 @@ class LineSinkBase(Element):
         self.resfacp = self.resfach * self.aq.T[self.layers]
 
     def setflowcoef(self):
-        """Separate function so that this can be overloaded for other types"""
+        """Separate function so that this can be overloaded for other types."""
         self.flowcoef = 1.0 / self.model.p  # Step function
 
     def potinf(self, x, y, aq=None):
-        """Can be called with only one x,y value"""
+        """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
@@ -117,7 +120,7 @@ class LineSinkBase(Element):
         return rv
 
     def disvecinf(self, x, y, aq=None):
-        """Can be called with only one x,y value"""
+        """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
@@ -148,7 +151,7 @@ class LineSinkBase(Element):
         return rvx, rvy
 
     def headinside(self, t):
-        """The head inside the line-sink
+        """The head inside the line-sink.
 
         Parameters
         ----------
@@ -160,7 +163,6 @@ class LineSinkBase(Element):
         array (length number of layers)
             Head inside the line-sink for each layer that
             the line-sink is screened in
-
         """
 
         return self.model.head(self.xc[0], self.yc[0], t)[self.layers] - self.resfach[
@@ -172,8 +174,8 @@ class LineSinkBase(Element):
 
 
 class LineSink(LineSinkBase):
-    """LineSink with non-zero and potentially variable discharge through time
-    really only used for testing"""
+    """LineSink with non-zero and potentially variable discharge through time really
+    only used for testing."""
 
     def __init__(
         self,
@@ -226,10 +228,10 @@ class LineSink(LineSinkBase):
 
 
 class HeadLineSink(LineSinkBase, HeadEquation):
-    """
-    Create a head-specified line-sink
-    which may optionally have a width and resistance
-    Inflow per unit length of line-sink is computed as
+    """Create a head-specified line-sink which may optionally have a width and
+    resistance.
+
+    Inflow per unit length of line-sink is computed as:
 
     .. math::
         \sigma = w(h_{aq} - h_{ls})/c
@@ -278,7 +280,6 @@ class HeadLineSink(LineSinkBase, HeadEquation):
     --------
 
     :class:`.HeadLineSinkString`
-
     """
 
     def __init__(
@@ -418,7 +419,7 @@ class LineSinkStringBase(Element):
         return rvx, rvy
 
     def headinside(self, t, derivative=0):
-        """The head inside the line-sink string
+        """The head inside the line-sink string.
 
         Parameters
         ----------
@@ -430,7 +431,6 @@ class LineSinkStringBase(Element):
         array size nline-sinks, nlayers, ntimes
             Head inside the line-sink for each line-sink, each layer that
             the line-sink is screened in, and each time
-
         """
 
         rv = np.zeros((self.nls, self.nlayers, np.size(t)))
@@ -455,7 +455,7 @@ class LineSinkStringBase(Element):
             ]
 
     def discharge_list(self, t, derivative=0):
-        """The discharge of each line-sink in the string
+        """The discharge of each line-sink in the string.
 
         Parameters
         ----------
@@ -467,7 +467,6 @@ class LineSinkStringBase(Element):
         array size nline-sinks, nlayers, ntimes
             Discharge for each line-sink, each layer that
             the line-sink is screened in, and each time
-
         """
         rv = np.zeros((self.nls, self.nlayers, np.size(t)))
         for i in range(self.nls):
@@ -476,10 +475,10 @@ class LineSinkStringBase(Element):
 
 
 class HeadLineSinkString(LineSinkStringBase, HeadEquation):
-    """
-    Create string of head-specified line-sinks
-    which may optionally have a width and resistance
-    Inflow per unit length of line-sink is computed as
+    """Create string of head-specified line-sinks which may optionally have a width and
+    resistance.
+
+    Inflow per unit length of line-sink is computed as:
 
     .. math::
         \sigma = w(h_{aq} - h_{ls})/c
@@ -523,7 +522,6 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
     --------
 
     :class:`.HeadLineSink`
-
     """
 
     def __init__(
@@ -585,8 +583,9 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
 
 class MscreenLineSink(LineSinkBase, MscreenEquation):
     """MscreenLineSink that varies through time.
-    Must be screened in multiple layers but heads are same
-    in all screened layers"""
+
+    Must be screened in multiple layers but heads are same in all screened layers
+    """
 
     def __init__(
         self,
@@ -639,12 +638,13 @@ class MscreenLineSink(LineSinkBase, MscreenEquation):
 
 
 class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
-    """
-    Create ditch consisting of a string of line-sink.
-    The total discharge for the string is specified and divided over the
-    line-sinks such that the head at the center inside each line-sink is
-    equal. A width and resistance may optionally be specified.
-    Inflow per unit length of line-sink is computed as
+    """Create ditch consisting of a string of line-sink.
+
+    The total discharge for the string is specified and divided over the line-sinks such
+    that the head at the center inside each line-sink is equal. A width and resistance
+    may optionally be specified.
+
+    Inflow per unit length of line-sink is computed as:
 
     .. math::
         \sigma = w(h_{aq} - h_{ls})/c
@@ -682,7 +682,6 @@ class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
         if list or array: element is placed in all these layers
     label: str or None
         label of element
-
     """
 
     def __init__(
@@ -736,12 +735,13 @@ class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
 
 
 class LineSinkDitchString2(LineSinkStringBase, MscreenDitchEquation):
-    """
-    Create ditch consisting of a string of line-sink.
-    The total discharge for the string is specified and divided over the
-    line-sinks such that the head at the center inside each line-sink is
-    equal. A width and resistance may optionally be specified.
-    Inflow per unit length of line-sink is computed as
+    """Create ditch consisting of a string of line-sink.
+
+    The total discharge for the string is specified and divided over the line-sinks such
+    that the head at the center inside each line-sink is equal. A width and resistance
+    may optionally be specified.
+
+    Inflow per unit length of line-sink is computed as:
 
     .. math::
         \sigma = w(h_{aq} - h_{ls})/c
@@ -779,7 +779,6 @@ class LineSinkDitchString2(LineSinkStringBase, MscreenDitchEquation):
         if list or array: element is placed in all these layers
     label: str or None
         label of element
-
     """
 
     def __init__(
@@ -833,8 +832,10 @@ class LineSinkDitchString2(LineSinkStringBase, MscreenDitchEquation):
 
 
 class LineSinkHoBase(Element):
-    """Higher Order LineSink Base Class. All Higher Order Line Sink elements
-    are derived from this class"""
+    """Higher Order LineSink Base Class.
+
+    All Higher Order Line Sink elements are derived from this class
+    """
 
     def __init__(
         self,
@@ -924,11 +925,11 @@ class LineSinkHoBase(Element):
         self.resfacp = self.resfach * self.aq.T[self.layers]
 
     def setflowcoef(self):
-        """Separate function so that this can be overloaded for other types"""
+        """Separate function so that this can be overloaded for other types."""
         self.flowcoef = 1 / self.model.p  # Step function
 
     def potinf(self, x, y, aq=None):
-        """Can be called with only one x,y value"""
+        """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
@@ -958,7 +959,7 @@ class LineSinkHoBase(Element):
         return rv
 
     def disvecinf(self, x, y, aq=None):
-        """Can be called with only one x,y value"""
+        """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
@@ -994,13 +995,12 @@ class LineSinkHoBase(Element):
         return rvx, rvy
 
     def headinside(self, t):
-        """The head inside the line-sink
+        """The head inside the line-sink.
 
         Returns
         -------
         array (length number of screens)
             Head inside the well for each screen
-
         """
 
         return self.model.head(self.xc, self.yc, t)[self.layers] - self.resfach[
@@ -1013,7 +1013,9 @@ class LineSinkHoBase(Element):
 
 class HeadLineSinkHo(LineSinkHoBase, HeadEquationNores):
     """HeadLineSink of which the head varies through time.
-    May be screened in multiple layers but all with the same head"""
+
+    May be screened in multiple layers but all with the same head
+    """
 
     def __init__(
         self,

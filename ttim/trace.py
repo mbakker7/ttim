@@ -14,8 +14,8 @@ def timtrace(
     silent=False,
     correctionstep=True,
 ):
-    """
-    Compute a pathline by numerical integration of the velocity vector.
+    """Compute a pathline by numerical integration of the velocity vector.
+
     Pathline is broken up in sections for which starting times are provided.
     Pathline is computed from first starting time + offset until second
     starting time, then continued from second starting time + offset until
@@ -38,10 +38,10 @@ def timtrace(
         this value is smaller than tmin it may cause problems after change in
         boundary conditions
     tstep : scalar or list
-        maximum time step for each step along pathline. either one value for
+        maximum time step for each step along pathline. Either one value for
         all sections, or list with values for each section.
     nstepmax : integer
-        maximu number of steps per section
+        maximum number of steps per section
     hstepmax : float or integer
         maximum length of horizontal step
     silent : boolean
@@ -52,22 +52,18 @@ def timtrace(
         be taken. Taking a correction step is more accurate, especially for
         curved pathlines.
 
-
     Returns
-    --------
-    result : dictionary with three entries
-
+    -------
+    result : dictionary with three items
         * xyzt : 2D array with four columns: x, y, z, t along pathline
         * message : list with text messages of each section of the pathline
         * status : numerical indication of the result. Negative is likely
-        undesirable.
-
+          undesirable.
             * -2 : reached maximum number of steps before reaching maximum time
             * -1 : starting z value not inside aquifer
             * +1 : reached maximum time
             * +2 : reached element
             * +3 : flows out of top of aquifer
-
     """
     xyzt = [np.array([[xstart, ystart, zstart, tstartend[0]]])]
     messages = []

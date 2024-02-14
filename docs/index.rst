@@ -7,23 +7,42 @@ with analytic elements.
 The head, flow, and leakage between aquifer layers may be computed analytically at any
 point in the aquifer system and at any time.
 
+.. grid::
+
+    .. grid-item-card:: Tutorials
+        :link: 00tutorials/index
+        :link-type: doc
+
+        Tutorials for getting started with TTim.
+
+    .. grid-item-card:: How-to guides
+        :link: 01howto/index
+        :link-type: doc
+
+        How-to guides for more advanced modeling with TTim.
+
+    .. grid-item-card:: Concepts
+        :link: 02concepts/index
+        :link-type: doc
+
+        TTim basic concepts explained.
 
 .. grid::
 
-    .. grid-item-card:: User Guide
-        :link: userguide/index
-        :link-type: doc
-
-        User guide on the basic concepts of TTim.
-
     .. grid-item-card:: Examples
-        :link: examples/index
+        :link: 03examples/index
         :link-type: doc
 
-        Examples of TTim usage.
+        TTim example notebooks.
 
-    .. grid-item-card:: Code Reference
-        :link: api/index
+    .. grid-item-card:: Pumping tests
+        :link: 04pumpingtests/index
+        :link-type: doc
+
+        TTim pumping test benchmark notebooks.
+
+    .. grid-item-card:: Code reference
+        :link: 05api/index
         :link-type: doc
 
         TTim code reference.
@@ -64,6 +83,8 @@ Quick Example
 
     .. tab-item:: Result
 
+        In this example a well is modelled near a river in a single aquifer.
+
         .. figure:: _static/example_output.png
             :figwidth: 500px
 
@@ -75,11 +96,14 @@ The Dupuit approximation is applied to aquifer layers, while flow in leaky layer
 approximated as vertical.
 
 
-
 .. toctree::
     :maxdepth: 2
     :hidden:
 
-    User Guide <userguide/index>
-    Examples <examples/index>
-    Code reference <api/index>
+    Tutorials <00tutorials/index>
+    How-to guides <01howto/index>
+    Concepts <02concepts/index>
+    Examples <03examples/index>
+    Pumping tests <04pumpingtests/index>
+    Code reference <05api/index>
+    Cite <06about/index>

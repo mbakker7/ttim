@@ -688,8 +688,8 @@ def bessells_gauss_ho(x, y, z1, z2, lab, order):
 
 @numba.njit(nogil=True, cache=True)
 def bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
-    """
-    Returns integral from d1 to d2 along real axis while strength is still Delta^order from -1 to +1
+    """Returns integral from d1 to d2 along real axis while strength is still
+    Delta^order from -1 to +1.
 
     implicit none
     integer, intent(in) :: order
@@ -753,7 +753,7 @@ def bessellsqxqyv2(x, y, z1, z2, lab, order, R):
     nlab = len(lab)
     qxqy = np.zeros((2 * (order + 1), nlab), dtype=np.complex_)
     nterms = order + 1
-    nhalf = nlab * (order + 1)
+    # nhalf = nlab * (order + 1)
     d1, d2 = find_d1d2(z1, z2, complex(x, y), R * np.abs(lab[0]))
     for n in range(nlab):
         qxqylab = bessellsqxqy(x, y, z1, z2, lab[n], order, d1, d2)
@@ -939,8 +939,8 @@ def bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
 
 @numba.njit(nogil=True, cache=True)
 def bessells_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
-    """
-    Returns integral from d1 to d2 along real axis while strength is still Delta^order from -1 to +1
+    """Returns integral from d1 to d2 along real axis while strength is still
+    Delta^order from -1 to +1.
 
     implicit none
     integer, intent(in) :: order
@@ -1018,7 +1018,7 @@ def lapld_int_ho(x, y, z1, z2, order):
     omega = np.zeros(order + 1, dtype=np.complex_)
     qm = np.zeros(order + 1, dtype=np.complex_)
 
-    L = np.abs(z2 - z1)
+    # L = np.abs(z2 - z1)
     z = (2.0 * complex(x, y) - (z1 + z2)) / (z2 - z1)
     zplus1 = z + 1.0
     zmin1 = z - 1.0
@@ -1449,7 +1449,7 @@ def besselldqxqyv2(x, y, z1, z2, lab, order, R):
     nlab = len(lab)
     qxqy = np.zeros((2 * (order + 1), nlab), dtype=np.complex_)
     nterms = order + 1
-    nhalf = nlab * (order + 1)
+    # nhalf = nlab * (order + 1)
     d1, d2 = find_d1d2(z1, z2, complex(x, y), R * np.abs(lab[0]))
     for n in range(nlab):
         qxqylab = besselldqxqy(x, y, z1, z2, lab[n], order, d1, d2)
@@ -1656,9 +1656,7 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     qx = -2.0 / L * (rvz + rvzbar) / biglab
     qy = -2.0 / L * complex(0, 1) * (rvz - rvzbar) / biglab
 
-    qx = qx - 2.0 / L * bigy / biglabcomplex**2 * azero * (
-        omegalap + np.conj(omegalap)
-    )
+    qx = qx - 2.0 / L * bigy / biglabcomplex**2 * azero * (omegalap + np.conj(omegalap))
     qy = qy - 2.0 / L * bigy / biglabcomplex**2 * azero * complex(0, 1) * (
         omegalap - np.conj(omegalap)
     )
@@ -1678,8 +1676,8 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
 
 @numba.njit(nogil=True, cache=True)
 def besselld_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
-    """
-    Returns integral from d1 to d2 along real axis while strength is still Delta^order from -1 to +1
+    """Returns integral from d1 to d2 along real axis while strength is still
+    Delta^order from -1 to +1.
 
     implicit none
     integer, intent(in) :: order
@@ -1787,8 +1785,8 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
     zminzbar = np.zeros(21, dtype=np.complex_)
 
     L = np.abs(z2 - z1)
-    bigz = (2.0 * complex(x, y) - (z1 + z2)) / (z2 - z1)
-    bigy = bigz.imag
+    # bigz = (2.0 * complex(x, y) - (z1 + z2)) / (z2 - z1)
+    # bigy = bigz.imag
     biga = np.abs(lab)
     ang = np.arctan2(lab.imag, lab.real)
     biglab = 2.0 * biga / L

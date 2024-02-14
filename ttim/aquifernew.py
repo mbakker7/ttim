@@ -55,13 +55,12 @@ class AquiferData:
         return "Inhom T: " + str(self.T)
 
     def initialize(self):
-        """
-        eigval[Naq,npval]: Array with eigenvalues
-        lab[Naq,npval]: Array with lambda values
-        lab2[Naq,Nin,npint]: Array with lambda values reorganized per interval
-        eigvec[Naq,Naq,npval]: Array with eigenvector matrices
-        coef[Naq,Naq,npval]: Array with coefficients;
-        coef[ilayers,:,np] are the coefficients if the element is in ilayers belonging to Laplace parameter number np
+        """Eigval[Naq,npval]: Array with eigenvalues lab[Naq,npval]: Array with lambda
+        values lab2[Naq,Nin,npint]: Array with lambda values reorganized per interval
+        eigvec[Naq,Naq,npval]: Array with eigenvector matrices coef[Naq,Naq,npval]:
+
+        Array with coefficients; coef[ilayers,:,np] are the coefficients if the element
+        is in ilayers belonging to Laplace parameter number np.
         """
         # Recompute T for when kaq is changed manually
         self.T = self.kaq * self.Haq
@@ -147,8 +146,13 @@ class AquiferData:
         return True
 
     def inWhichLayer(self, z):
-        """Returns -9999 if above top of system, +9999 if below bottom of system, negative for in leaky layer.
-        leaky layer -n is on top of aquifer n"""
+        """Get layer given elevation z.
+
+        Returns -9999 if above top of system, +9999 if below bottom of system, negative
+        for in leaky layer.
+
+        leaky layer -n is on top of aquifer n
+        """
         if z > self.zt[0]:
             return -9999
         for i in range(self.Naquifers - 1):
@@ -167,8 +171,7 @@ class AquiferData:
         self.Saq[layer] = value
 
     def findlayer(self, z):
-        """
-        Returns layer-number, layer-type and model-layer-number"""
+        """Returns layer-number, layer-type and model-layer-number."""
         if z > self.z[0]:
             modellayer, ltype = -1, "above"
             layernumber = None

@@ -4,14 +4,12 @@ import numpy as np
 
 class PlotTtim:
     def plot(self, win=None, newfig=True, figsize=None):
-        """Plot layout
+        """Plot layout.
 
         Parameters
         ----------
-
         win : list or tuple
             [x1, x2, y1, y2]
-
         """
 
         if newfig:
@@ -78,7 +76,7 @@ class PlotTtim:
         figsize=None,
         legend=True,
     ):
-        """Contour plot
+        """Contour plot.
 
         Parameters
         ----------
@@ -109,7 +107,6 @@ class PlotTtim:
         legend : list or boolean (default True)
             add legend to figure
             if list of strings: use strings as names in legend
-
         """
 
         x1, x2, y1, y2 = win
@@ -126,9 +123,9 @@ class PlotTtim:
         # color
         if color is None:
             c = plt.rcParams["axes.prop_cycle"].by_key()["color"]
-        elif type(color) is str:
+        elif isinstance(color, str):
             c = len(layers) * [color]
-        elif type(color) is list:
+        elif isinstance(color, list):
             c = color
         if len(c) < len(layers):
             n = np.ceil(self.aq.naq / len(c))
@@ -145,7 +142,7 @@ class PlotTtim:
             if labels:
                 fmt = f"%1.{decimals}f"
                 plt.clabel(cs, fmt=fmt)
-        if type(legend) is list:
+        if isinstance(legend, list):
             plt.legend(cshandlelist, legend)
         elif legend:
             legendlist = ["layer " + str(i) for i in layers]
