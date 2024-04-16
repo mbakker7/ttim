@@ -246,7 +246,7 @@ class Calibrate:
             print(self.covmat)
             print(self.cormat)
 
-    def fit_lmfit(self, report=True, printdot=True):
+    def fit_lmfit(self, report=False, printdot=True):
         import lmfit
 
         self.lmfitparams = lmfit.Parameters()
@@ -279,9 +279,11 @@ class Calibrate:
         if report:
             print(lmfit.fit_report(self.fitresult))
 
-    def fit(self, report=True, printdot=True):
-        # current default fitting routine
+    def fit(self, report=False, printdot=True):
+        # current default fitting routine is lmfit
+        #return self.fit_least_squares(report) # does not support bounds by default
         return self.fit_lmfit(report, printdot)
+        
 
     def rmse(self, weighted=True, layers=None):
         """Calculate root-mean-squared-error.
