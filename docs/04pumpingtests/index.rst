@@ -1,9 +1,9 @@
 Pumping tests
 =============
 
-This series of benchmark problems demonstrate the features and capabilities of TTim for
-simulating and analyzing transient groundwater hydraulic problems such as pumping tests
-and slug tests.
+This series of benchmark problems demonstrates the capabilities of TTim for
+simulating and analyzing aquifer tests such as pumping tests
+and slug tests. A detailed description of how to analyze a pumping test with TTim is given in the HowTo section.
 
 
 Synthetic
