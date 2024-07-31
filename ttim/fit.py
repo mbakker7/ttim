@@ -7,13 +7,21 @@ from scipy.optimize import least_squares
 
 
 class Calibrate:
-    def __init__(self, model):
+    def __init__(self, model, reference_time=None):
         """Initialize Calibration class.
 
         Parameters
         ----------
         model : ttim.Model
             model to calibrate
+        reference_time : float, optional
+            Specify reference time to compute head changes relative to
+            the head at that time. The residuals are then computed with the following
+            formula:
+                res = ((sim - sim(tref)) - (obs - obs(tref))) * w
+            The default is None, which uses the following formula for the residuals:
+                res = (sim  - obs) * w
+
         """
 
         self.model = model
@@ -22,6 +30,8 @@ class Calibrate:
         )
         self.seriesdict = {}
         self.seriesinwelldict = {}
+
+        self.reference_time = reference_time
 
     def set_parameter(self, name=None, initial=0, pmin=-np.inf, pmax=np.inf):
         """Set parameter to be optimized.
@@ -271,13 +281,14 @@ class Calibrate:
             kws={"printdot": printdot},
             **fit_kws,
         )
-        print("", flush=True)
-        print(self.fitresult.message)
+        if printdot:
+            print("", flush=True)
+            print(self.fitresult.message)
         if self.fitresult.success:
             for name in self.parameters.index:
-                self.parameters.loc[
-                    name, "optimal"
-                ] = self.fitresult.params.valuesdict()[name]
+                self.parameters.loc[name, "optimal"] = (
+                    self.fitresult.params.valuesdict()[name]
+                )
             if hasattr(self.fitresult, "covar"):
                 self.parameters["std"] = np.sqrt(np.diag(self.fitresult.covar))
                 self.parameters["perc_std"] = (
@@ -291,9 +302,8 @@ class Calibrate:
 
     def fit(self, report=False, printdot=True):
         # current default fitting routine is lmfit
-        #return self.fit_least_squares(report) # does not support bounds by default
+        # return self.fit_least_squares(report) # does not support bounds by default
         return self.fit_lmfit(report, printdot)
-        
 
     def rmse(self, weighted=True, layers=None):
         """Calculate root-mean-squared-error.
