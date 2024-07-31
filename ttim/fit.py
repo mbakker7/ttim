@@ -198,9 +198,19 @@ class Calibrate:
             s = self.seriesdict[key]
             if s.layer not in layers:
                 continue
-            h = self.model.head(s.x, s.y, s.t, layers=s.layer)
-            w = s.weights if ((s.weights is not None) and weighted) else np.ones_like(h)
-            rv = np.append(rv, (s.h - h) * w)
+            h = self.model.head(s.x, s.y, s.t, layers=s.layer).squeeze()
+            w = s.weights if ((s.weights is not None) and weighted) else 1.0
+            if self.reference_time is not None:
+                # get closest observation to reference time
+                tref_idx = np.abs(s.t - self.reference_time).argmin()
+                htref = self.model.head(
+                    s.x, s.y, self.reference_time, layers=s.layer
+                ).squeeze()
+                res = ((s.h - s.h[tref_idx]) - (h - htref)) * w
+            else:
+                res = (s.h - h) * w
+            rv = np.append(rv, res)
+
         for key in self.seriesinwelldict:
             s = self.seriesinwelldict[key]
             h = s.element.headinside(s.t)[0]
