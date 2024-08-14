@@ -233,7 +233,9 @@ class Calibrate:
         # p = np.array([vals[k] for k in vals])
         return self.residuals(p, printdot)
 
-    def fit_least_squares(self, report=True, diff_step=1e-4, xtol=1e-8, method="lm"):
+    def fit_least_squares(
+        self, report=True, diff_step=1e-4, xtol=1e-8, method="lm", **kwargs
+    ):
         self.fitresult = least_squares(
             self.residuals,
             self.parameters.initial.values,
@@ -242,7 +244,8 @@ class Calibrate:
             method=method,
             diff_step=diff_step,
             xtol=xtol,
-            x_scale="jac",
+            x_scale=kwargs.pop("x_scale", "jac"),
+            **kwargs,
         )
         print("", flush=True)
         # Call residuals to specify optimal values for model
@@ -266,20 +269,20 @@ class Calibrate:
             print(self.covmat)
             print(self.cormat)
 
-    def fit_lmfit(self, report=False, printdot=True):
+    def fit_lmfit(self, report=False, printdot=True, epsfcn=1e-4, **kwargs):
         import lmfit
 
         self.lmfitparams = lmfit.Parameters()
         for name in self.parameters.index:
             p = self.parameters.loc[name]
             self.lmfitparams.add(name, value=p["initial"], min=p["pmin"], max=p["pmax"])
-        fit_kws = {"epsfcn": 1e-4}
         self.fitresult = lmfit.minimize(
             self.residuals_lmfit,
             self.lmfitparams,
             method="leastsq",
             kws={"printdot": printdot},
-            **fit_kws,
+            epsfcn=epsfcn,
+            **kwargs,
         )
         if printdot:
             print("", flush=True)
@@ -300,10 +303,10 @@ class Calibrate:
         if report:
             print(lmfit.fit_report(self.fitresult))
 
-    def fit(self, report=False, printdot=True):
+    def fit(self, report=False, printdot=True, **kwargs):
         # current default fitting routine is lmfit
         # return self.fit_least_squares(report) # does not support bounds by default
-        return self.fit_lmfit(report, printdot)
+        return self.fit_lmfit(report, printdot, **kwargs)
 
     def rmse(self, weighted=True, layers=None):
         """Calculate root-mean-squared-error.
