@@ -179,13 +179,13 @@ class LineDoubletHoBase(Element):
 
 
 class LeakyLineDoublet(LineDoubletHoBase, LeakyWallEquation):
-    """Create a segment of a leaky wall, which is simulated with a line-doublet. The
-    specific discharge through the wall is equal to the head difference across the wall
-    divided by the resistance of the wall.
+    """Create a segment of a leaky wall, which is simulated with a line-doublet.
+
+    The specific discharge through the wall is equal to the head difference
+    across the wall divided by the resistance of the wall.
 
     Parameters
     ----------
-
     model : Model object
         Model to which the element is added
     x1 : scalar
@@ -211,7 +211,6 @@ class LeakyLineDoublet(LineDoubletHoBase, LeakyWallEquation):
 
     See Also
     --------
-
     :class:`.LeakyLineDoubletString`
     """
 
@@ -259,7 +258,6 @@ class LeakyLineDoubletString(Element, LeakyWallEquation):
 
     Parameters
     ----------
-
     model : Model object
         Model to which the element is added
     xy : array or list
@@ -280,7 +278,6 @@ class LeakyLineDoubletString(Element, LeakyWallEquation):
 
     See Also
     --------
-
     :class:`.LeakyLineDoublet`
     """
 
@@ -359,7 +356,7 @@ class LeakyLineDoubletString(Element, LeakyWallEquation):
             self.sinout[i * ld.ncp : (i + 1) * ld.ncp] = ld.sinout
 
     def potinf(self, x, y, aq=None):
-        """Returns array (nunknowns,nperiods)"""
+        """Returns array (nunknowns,nperiods)."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
@@ -368,7 +365,7 @@ class LeakyLineDoubletString(Element, LeakyWallEquation):
         return rv
 
     def disvecinf(self, x, y, aq=None):
-        """Returns array (nunknowns,nperiods)"""
+        """Returns array (nunknowns,nperiods)."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         rvx = np.zeros((self.nparam, aq.naq, self.model.npval), "D")

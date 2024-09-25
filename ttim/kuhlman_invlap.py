@@ -1,10 +1,21 @@
 # Copyright 2019 Kristopher L. Kuhlman <klkuhlm _at_ sandia _dot_ gov>
 
-# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to the following
+# conditions:
 
-# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in all copies
+# or substantial portions of the Software.
 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+# OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 class InverseLaplaceTransform(object):
@@ -139,9 +150,11 @@ class Stehfest(InverseLaplaceTransform):
         # NB: p is real
 
     def _coeff(self):
-        r"""Salzer summation weights (aka, "Stehfest coefficients") only depend on the
-        approximation order (M) and the precision."""
+        """Compute the Salzer summation weights.
 
+        Salzer summation weights (aka, "Stehfest coefficients") only depends on the
+        approximation order (M) and the precision.
+        """
         import numpy as np
         from scipy.misc import factorial
 
@@ -150,7 +163,7 @@ class Stehfest(InverseLaplaceTransform):
 
         V = np.empty((M,), dtype=np.float64)
 
-        fac = lambda x: float(factorial(x, exact=True))
+        fac = lambda x: float(factorial(x, exact=True))  # noqa: E731
 
         # Salzer summation weights
         # get very large in magnitude and oscillate in sign,

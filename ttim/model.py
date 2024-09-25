@@ -120,7 +120,10 @@ class TimModel(PlotTtim):
         self.aq.inhomlist.append(inhom)
 
     def compute_laplace_parameters(self):
-        """
+        """Compute the parameters for the Laplace transform inversion.
+
+        Attributes
+        ----------
         nint: Number of time intervals
         npint: Number of p values per interval
         npval: Total number of p values (nint * npint)
@@ -222,7 +225,9 @@ class TimModel(PlotTtim):
         return rv
 
     def disvec(self, x, y, t, layers=None, aq=None, derivative=0):
-        """Returns qx[naq, ntimes], qy[naq, ntimes] if layers=None, otherwise
+        """Compute discharge vectgor.
+
+        Returns qx[naq, ntimes], qy[naq, ntimes] if layers=None, otherwise
         qx[len(layers,Ntimes)],qy[len(layers, ntimes)].
 
         t must be ordered.
@@ -293,7 +298,6 @@ class TimModel(PlotTtim):
         -------
         h : array size `nlayers, ntimes`
         """
-
         if aq is None:
             aq = self.aq.find_aquifer_data(x, y)
         if layers is None:
@@ -312,7 +316,7 @@ class TimModel(PlotTtim):
         # implemented for one layer
         if aq is None:
             aq = self.aq.find_aquifer_data(x, y)
-        assert z <= aq.z[0] and z >= aq.z[-1], "z value not inside aquifer"
+        assert (z <= aq.z[0]) & (z >= aq.z[-1]), "z value not inside aquifer"
         if layer_ltype is None:
             layer, ltype, dummy = aq.findlayer(z)
         else:
@@ -328,7 +332,7 @@ class TimModel(PlotTtim):
         # compute velocity for one point x, y, z, t
         if aq is None:
             aq = self.aq.find_aquifer_data(x, y)
-        assert z <= aq.z[0] and z >= aq.z[-1], "z value not inside aquifer"
+        assert (z <= aq.z[0]) & (z >= aq.z[-1]), "z value not inside aquifer"
         if layer_ltype is None:
             layer, ltype, dummy = aq.findlayer(z)
         else:
@@ -430,7 +434,6 @@ class TimModel(PlotTtim):
         -------
         h : array size `nlayers, ntimes, nx`
         """
-
         xg = np.atleast_1d(x)
         yg = np.atleast_1d(y)
         if layers is None:
@@ -466,12 +469,10 @@ class TimModel(PlotTtim):
         -------
         h : array size `nlayers, ntimes, ny, nx`
 
-        See also
+        See Also
         --------
-
         :func:`~ttim.model.Model.headgrid2`
         """
-
         nx = len(xg)
         ny = len(yg)
         if layers is None:
@@ -507,19 +508,16 @@ class TimModel(PlotTtim):
         -------
         h : array size `nlayers, ntimes, ny, nx`
 
-        See also
+        See Also
         --------
-
         :func:`~ttim.model.Model.headgrid`
         """
-
         xg = np.linspace(x1, x2, nx)
         yg = np.linspace(y1, y2, ny)
         return self.headgrid(xg, yg, t, layers, printrow)
 
     def inverseLapTran(self, pot, t):
-        """Returns array of potentials of len(t) t must be ordered and tmin <= t <=
-        tmax."""
+        """Returns array of potentials of len(t) t must be ordered and tmin<=t<=tmax."""
         t = np.atleast_1d(t)
         rv = np.zeros(len(t))
         it = 0
@@ -549,7 +547,6 @@ class TimModel(PlotTtim):
 
     def solve(self, printmat=0, sendback=0, silent=False):
         """Compute solution."""
-
         # Initialize elements
         self.initialize()
         # Compute number of equations
@@ -619,8 +616,7 @@ class TimModel(PlotTtim):
 
 
 class ModelMaq(TimModel):
-    """Create a Model object by specifying a mult-aquifer sequence of aquifer-
-    leakylayer-aquifer-leakylayer-aquifer etc.
+    """Create model specifying a multi-aquifer sequence of aquifer-leakylayer-etc.
 
     Parameters
     ----------

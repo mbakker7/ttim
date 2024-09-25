@@ -15,7 +15,6 @@ class Calibrate:
         model : ttim.Model
             model to calibrate
         """
-
         self.model = model
         self.parameters = pd.DataFrame(
             columns=["optimal", "std", "perc_std", "pmin", "pmax", "initial", "parray"]
@@ -43,7 +42,6 @@ class Calibrate:
         pmax : float, optional
             upper bound for paramater value (the default is np.inf)
         """
-
         assert isinstance(name, str), "Error: name must be string"
         # find numbers in name str for support layer ranges
         layers_from_name = re.findall(r"\d+", name)
@@ -139,7 +137,6 @@ class Calibrate:
         h : np.array
             array containing timeseries values, i.e. head observations
         """
-
         s = Series(x, y, layer, t, h, weights=weights)
         self.seriesdict[name] = s
 
@@ -156,7 +153,6 @@ class Calibrate:
         h : np.array
             array containing timeseries values, i.e. head observations
         """
-
         e = SeriesInWell(element, t, h)
         self.seriesinwelldict[name] = e
 
@@ -175,7 +171,6 @@ class Calibrate:
         np.array
             array containing all residuals
         """
-
         if printdot:
             print(".", end="")
         # set the values of the variables
@@ -265,9 +260,9 @@ class Calibrate:
         print(self.fitresult.message)
         if self.fitresult.success:
             for name in self.parameters.index:
-                self.parameters.loc[
-                    name, "optimal"
-                ] = self.fitresult.params.valuesdict()[name]
+                self.parameters.loc[name, "optimal"] = (
+                    self.fitresult.params.valuesdict()[name]
+                )
             if hasattr(self.fitresult, "covar"):
                 self.parameters["std"] = np.sqrt(np.diag(self.fitresult.covar))
                 self.parameters["perc_std"] = (
@@ -281,9 +276,8 @@ class Calibrate:
 
     def fit(self, report=False, printdot=True):
         # current default fitting routine is lmfit
-        #return self.fit_least_squares(report) # does not support bounds by default
+        # return self.fit_least_squares(report) # does not support bounds by default
         return self.fit_lmfit(report, printdot)
-        
 
     def rmse(self, weighted=True, layers=None):
         """Calculate root-mean-squared-error.
@@ -293,7 +287,6 @@ class Calibrate:
         float
             return rmse value
         """
-
         r = self.residuals(
             self.parameters["optimal"].values, weighted=weighted, layers=layers
         )
