@@ -15,7 +15,8 @@ author = "Mark Bakker"
 
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.autosummary",
+    "autoapi.extension",
+    # "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.doctest",
     # "sphinx.ext.intersphinx",
@@ -77,17 +78,21 @@ napoleon_type_aliases = {"ml": "ttim.Model"}
 
 autodoc_typehints = "description"
 autodoc_typehints_format = "short"
-
-autosummary_generate = True
-
-autoclass_content = "class"
-
+# autosummary_generate = True
+# autoclass_content = "class"
 autosectionlabel_prefix_document = True
+
+# -- AutoAPI settings -----------------------------------------------------------------
+
+autoapi_dirs = ["../ttim"]
+autoapi_root = "05api"
 
 # -- Numpydoc settings ----------------------------------------------------------------
 
 numpydoc_class_members_toctree = True
 numpydoc_show_class_members = False
+
+# -- Intersphinx settings -------------------------------------------------------------
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),

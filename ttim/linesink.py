@@ -351,7 +351,7 @@ class LineSinkStringBase(Element):
         self.lslist = []
 
     def __repr__(self):
-        return self.name + " with nodes " + str(zip(self.x, self.y))
+        return self.name + " with nodes " + str(zip(self.x, self.y, strict=False))
 
     def initialize(self):
         self.ncp = self.nls

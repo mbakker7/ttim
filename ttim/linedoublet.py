@@ -320,7 +320,7 @@ class LeakyLineDoubletString(Element, LeakyWallEquation):
         self.model.addelement(self)
 
     def __repr__(self):
-        return self.name + " with nodes " + str(zip(self.x, self.y))
+        return self.name + " with nodes " + str(zip(self.x, self.y, strict=False))
 
     def initialize(self):
         for ld in self.ldlist:
