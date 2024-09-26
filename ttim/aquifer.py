@@ -44,9 +44,8 @@ class AquiferData:
         self.layernumber[self.ltype == "a"] = np.arange(self.naq)
         self.layernumber[self.ltype == "l"] = np.arange(self.nlayers - self.naq)
         if self.ltype[0] == "a":
-            self.layernumber[
-                self.ltype == "l"
-            ] += 1  # first leaky layer below first aquifer layer
+            # first leaky layer below first aquifer layer
+            self.layernumber[self.ltype == "l"] += 1
         self.topboundary = topboundary[:3]
         self.phreatictop = phreatictop
         self.kzoverkh = kzoverkh
@@ -64,12 +63,21 @@ class AquiferData:
         return "Inhom T: " + str(self.T)
 
     def initialize(self):
-        """Eigval[naq, npval]: Array with eigenvalues lab[naq, npval]: Array with lambda
-        values lab2[naq, nint, npint]: Array with lambda values reorganized per interval
-        eigvec[naq, naq, npval]: Array with eigenvector matrices coef[naq ,naq, npval]:
+        """Initialize the aquifer data.
 
-        Array with coefficients; coef[ilayers, :, np] are the coefficients if the
-        element is in ilayers belonging to Laplace parameter number np.
+        Attributes
+        ----------
+        eigval[naq, npval]:
+            Array with eigenvalues
+        lab[naq, npval]:
+            Array with lambda values
+        lab2[naq, nint, npint]:
+            Array with lambda values reorganized per interval
+        eigvec[naq, naq, npval]:
+            Array with eigenvector matrices
+        coef[naq ,naq, npval]:
+            Array with coefficients coef[ilayers, :, np] are the coefficients if the
+            element is in ilayers belonging to Laplace parameter number np.
         """
         # Recompute T for when kaq is changed
         self.T = self.kaq * self.Haq

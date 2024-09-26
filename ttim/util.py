@@ -11,7 +11,6 @@ class PlotTtim:
         win : list or tuple
             [x1, x2, y1, y2]
         """
-
         if newfig:
             plt.figure(figsize=figsize)
             ax1 = plt.subplot()
@@ -80,7 +79,6 @@ class PlotTtim:
 
         Parameters
         ----------
-
         win : list or tuple
             [x1, x2, y1, y2]
         ngr : scalar, tuple or list
@@ -108,7 +106,6 @@ class PlotTtim:
             add legend to figure
             if list of strings: use strings as names in legend
         """
-
         x1, x2, y1, y2 = win
         if np.isscalar(ngr):
             nx = ny = ngr
