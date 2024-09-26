@@ -1,2 +1,5 @@
 # Migrate code style to black
 a8aa6904034da74b91f8046e2440ebb4359d63e2
+
+# Migrate code style to ruff
+c1e21219503158d714f2bc8a582b098ed97852f4
