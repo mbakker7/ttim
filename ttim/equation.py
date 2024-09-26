@@ -3,9 +3,9 @@ import numpy as np
 
 class HeadEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for head-specified conditions. (really
-        written as constant potential element)
+        """Matrix rows for head-specified conditions.
 
+        Really written as constant potential element.
         Works for nunknowns = 1
         Returns matrix part nunknowns,neq,npval, complex.
 
@@ -22,9 +22,9 @@ class HeadEquation:
             ieq = 0
             for e in self.model.elementlist:
                 if e.nunknowns > 0:
-                    mat[
-                        istart : istart + self.nlayers, ieq : ieq + e.nunknowns, :
-                    ] = e.potinflayers(self.xc[icp], self.yc[icp], self.layers)
+                    mat[istart : istart + self.nlayers, ieq : ieq + e.nunknowns, :] = (
+                        e.potinflayers(self.xc[icp], self.yc[icp], self.layers)
+                    )
                     if e == self:
                         for i in range(self.nlayers):
                             mat[istart + i, ieq + istart + i, :] -= (
@@ -47,8 +47,11 @@ class HeadEquation:
 
 class WellBoreStorageEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for multi-aquifer element with total
-        given discharge, uniform but unknown head and InternalStorageEquation."""
+        """Matrix rows for multi-aquifer well element.
+
+        Element with total given discharge, uniform but unknown head and
+        InternalStorageEquation.
+        """
         mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), "D")
         rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
         ieq = 0
@@ -114,9 +117,9 @@ class HeadEquationNores:
             ieq = 0
             for e in self.model.elementlist:
                 if e.nunknowns > 0:
-                    mat[
-                        istart : istart + self.nlayers, ieq : ieq + e.nunknowns, :
-                    ] = e.potinflayers(self.xc[icp], self.yc[icp], self.layers)
+                    mat[istart : istart + self.nlayers, ieq : ieq + e.nunknowns, :] = (
+                        e.potinflayers(self.xc[icp], self.yc[icp], self.layers)
+                    )
                     ieq += e.nunknowns
             for i in range(self.model.ngbc):
                 rhs[istart : istart + self.nlayers, i, :] -= self.model.gbclist[
@@ -133,9 +136,11 @@ class HeadEquationNores:
 
 class LeakyWallEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for leaky-wall condition Returns matrix
-        part nunknowns,neq,npval, complex Returns rhs part nunknowns,nvbc,npval,
-        complex."""
+        """Mix-in class that returns matrix rows for leaky-wall condition.
+
+        Returns matrix part (nunknowns,neq,npval), complex
+        Returns rhs part (nunknowns,nvbc,npval), complex.
+        """
         mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), "D")
         rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
         for icp in range(self.ncp):
@@ -179,7 +184,9 @@ class LeakyWallEquation:
 
 class MscreenEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for multi-screen conditions where total
+        """Matrix rows for multi-screen conditions where total discharge is specified.
+
+        Mix-in class that returns matrix rows for multi-screen conditions where total
         discharge is specified. Works for nunknowns = 1 Returns matrix part nunknowns,
         neq, npval, complex.
 
@@ -242,9 +249,9 @@ class MscreenEquation:
 
 class MscreenDitchEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for multi-screen conditions where total
-        discharge is specified. Returns matrix part nunknowns,neq,npval, complex.
+        """Matrix rows for multi-screen conditions where total discharge is specified.
 
+        Returns matrix part nunknowns,neq,npval, complex.
         Returns rhs part nunknowns,nvbc,npval, complex
         head_out - c*q_s = h_in
         Set h_i - h_(i+1) = 0 and Sum Q_i = Q

@@ -1,6 +1,5 @@
-import sys
-
 import numpy as np
+
 from ttim.bessel import bessel  # fortran compiled funcs
 from ttim.besselnumba import besselnumba  # numba funcs
 
@@ -16,7 +15,7 @@ def test_variables():
         frtrn_var = getattr(bessel, var)
         # print(var, np.allclose(numba_var, frtrn_var))
         result.append(np.allclose(numba_var, frtrn_var))
-    assert np.all(result) == True, "Not all variables equal!"
+    assert np.all(result), "Not all variables equal!"
     return result
 
 
@@ -98,9 +97,9 @@ def test_besselk0v():
     y = 10.0
     lab = np.array([100.0])
     nlab = 1
-    omega = np.zeros(1, dtype=np.complex_)
+    omega = np.zeros(1, dtype=np.complex128)
     bessel.besselk0v(x, y, lab, omega=omega)
-    b = besselnumba.besselk0v(x, y, lab, nlab, np.zeros(1, dtype=np.complex_))
+    b = besselnumba.besselk0v(x, y, lab, nlab, np.zeros(1, dtype=np.complex128))
     assert omega == b, "not equal"
     return omega, b
 
@@ -108,9 +107,9 @@ def test_besselk0v():
 def test_k0besselv():
     z = np.array([1 + 1j])
     nlab = 1
-    omega = np.zeros(1, dtype=np.complex_)
+    omega = np.zeros(1, dtype=np.complex128)
     bessel.k0besselv(z, omega=omega)
-    b = besselnumba.k0besselv(z, nlab, np.zeros(1, dtype=np.complex_))
+    b = besselnumba.k0besselv(z, nlab, np.zeros(1, dtype=np.complex128))
     assert omega == b, "not equal"
     return omega, b
 
@@ -669,11 +668,11 @@ def test_circle_line_intersection():
     z2 = 5.0 + 5.0j
     zc = 2.0 + 2.0j
     R = 10.0
-    xouta = 0.0
-    youta = 0.0
-    xoutb = 1.0
-    youtb = 1.0
-    N = 0
+    # xouta = 0.0
+    # youta = 0.0
+    # xoutb = 1.0
+    # youtb = 1.0
+    # N = 0
     xyn = bessel.circle_line_intersection_func(z1, z2, zc, R)
     a = (xyn[0], xyn[1], xyn[2], xyn[3], int(xyn[4]))
     b = besselnumba.circle_line_intersection(z1, z2, zc, R)
@@ -686,8 +685,8 @@ def test_find_d1d2():
     z2 = 2 + 1j
     zc = 2 + 0.5j
     R = 2.0
-    d1 = 0.0
-    d2 = 0.0
+    # d1 = 0.0
+    # d2 = 0.0
     a = bessel.find_d1d2_func(z1, z2, zc, R)
     b = besselnumba.find_d1d2(z1, z2, zc, R)
     assert np.allclose(a, b), "not equal"

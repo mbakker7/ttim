@@ -150,12 +150,12 @@ class WellBase(Element):
         ----------
         t : float, list or array
             time for which head is computed
+
         Returns
         -------
         Q : array of size `nscreens, ntimes`
             nsreens is the number of layers with a well screen
         """
-
         return self.model.head(self.xc[0], self.yc[0], t, derivative=derivative)[
             self.layers
         ] - self.resfach[:, np.newaxis] * self.discharge(t, derivative=derivative)
@@ -197,8 +197,7 @@ class WellBase(Element):
 
 
 class DischargeWell(WellBase):
-    """Create a well with a specified discharge for each layer that the well is screened
-    in.
+    r"""Well with a specified discharge for each layer that the well is screened in.
 
     This is not very common and is likely only used for testing and comparison with
     other codes. The discharge must be specified for each screened layer. The resistance
@@ -259,7 +258,7 @@ class DischargeWell(WellBase):
 
 
 class Well(WellBase, WellBoreStorageEquation):
-    """Create a well with a specified discharge.
+    r"""Create a well with a specified discharge.
 
     The well may be screened in multiple layers. The discharge is distributed across
     the layers such that the head inside the well is the same in all screened layers.
@@ -355,7 +354,7 @@ class Well(WellBase, WellBoreStorageEquation):
 
 
 class HeadWell(WellBase, HeadEquation):
-    """Create a well with a specified head inside the well.
+    r"""Create a well with a specified head inside the well.
 
     The well may be screened in multiple layers. The resistance of the screen may be
     specified. The head is computed such that the discharge :math:`Q_i` in layer

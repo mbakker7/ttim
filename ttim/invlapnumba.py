@@ -264,7 +264,6 @@ def invlapgen(time, pot, M, tintervals, tstart, ebc):
     -------
     rv[ntimes]
     """
-
     print_tmin_warning = True  # set to False if warning is printed once
     print_tmax_warning = True
     npint = 2 * M + 1

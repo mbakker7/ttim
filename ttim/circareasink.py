@@ -9,6 +9,7 @@ from .element import Element
 
 class CircAreaSink(Element):
     """Create a circular area-sink with uniform infiltration rate in aquifer layer 0.
+
     Infiltration rate in length / time, positive for water entering the aquifer.
 
     Parameters

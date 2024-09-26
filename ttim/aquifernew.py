@@ -23,9 +23,8 @@ class AquiferData:
         self.layernumber[self.ltype == "a"] = np.arange(self.Naq)
         self.layernumber[self.ltype == "l"] = np.arange(self.nlayers - self.Naq)
         if self.ltype[0] == "a":
-            self.layernumber[
-                self.ltype == "l"
-            ] += 1  # first leaky layer below first aquifer layer
+            # first leaky layer below first aquifer layer
+            self.layernumber[self.ltype == "l"] += 1
         self.zaqtop = self.z[:-1][self.ltype == "a"]
         self.zaqbot = self.z[1:][self.ltype == "a"]
         self.Haq = self.zaqtop - self.zaqbot
