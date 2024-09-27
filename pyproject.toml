@@ -44,7 +44,14 @@ repository = "https://github.com/mbakker7/ttim"
 documentation = "http://mbakker7.github.io/ttim/docs/builddocs/html/index.html"
 
 [project.optional-dependencies]
-ci = ["pytest>=4.6", "pytest-cov", "jupyter>=1.0.0", "shapely", "flake8", "coveralls"]
+ci = [
+    "pytest",
+    "pytest-cov",
+    "pytest-sugar",
+    "jupyter",
+    "shapely",
+    "coveralls",
+]
 docs = [
     "ttim[ci]",
     "sphinx",
