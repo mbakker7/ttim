@@ -100,6 +100,16 @@ class TimModel(PlotTtim):
         self.etstart = np.array(etstart)
         self.ebc = np.array(ebc)
 
+    def initialize_interval(self, t_int: int):
+        if t_int not in self.logtintervals:
+            self.logtintervals.append(t_int)
+            self.logtintervals.sort()
+            self.tintervals[t_int] = 10.0 ** np.array([t_int, t_int + 1])
+            self.compute_laplace_parameters_interval(t_int)
+            self.aq.initialize_interval(t_int)
+            for e in self.elementlist:
+                e.initialize_interval(t_int)
+
     def addelement(self, e):
         if e.label is not None:
             self.elementdict[e.label] = e
