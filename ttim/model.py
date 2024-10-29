@@ -176,7 +176,7 @@ class TimModel(PlotTtim):
         p[:] = compute_laplace_parameters_numba(tmax, self.M)
         self.p[t_int] = p
 
-    def potential(self, x, y, t, layers=None, aq=None, derivative=0, returnphi=0):
+    def potentialall(self, x, y, t, layers=None, aq=None, derivative=0, returnphi=0):
         """Returns pot[naq, ntimes] if layers=None, otherwise pot[len(layers), ntimes].
 
         t must be ordered.
@@ -187,7 +187,7 @@ class TimModel(PlotTtim):
             layers = range(aq.naq)
         nlayers = len(layers)
         time = np.atleast_1d(t) - self.tstart  # used to be ).copy()
-        pot = np.zeros((self.ngvbc, aq.naq, self.npval), "D")
+        pot = np.zeros((self.ngvbc, aq.naq, self.nppar), "D")
         for i in range(self.ngbc):
             pot[i, :] += self.gbclist[i].unitpotential(x, y, aq)
         for e in self.vzbclist:
@@ -203,7 +203,7 @@ class TimModel(PlotTtim):
         rv = invlapcomp(
             time,
             pot,
-            self.npint,
+            self.nppar,
             self.M,
             self.tintervals,
             self.enumber,
@@ -213,7 +213,7 @@ class TimModel(PlotTtim):
         )
         return rv
 
-    def potentialone(self, x, y, time, layers=None, aq=None, derivative=0, returnphi=0):
+    def potential(self, x, y, time, layers=None, aq=None, derivative=0, returnphi=0):
         """Returns pot[naq] if layers=None, otherwise pot[len(layers)].
 
         time is one value.
@@ -223,28 +223,30 @@ class TimModel(PlotTtim):
         if layers is None:
             layers = range(aq.naq)
         nlayers = len(layers)
+        t_int = np.floor(np.log10(time)).astype(int)
+        # NOTE: this check no longer allows the right boundary of the time interval to 
+        # be computed, which was allowed in the previous version of TTim
+        assert t_int in self.logtintervals, "time not in tintervals"
         time = np.atleast_1d(time) - self.tstart  # used to be ).copy()
-        jtime = np.searchsorted(self.tintervals, time)[0] - 1
-        assert 0 <= jtime <= len(self.tintervals), "time not in tintervals"
-        pot = np.zeros((self.ngvbc, aq.naq, self.npint), "D")
+        pot = np.zeros((self.ngvbc, aq.naq, self.nppar), "D")
         for i in range(self.ngbc):
-            pot[i, :] += self.gbclist[i].unitpotentialone(x, y, jtime, aq)
+            pot[i, :] += self.gbclist[i].unitpotentialone(x, y, t_int, aq)
         for e in self.vzbclist:
-            pot += e.potential(x, y, aq)
+            pot += e.potential(x, y, t_int, aq)
         if layers is None:
-            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec2[:, :, jtime], 2)
+            pot = pot * aq.eigvec[t_int]
         else:
-            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec2[layers, :, jtime], 2)
+            pot = pot * aq.eigvec[t_int][layers]
         if derivative > 0:
-            pot *= self.p**derivative
+            pot *= self.p[t_int] ** derivative
         if returnphi:
             return pot
         rv = invlapcomp(
             time,
-            pot[:, :, :],
-            self.npint,
+            pot,
+            self.nppar,
             self.M,
-            self.tintervals[jtime : jtime + 2],
+            self.tintervals[t_int],
             self.enumber,
             self.etstart,
             self.ebc,
