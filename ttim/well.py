@@ -134,9 +134,9 @@ class WellBase(Element):
         qx = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
         qy = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
         if aq == self.aq:
-            qr = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+            qr = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.nppar), "D")
             r = np.sqrt((x - self.xw) ** 2 + (y - self.yw) ** 2)
-            # pot = np.zeros(self.model.npint, "D")
+            # pot = np.zeros(self.model.nppar, "D")
             if r < self.rw:
                 r = self.rw  # If at well, set to at radius
             for i in range(self.aq.naq):
@@ -355,7 +355,7 @@ class Well(WellBase, WellBoreStorageEquation):
             self.initialize_interval(t_int)
 
     def initialize_interval(self, t_int):
-        super().initialize_interval(self, t_int)
+        super().initialize_interval(t_int)
         self.parameters[t_int] = np.zeros(
             (self.model.ngvbc, self.nparam, self.model.nppar), "D"
         )
