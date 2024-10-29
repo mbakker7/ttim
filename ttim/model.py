@@ -268,8 +268,8 @@ class TimModel(PlotTtim):
             layers = range(aq.naq)
         nlayers = len(layers)
         time = np.atleast_1d(t) - self.tstart
-        disx = np.zeros((self.ngvbc, aq.naq, self.npval), "D")
-        disy = np.zeros((self.ngvbc, aq.naq, self.npval), "D")
+        disx = np.zeros((self.ngvbc, aq.naq, self.nppar), "D")
+        disy = np.zeros((self.ngvbc, aq.naq, self.nppar), "D")
         for i in range(self.ngbc):
             qx, qy = self.gbclist[i].unitdisvec(x, y, aq)
             disx[i, :] += qx
@@ -290,7 +290,7 @@ class TimModel(PlotTtim):
         rvx = invlapcomp(
             time,
             disx,
-            self.npint,
+            self.nppar,
             self.M,
             self.tintervals,
             self.enumber,
@@ -301,7 +301,7 @@ class TimModel(PlotTtim):
         rvy = invlapcomp(
             time,
             disy,
-            self.npint,
+            self.nppar,
             self.M,
             self.tintervals,
             self.enumber,
@@ -561,15 +561,15 @@ class TimModel(PlotTtim):
                     tp = t[(t >= self.tintervals[n]) & (t < self.tintervals[n + 1])]
                 nt = len(tp)
                 if nt > 0:  # if all values zero, don't do inverse transform
-                    # Not needed anymore: if np.abs(pot[n*self.npint]) > 1e-20:
+                    # Not needed anymore: if np.abs(pot[n*self.nppar]) > 1e-20:
                     # If there is a zero item, zero should be returned;
                     # funky enough this can be done with a
                     # straight equal comparison
-                    if not np.any(pot[n * self.npint : (n + 1) * self.npint] == 0.0):
+                    if not np.any(pot[n * self.nppar : (n + 1) * self.nppar] == 0.0):
                         rv[it : it + nt] = invlap(
                             tp,
                             self.tintervals[n + 1],
-                            pot[n * self.npint : (n + 1) * self.npint],
+                            pot[n * self.nppar : (n + 1) * self.nppar],
                             self.M,
                         )
                     it = it + nt
