@@ -1,11 +1,12 @@
 import inspect  # Used for storing the input
+from abc import ABC, abstractmethod
 
 import numpy as np
 
 from .invlapnumba import invlapcomp
 
 
-class Element:
+class Element(ABC):
     def __init__(
         self,
         model,
@@ -68,6 +69,7 @@ class Element:
             self.bc = self.bcin.copy()
         self.ntstart = len(self.tstart)
 
+    @abstractmethod
     def initialize(self):
         """Initialize the element.
 
@@ -78,17 +80,26 @@ class Element:
         are initialized when Model.solve is called The initialization class needs to be
         overloaded by all derived classes
         """
-        pass
 
-    def potinf(self, x, y, aq=None):
+    @abstractmethod
+    def initialize_interval(self, t_int: int):
+        """Initialize the element for a log time interval."""
+
+    @abstractmethod
+    def potinf(self, x, y, t_int, aq=None):
         """Returns complex array of size (nparam, naq, npval)."""
-        raise Exception("Must overload Element.potinf()")
 
-    def potential(self, x, y, aq=None):
+    def potentialall(self, x, y, aq=None):
         """Returns complex array of size (ngvbc, naq, npval)."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum(self.parameters[:, :, np.newaxis, :] * self.potinf(x, y, aq), 1)
+
+    def potential(self, x, y, t_int, aq=None):
+        """Returns complex array of size (ngvbc, naq, nppar)."""
+        if aq is None:
+            aq = self.model.aq.find_aquifer_data(x, y)
+        return np.sum(self.parameters[t_int] * self.potinf(x, y, t_int, aq), 1)
 
     def unitpotential(self, x, y, aq=None):
         """Returns complex array of size (naq, npval).
@@ -108,9 +119,9 @@ class Element:
             aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum(self.potinfone(x, y, jtime, aq), 0)
 
+    @abstractmethod
     def disvecinf(self, x, y, aq=None):
         """Returns 2 complex arrays of size (nparam, naq, npval)."""
-        raise Exception("Must overload Element.disvecinf()")
 
     def disvec(self, x, y, aq=None):
         """Returns 2 complex arrays of size (ngvbc, naq, npval)."""
@@ -132,15 +143,15 @@ class Element:
         return np.sum(qx, 0), np.sum(qy, 0)
 
     # Functions used to build equations
-    def potinflayers(self, x, y, layers=0, aq=None):
+    def potinflayers(self, x, y, t_int, layers=0, aq=None):
         """Layers can be scalar, list, or array.
 
         returns array of size (len(layers),nparam,npval) only used in building equations
         """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        pot = self.potinf(x, y, aq)
-        rv = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec, 2)
+        pot = self.potinf(x, y, t_int, aq)
+        rv = pot * aq.eigvec[t_int]
         # first axis needs to be the number of layers
         rv = rv.swapaxes(0, 1)
         return rv[layers, :]
@@ -231,7 +242,7 @@ class Element:
             rv = invlapcomp(
                 time,
                 s[np.newaxis, :],
-                self.model.npint,
+                self.model.nppar,
                 self.model.M,
                 self.model.tintervals,
                 np.zeros(self.ntstart, dtype="int"),
@@ -246,7 +257,7 @@ class Element:
             rv = invlapcomp(
                 time,
                 s,
-                self.model.npint,
+                self.model.nppar,
                 self.model.M,
                 self.model.tintervals,
                 self.model.enumber,
@@ -333,4 +344,5 @@ class Element:
         pass
 
     def plot(self):
+        """Plot element."""
         pass
