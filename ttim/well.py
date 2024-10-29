@@ -90,14 +90,14 @@ class WellBase(Element):
         """Separate function so that this can be overloaded for other types."""
         self.flowcoef[t_int] = 1.0 / self.model.p[t_int]  # Step function
 
-    def potinf(self, x, y, aq=None):
+    def potinfall(self, x, y, aq=None):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.nppar), "D")
         if aq == self.aq:
             r = np.sqrt((x - self.xw) ** 2 + (y - self.yw) ** 2)
-            pot = np.zeros(self.model.npint, "D")
+            pot = np.zeros(self.model.nppar, "D")
             if r < self.rw:
                 r = self.rw  # If at well, set to at radius
             for i in range(self.aq.naq):
@@ -110,21 +110,21 @@ class WellBase(Element):
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
 
-    def potinfone(self, x, y, jtime, aq=None):
+    def potinf(self, x, y, t_int, aq=None):
         """Can be called with only one x,y value for time interval jtime."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.npint), "D")
+        rv = np.zeros((self.nparam, aq.naq, self.model.nppar), "D")
         if aq == self.aq:
             r = np.sqrt((x - self.xw) ** 2 + (y - self.yw) ** 2)
-            pot = np.zeros(self.model.npint, "D")
+            pot = np.zeros(self.model.nppar, "D")
             if r < self.rw:
                 r = self.rw  # If at well, set to at radius
             for i in range(self.aq.naq):
-                if r / abs(self.aq.lab2[i, jtime, 0]) < self.rzero:
-                    pot[:] = kv(0, r / self.aq.lab2[i, jtime, :])
-                    rv[:, i, :] = self.term2[:, i, jtime, :] * pot
-        # rv.shape = (self.nparam, aq.naq, self.model.npval)
+                lab_t = self.aq.lab[t_int]
+                if r / abs(lab_t[i, 0]) < self.rzero:
+                    pot[:] = kv(0, r / lab_t[i, :])
+                    rv[:, i, :] = self.term[t_int][:, i, :] * pot
         return rv
 
     def disvecinf(self, x, y, aq=None):
