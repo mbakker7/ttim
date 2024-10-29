@@ -60,26 +60,35 @@ class WellBase(Element):
         self.ncp = 1
         self.aq = self.model.aq.find_aquifer_data(self.xw, self.yw)
         self.setbc()
-        coef = self.aq.coef[self.layers, :]
-        laboverrwk1 = self.aq.lab / (self.rw * kv(1, self.rw / self.aq.lab))
-        self.setflowcoef()
-        # term is shape (self.nparam,self.aq.naq,self.model.npval)
-        self.term = -1.0 / (2 * np.pi) * laboverrwk1 * self.flowcoef * coef
-        self.term2 = self.term.reshape(
-            self.nparam, self.aq.naq, self.model.nint, self.model.npint
-        )
-        self.dischargeinf = self.flowcoef * coef
-        self.dischargeinflayers = np.sum(
-            self.dischargeinf * self.aq.eigvec[self.layers, :, :], 1
-        )
+
+        self.term = {}
+        self.flowcoef = {}
+        self.dischargeinf = {}
+        self.dischargeinflayers = {}
+
         # Q = (h - hw) / resfach
         self.resfach = self.res / (2 * np.pi * self.rw * self.aq.Haq[self.layers])
         # Q = (Phi - Phiw) / resfacp
         self.resfacp = self.resfach * self.aq.T[self.layers]
 
-    def setflowcoef(self):
+    def initialize_interval(self, t_int):
+        coef = self.aq.coef[t_int][self.layers]
+        laboverrwk1 = self.aq.lab[t_int] / (
+            self.rw * kv(1, self.rw / self.aq.lab[t_int])
+        )
+        self.setflowcoef(t_int)
+        self.term[t_int] = (
+            -1.0 / (2 * np.pi) * laboverrwk1 * self.flowcoef[t_int] * coef
+        )
+        self.dischargeinf[t_int] = self.flowcoef[t_int] * coef
+        self.dischargeinflayers[t_int] = np.sum(
+            self.dischargeinf[t_int] * self.aq.eigvec[t_int][self.layers],
+            axis=1,
+        )
+
+    def setflowcoef(self, t_int):
         """Separate function so that this can be overloaded for other types."""
-        self.flowcoef = 1.0 / self.model.p  # Step function
+        self.flowcoef[t_int] = 1.0 / self.model.p[t_int]  # Step function
 
     def potinf(self, x, y, aq=None):
         """Can be called with only one x,y value."""
