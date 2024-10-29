@@ -587,33 +587,40 @@ class TimModel(PlotTtim):
             if silent is False:
                 print("No unknowns. Solution complete")
             return
-        mat = np.empty((self.neq, self.neq, self.npval), "D")
-        rhs = np.empty((self.neq, self.ngvbc, self.npval), "D")
+        for t_int in self.logtintervals:
+            self.solve_interval(t_int, initialize=False)
+
+        if silent is False:
+            print("solution complete")
+        elif (silent == "dot") or (silent == "."):
+            print(".", end="", flush=True)
+
+    def solve_interval(self, t_int, initialize=True):
+        self.neq = np.sum([e.nunknowns for e in self.elementlist])
+
+        if initialize:
+            self.initialize_interval(t_int)
+
+        mat = np.empty((self.neq, self.neq, self.nppar), "D")
+        rhs = np.empty((self.neq, self.ngvbc, self.nppar), "D")
+
         ieq = 0
         for e in self.elementlist:
             if e.nunknowns > 0:
                 (
                     mat[ieq : ieq + e.nunknowns, :, :],
                     rhs[ieq : ieq + e.nunknowns, :, :],
-                ) = e.equation()
+                ) = e.equation(t_int)
                 ieq += e.nunknowns
-        if printmat:
-            return mat, rhs
-        for i in range(self.npval):
+
+        for i in range(self.nppar):
             sol = np.linalg.solve(mat[:, :, i], rhs[:, :, i])
             icount = 0
             for e in self.elementlist:
                 for j in range(e.nunknowns):
-                    e.parameters[:, j, i] = sol[icount, :]
+                    e.parameters[t_int][:, j] = sol[icount, :]
                     icount += 1
                 e.run_after_solve()
-        if silent is False:
-            print("solution complete")
-        elif (silent == "dot") or (silent == "."):
-            print(".", end="", flush=True)
-        if sendback:
-            return sol
-        return
 
     def storeinput(self, frame):
         self.inputargs, _, _, self.inputvalues = inspect.getargvalues(frame)
