@@ -67,16 +67,16 @@ class AquiferData:
 
         Attributes
         ----------
-        eigval[naq, npval]:
-            Array with eigenvalues
-        lab[naq, npval]:
-            Array with lambda values
-        lab2[naq, nint, npint]:
-            Array with lambda values reorganized per interval
-        eigvec[naq, naq, npval]:
-            Array with eigenvector matrices
-        coef[naq ,naq, npval]:
-            Array with coefficients coef[ilayers, :, np] are the coefficients if the
+        eigval : dict
+            Arrays with eigenvalues with shape [naq, nppar] per time interval
+        lab : dict
+            Arrays with lambda values with shape [naq, nppar] per time interval
+        eigvec : dict
+            Arrays with eigenvector matrices with shape [naq, naq, nppar] per time
+            interval
+        coef : dict
+            Arrays with coefficients with shape [naq ,naq, nppar] for each time
+            interval. The array coef[ilayers, :, np] are the coefficients if the
             element is in ilayers belonging to Laplace parameter number np.
         """
         # Recompute T for when kaq is changed
@@ -95,24 +95,31 @@ class AquiferData:
             self.c[1:] = 0.5 * self.Haq[:-1] / (
                 self.kzoverkh[:-1] * self.kaq[:-1]
             ) + 0.5 * self.Haq[1:] / (self.kzoverkh[1:] * self.kaq[1:])
-        #
-        self.eigval = np.zeros((self.naq, self.model.npval), "D")
-        self.lab = np.zeros((self.naq, self.model.npval), "D")
-        self.eigvec = np.zeros((self.naq, self.naq, self.model.npval), "D")
-        self.coef = np.zeros((self.naq, self.naq, self.model.npval), "D")
+        # initialize empty dictionaries for variables that have to be computed for
+        # each time interval
+        self.eigval = {}
+        self.eigvec = {}
+        self.lab = {}
+        self.coef = {}
+        for t_int in self.model.logtintervals:
+            self.initialize_interval(t_int)
+
+    def initialize_interval(self, t_int):
+        self.eigval[t_int] = np.zeros((self.naq, self.model.nppar), "D")
+        self.lab[t_int] = np.zeros((self.naq, self.model.nppar), "D")
+        self.eigvec[t_int] = np.zeros((self.naq, self.naq, self.model.nppar), "D")
+        self.coef[t_int] = np.zeros((self.naq, self.naq, self.model.nppar), "D")
         b = np.diag(np.ones(self.naq))
-        for i in range(self.model.npval):
-            w, v = self.compute_lab_eigvec(self.model.p[i])
+        for j in range(self.model.nppar):
+            w, v = self.compute_lab_eigvec(self.model.p[t_int][j])
             # Eigenvectors are columns of v
-            self.eigval[:, i] = w
-            self.eigvec[:, :, i] = v
-            self.coef[:, :, i] = np.linalg.solve(v, b).T
-        self.lab = 1.0 / np.sqrt(self.eigval)
-        self.lab2 = self.lab.copy()
-        self.lab2.shape = (self.naq, self.model.nint, self.model.npint)
-        self.lababs = np.abs(self.lab2[:, :, 0])  # used to check distances
-        self.eigvec2 = self.eigvec.copy()
-        self.eigvec2.shape = (self.naq, self.naq, self.model.nint, self.model.npint)
+            self.eigval[t_int][:, j] = w
+            self.eigvec[t_int][:, :, j] = v
+            self.lab[t_int][:] = 1.0 / np.sqrt(self.eigval[t_int])
+            self.coef[t_int][:, :, j] = np.linalg.solve(v, b).T
+
+        # used to check distances
+        self.lababs = np.abs([lab[:, 0] for lab in self.lab.values()])
 
     def compute_lab_eigvec(self, p, returnA=False, B=None):
         sqrtpSc = np.sqrt(p * self.Scoefll * self.c)
@@ -130,15 +137,13 @@ class AquiferData:
             * np.exp(-sqrtpSc[~small])
             / (1.0 - np.exp(-2.0 * sqrtpSc[~small]))
         )
-        if (self.topboundary[:3] == "sem") or (self.topboundary[:3] == "lea"):
-            dzero = sqrtpSc[0] * np.tanh(sqrtpSc[0])
-
         d0 = p / self.D
         if B is not None:
             d0 = d0 * B  # B is vector of load efficiency paramters
         d0[:-1] += a[1:] / (self.c[1:] * self.T[:-1])
         d0[1:] += a[1:] / (self.c[1:] * self.T[1:])
         if self.topboundary[:3] == "lea":
+            dzero = sqrtpSc[0] * np.tanh(sqrtpSc[0])
             d0[0] += dzero / (self.c[0] * self.T[0])
         elif self.topboundary[:3] == "sem":
             d0[0] += a[0] / (self.c[0] * self.T[0])
