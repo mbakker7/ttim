@@ -61,7 +61,7 @@ class TimModel(PlotTtim):
             kzoverkh,
             model3d,
         )
-        self.compute_laplace_parameters()
+        # self.compute_laplace_parameters()
         self.name = "TimModel"
         self.modelname = "ml"  # Used for writing out input
         self.timmlmodel = timmlmodel
@@ -80,9 +80,13 @@ class TimModel(PlotTtim):
         self.nvbc = len(self.vbclist)
         self.nzbc = len(self.zbclist)
         self.ngvbc = self.ngbc + self.nvbc
+
+        # initialize laplace parameters, aquifer and elements
+        self.compute_laplace_parameters()
         self.aq.initialize()
         for e in self.elementlist:
             e.initialize()
+
         # lists used for inverse transform
         enumber = []
         etstart = []
@@ -125,28 +129,42 @@ class TimModel(PlotTtim):
         Attributes
         ----------
         nint: Number of time intervals
-        npint: Number of p values per interval
-        npval: Total number of p values (nint * npint)
+        nppar: Number of p values per interval
+        npval: Total number of p values (nint * nppar)
         p[npval]: Array with p values
         """
         itmin = np.floor(np.log10(self.tmin))
         itmax = np.ceil(np.log10(self.tmax))
-        self.tintervals = 10.0 ** np.arange(itmin, itmax + 1)
+        tintervals = 10.0 ** np.arange(itmin, itmax + 1)
         # lower and upper limit are adjusted to prevent any problems from t
         # exactly at the beginning and end of the interval
         # also, you cannot count on t >= 10 ** log10(t) for all possible t
-        self.tintervals[0] = self.tintervals[0] * (1 - 1e-8)
-        self.tintervals[-1] = self.tintervals[-1] * (1 + 1e-8)
-        self.nint = len(self.tintervals) - 1  # number of p-intervals
-        self.npint = 2 * self.M + 1  # number of p values in an interval
-        self.npval = self.nint * self.npint
+        self.logtintervals = (
+            np.log10(tintervals[:-1]).astype(int).tolist()
+        )  # interval labels
+        # adjust lower and upper limits
+        tintervals[0] = tintervals[0] * (1 - 1e-8)
+        tintervals[-1] = tintervals[-1] * (1 + 1e-8)
+        self.tintervals = {
+            t_int: tintervals[i : i + 2] for i, t_int in enumerate(self.logtintervals)
+        }
+        self.nint = len(tintervals) - 1  # number of p-intervals
+        self.nppar = 2 * self.M + 1  # number of p parameters in an interval
+        self.npval = self.nint * self.nppar
         # numba
-        self.p = np.zeros((self.nint, self.npint), dtype=np.complex128)
-        for i in range(self.nint):
-            self.p[i] = compute_laplace_parameters_numba(self.tintervals[i + 1], self.M)
-        # TODO: make self.p a 2D array
-        self.p = np.ravel(self.p)
-        self.aq.initialize()
+        self.p = {}
+        for i, t_int in enumerate(self.logtintervals):
+            self.compute_laplace_parameters_interval(t_int, tintervals[i + 1])
+
+        # TODO: remove when ready
+        self.pvec = np.concatenate(list(self.p.values()))
+
+    def compute_laplace_parameters_interval(self, t_int, tmax=None):
+        if tmax is None:
+            tmax = 10 ** (t_int + 1)
+        p = np.zeros((self.nppar,), dtype=np.complex128)
+        p[:] = compute_laplace_parameters_numba(tmax, self.M)
+        self.p[t_int] = p
 
     def potential(self, x, y, t, layers=None, aq=None, derivative=0, returnphi=0):
         """Returns pot[naq, ntimes] if layers=None, otherwise pot[len(layers), ntimes].
