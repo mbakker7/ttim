@@ -349,17 +349,23 @@ class Well(WellBase, WellBoreStorageEquation):
         self.wbstype = wbstype
 
     def initialize(self):
-        WellBase.initialize(self)
-        self.parameters = np.zeros(
-            (self.model.ngvbc, self.nparam, self.model.npval), "D"
+        super().initialize()
+        self.parameters = {}
+        for t_int in self.model.logtintervals:
+            self.initialize_interval(t_int)
+
+    def initialize_interval(self, t_int):
+        super().initialize_interval(self, t_int)
+        self.parameters[t_int] = np.zeros(
+            (self.model.ngvbc, self.nparam, self.model.nppar), "D"
         )
 
-    def setflowcoef(self):
+    def setflowcoef(self, t_int):
         """Separate function so that this can be overloaded for other types."""
         if self.wbstype == "pumping":
-            self.flowcoef = 1.0 / self.model.p  # Step function
+            self.flowcoef[t_int] = 1.0 / self.model.p[t_int]  # Step function
         elif self.wbstype == "slug":
-            self.flowcoef = 1.0  # Delta function
+            self.flowcoef[t_int] = 1.0  # Delta function
 
 
 class HeadWell(WellBase, HeadEquation):
