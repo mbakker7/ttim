@@ -46,28 +46,28 @@ class HeadEquation:
 
 
 class WellBoreStorageEquation:
-    def equation(self):
-        """Matrix rows for multi-aquifer well element.
+    def equation(self, t_int):
+        """Matrix rows for multi-aquifer well element for log time interval t_int.
 
         Element with total given discharge, uniform but unknown head and
         InternalStorageEquation.
         """
-        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), "D")
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
+        mat = np.zeros((self.nunknowns, self.model.neq, self.model.nppar), "D")
+        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.nppar), "D")
         ieq = 0
         for e in self.model.elementlist:
             if e.nunknowns > 0:
                 head = (
-                    e.potinflayers(self.xc[0], self.yc[0], self.layers)
+                    e.potinflayers(self.xc[0], self.yc[0], t_int, self.layers)
                     / self.aq.T[self.layers][:, np.newaxis, np.newaxis]
                 )
                 mat[:-1, ieq : ieq + e.nunknowns, :] = head[:-1, :] - head[1:, :]
                 mat[-1, ieq : ieq + e.nunknowns, :] -= (
-                    np.pi * self.rc**2 * self.model.p * head[0, :]
+                    np.pi * self.rc**2 * self.model.p[t_int] * head[0, :]
                 )
                 if e == self:
                     disterm = (
-                        self.dischargeinflayers
+                        self.dischargeinflayers[t_int]
                         * self.res
                         / (
                             2
@@ -80,8 +80,12 @@ class WellBoreStorageEquation:
                         for i in range(self.nunknowns - 1):
                             mat[i, ieq + i, :] -= disterm[i]
                             mat[i, ieq + i + 1, :] += disterm[i + 1]
-                    mat[-1, ieq : ieq + self.nunknowns, :] += self.dischargeinflayers
-                    mat[-1, ieq, :] += np.pi * self.rc**2 * self.model.p * disterm[0]
+                    mat[-1, ieq : ieq + self.nunknowns, :] += self.dischargeinflayers[
+                        t_int
+                    ]
+                    mat[-1, ieq, :] += (
+                        np.pi * self.rc**2 * self.model.p[t_int] * disterm[0]
+                    )
                 ieq += e.nunknowns
         for i in range(self.model.ngbc):
             head = (
@@ -91,14 +95,14 @@ class WellBoreStorageEquation:
                 / self.aq.T[self.layers][:, np.newaxis]
             )
             rhs[:-1, i, :] -= head[:-1, :] - head[1:, :]
-            rhs[-1, i, :] += np.pi * self.rc**2 * self.model.p * head[0, :]
+            rhs[-1, i, :] += np.pi * self.rc**2 * self.model.p[t_int] * head[0, :]
         if self.type == "v":
             iself = self.model.vbclist.index(self)
-            rhs[-1, self.model.ngbc + iself, :] += self.flowcoef
+            rhs[-1, self.model.ngbc + iself, :] += self.flowcoef[t_int]
             if self.hdiff is not None:
                 # head[0] - head[1] = hdiff
                 rhs[:-1, self.model.ngbc + iself, :] += (
-                    self.hdiff[:, np.newaxis] / self.model.p
+                    self.hdiff[:, np.newaxis] / self.model.p[t_int]
                 )
         return mat, rhs
 
