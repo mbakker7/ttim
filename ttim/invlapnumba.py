@@ -154,7 +154,7 @@ def invlaptest():
 
 
 @numba.njit(nogil=True, cache=True)
-def invlapcomp(time, pot, npint, M, tintervals, enumber, etstart, ebc, nlayers):
+def invlapcomp(time, pot, nppar, M, tintervals, enumber, etstart, ebc, nlayers):
     """Compute time domain solution for given laplace domain solution.
 
     Parameters
@@ -162,7 +162,7 @@ def invlapcomp(time, pot, npint, M, tintervals, enumber, etstart, ebc, nlayers):
     time : array, must be ordered
            times for which time domain solution is computed, must start at 0
     pot : array of laplace domain solution conform the ttim shape
-    npint : int
+    nppar : int
         number of p values per interval (=2M + 1)
     M : int
         order of the approximation
@@ -186,12 +186,12 @@ def invlapcomp(time, pot, npint, M, tintervals, enumber, etstart, ebc, nlayers):
     """
     print_tmin_warning = True  # set to False if warning is printed once
     print_tmax_warning = True
-    nelements, naq, npval = pot.shape
+    # nelements, naq, npval = pot.shape
     nint = len(tintervals) - 1
     rv = np.zeros((nlayers, len(time)))
     #
     # assuming that first time of all bc's is 0
-    for j in range(len(enumber)):
+    for j, eno in enumerate(enumber):
         t = time - etstart[j]
         it = 0
         if t[0] <= 0:  # there are times before start of bc
@@ -223,11 +223,11 @@ def invlapcomp(time, pot, npint, M, tintervals, enumber, etstart, ebc, nlayers):
             for i in range(nlayers):
                 # I used to check the first value only, but got to check if
                 # none of the values are zero
-                if not np.any(pot[enumber[j], i, n * npint : (n + 1) * npint] == 0):
+                if not np.any(pot[eno, i, n * nppar : (n + 1) * nppar] == 0):
                     rv[i, it : it + nt] += ebc[j] * invlap(
                         tp,
                         tintervals[n + 1],
-                        pot[enumber[j], i, n * npint : (n + 1) * npint],
+                        pot[eno, i, n * nppar : (n + 1) * nppar],
                         M,
                     )
             it = it + nt
@@ -266,13 +266,13 @@ def invlapgen(time, pot, M, tintervals, tstart, ebc):
     """
     print_tmin_warning = True  # set to False if warning is printed once
     print_tmax_warning = True
-    npint = 2 * M + 1
+    nppar = 2 * M + 1
     nint = len(tintervals) - 1
     rv = np.zeros(len(time))
     #
     # assuming that first time of all bc's is 0
-    for j in range(len(tstart)):
-        t = time - tstart[j]
+    for j, ts in enumerate(tstart):
+        t = time - ts
         it = 0
         if t[0] <= 0:  # there are times before start of bc
             if t[-1] <= 0:  # all times before start of bc, also for len(t)=1
@@ -302,9 +302,9 @@ def invlapgen(time, pot, M, tintervals, tstart, ebc):
                 continue
             # I used to check the first value only, but got to check if
             # none of the values are zero
-            if not np.any(pot[n * npint : (n + 1) * npint] == 0):
+            if not np.any(pot[n * nppar : (n + 1) * nppar] == 0):
                 rv[it : it + nt] += ebc[j] * invlap(
-                    tp, tintervals[n + 1], pot[n * npint : (n + 1) * npint], M
+                    tp, tintervals[n + 1], pot[n * nppar : (n + 1) * nppar], M
                 )
             it = it + nt
         if it < len(t):  # there are times above tintervals[-1]
