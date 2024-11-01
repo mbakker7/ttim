@@ -127,16 +127,18 @@ class WellBase(Element):
                     rv[:, i, :] = self.term[t_int][:, i, :] * pot
         return rv
 
-    def disvecinf(self, x, y, aq=None):
+    def disvecinfall(self, x, y, aq=None):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        qx = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
-        qy = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
+        qx = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
+        qy = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         if aq == self.aq:
-            qr = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.nppar), "D")
+            qr = np.zeros(
+                (self.nparam, aq.naq, self.model.nint, self.model.nppar), dtype=complex
+            )
             r = np.sqrt((x - self.xw) ** 2 + (y - self.yw) ** 2)
-            # pot = np.zeros(self.model.nppar, "D")
+            # pot = np.zeros(self.model.nppar, dtype=complex)
             if r < self.rw:
                 r = self.rw  # If at well, set to at radius
             for i in range(self.aq.naq):
@@ -148,6 +150,29 @@ class WellBase(Element):
                             / self.aq.lab2[i, j, :]
                         )
             qr.shape = (self.nparam, aq.naq, self.model.npval)
+            qx[:] = qr * (x - self.xw) / r
+            qy[:] = qr * (y - self.yw) / r
+        return qx, qy
+
+    def disvecinf(self, x, y, t_int, aq=None):
+        """Can be called with only one x, y value for log time interval t_int."""
+        if aq is None:
+            aq = self.model.aq.find_aquifer_data(x, y)
+        qx = np.zeros((self.nparam, aq.naq, self.model.nppar), dtype=complex)
+        qy = np.zeros((self.nparam, aq.naq, self.model.nppar), dtype=complex)
+        if aq == self.aq:
+            qr = np.zeros((self.nparam, aq.naq, self.model.nppar), dtype=complex)
+            r = np.sqrt((x - self.xw) ** 2 + (y - self.yw) ** 2)
+            # pot = np.zeros(self.model.nppar, dtype=complex)
+            if r < self.rw:
+                r = self.rw  # If at well, set to at radius
+            for i in range(self.aq.naq):
+                if r / abs(self.aq.lab[t_int][i, 0]) < self.rzero:
+                    qr[:, i, :] = (
+                        self.term[t_int][:, i, :]
+                        * kv(1, r / self.aq.lab[t_int][i, :])
+                        / self.aq.lab[t_int][i, :]
+                    )
             qx[:] = qr * (x - self.xw) / r
             qy[:] = qr * (y - self.yw) / r
         return qx, qy

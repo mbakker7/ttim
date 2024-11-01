@@ -316,6 +316,64 @@ class TimModel(PlotTtim):
         )
         return rvx, rvy
 
+    def disvec(self, x, y, time, layers=None, aq=None, derivative=0):
+        """Compute discharge vectgor.
+
+        Returns qx[naq, ntimes], qy[naq, ntimes] if layers=None, otherwise
+        qx[len(layers,Ntimes)],qy[len(layers, ntimes)].
+
+        t must be ordered.
+        """
+        if aq is None:
+            aq = self.aq.find_aquifer_data(x, y)
+        if layers is None:
+            layers = range(aq.naq)
+        nlayers = len(layers)
+        t_int = np.floor(np.log10(time)).astype(int)
+        time = np.atleast_1d(time) - self.tstart
+        disx = np.zeros((self.ngvbc, aq.naq, self.nppar), dtype=complex)
+        disy = np.zeros((self.ngvbc, aq.naq, self.nppar), dtype=complex)
+        for i in range(self.ngbc):
+            qx, qy = self.gbclist[i].unitdisvec(x, y, t_int, aq)
+            disx[i, :] += qx
+            disy[i, :] += qy
+        for e in self.vzbclist:
+            qx, qy = e.disvec(x, y, t_int, aq)
+            disx += qx
+            disy += qy
+        if layers is None:
+            disx = disx * aq.eigvec[t_int]
+            disy = disy * aq.eigvec[t_int]
+        else:
+            disx = disx * aq.eigvec[t_int][layers, :]
+            disy = disy * aq.eigvec[t_int][layers, :]
+        if derivative > 0:
+            disx *= self.p**derivative
+            disy *= self.p**derivative
+        rvx = invlapcomp(
+            time,
+            disx,
+            self.nppar,
+            self.M,
+            self.tintervals[t_int],
+            self.enumber,
+            self.etstart,
+            self.ebc,
+            nlayers,
+        )
+        rvy = invlapcomp(
+            time,
+            disy,
+            self.nppar,
+            self.M,
+            self.tintervals[t_int],
+            self.enumber,
+            self.etstart,
+            self.ebc,
+            nlayers,
+        )
+        return rvx, rvy
+
     def head(self, x, y, t, layers=None, aq=None, derivative=0, neglect_steady=False):
         """Head at x, y, t where t can be multiple times.
 

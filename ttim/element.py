@@ -120,10 +120,10 @@ class Element(ABC):
         return np.sum(self.potinfone(x, y, jtime, aq), 0)
 
     @abstractmethod
-    def disvecinf(self, x, y, aq=None):
-        """Returns 2 complex arrays of size (nparam, naq, npval)."""
+    def disvecinf(self, x, y, t_int, aq=None):
+        """Returns 2 complex arrays of size (nparam, naq, nppar)."""
 
-    def disvec(self, x, y, aq=None):
+    def disvecall(self, x, y, aq=None):
         """Returns 2 complex arrays of size (ngvbc, naq, npval)."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
@@ -132,15 +132,25 @@ class Element(ABC):
             self.parameters[:, :, np.newaxis, :] * qy, 1
         )
 
-    def unitdisvec(self, x, y, aq=None):
-        """Returns 2 complex arrays of size (naq, npval).
+    def disvec(self, x, y, t_int, aq=None):
+        """Returns 2 complex arrays of size (ngvbc, naq, nppar)."""
+        if aq is None:
+            aq = self.model.aq.find_aquifer_data(x, y)
+        qx, qy = self.disvecinf(x, y, t_int, aq)
+        return (
+            np.sum(self.parameters[t_int] * qx, 1),
+            np.sum(self.parameters[t_int] * qy, 1),
+        )
+
+    def unitdisvec(self, x, y, t_int, aq=None):
+        """Returns 2 complex arrays of size (naq, nppar).
 
         Can be more efficient for given elements.
         """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        qx, qy = self.disvecinf(x, y, aq)
-        return np.sum(qx, 0), np.sum(qy, 0)
+        qx, qy = self.disvecinf(x, y, t_int, aq)
+        return np.sum(qx, axis=0), np.sum(qy, axis=0)
 
     # Functions used to build equations
     def potinflayers(self, x, y, t_int, layers=0, aq=None):
@@ -178,7 +188,7 @@ class Element(ABC):
         phi = np.sum(pot[np.newaxis, :, :] * aq.eigvec, 1)
         return phi[layers, :]
 
-    def disvecinflayers(self, x, y, layers=0, aq=None):
+    def disvecinflayers(self, x, y, t_int, layers=0, aq=None):
         """Layers can be scalar, list, or array.
 
         returns 2 arrays of size (len(layers),nparam,npval) only used in building
@@ -186,36 +196,36 @@ class Element(ABC):
         """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        qx, qy = self.disvecinf(x, y, aq)
-        rvx = np.sum(qx[:, np.newaxis, :, :] * aq.eigvec, 2)
-        rvy = np.sum(qy[:, np.newaxis, :, :] * aq.eigvec, 2)
+        qx, qy = self.disvecinf(x, y, t_int, aq)
+        rvx = qx * aq.eigvec[t_int]
+        rvy = qy * aq.eigvec[t_int]
         # first axis needs to be the number of layers
         rvx = rvx.swapaxes(0, 1)
         rvy = rvy.swapaxes(0, 1)
         return rvx[layers, :], rvy[layers, :]
 
-    def disveclayers(self, x, y, layers=0, aq=None):
-        """Returns 2 complex array of size (ngvbc, len(layers), npval).
+    def disveclayers(self, x, y, t_int, layers=0, aq=None):
+        """Returns 2 complex array of size (ngvbc, len(layers), nppar).
 
         Only used in building equations.
         """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        qx, qy = self.disvec(x, y, aq)
-        rvx = np.sum(qx[:, np.newaxis, :, :] * aq.eigvec, 2)
-        rvy = np.sum(qy[:, np.newaxis, :, :] * aq.eigvec, 2)
+        qx, qy = self.disvec(x, y, t_int, aq)
+        rvx = qx * aq.eigvec[t_int]
+        rvy = qy * aq.eigvec[t_int]
         return rvx[:, layers, :], rvy[:, layers, :]
 
-    def unitdisveclayers(self, x, y, layers=0, aq=None):
-        """Returns complex array of size (len(layers), npval).
+    def unitdisveclayers(self, x, y, t_int, layers=0, aq=None):
+        """Returns complex array of size (len(layers), nppar).
 
         Only used in building equations.
         """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        qx, qy = self.unitdisvec(x, y, aq)
-        rvx = np.sum(qx[np.newaxis, :, :] * aq.eigvec, 1)
-        rvy = np.sum(qy[np.newaxis, :, :] * aq.eigvec, 1)
+        qx, qy = self.unitdisvec(x, y, t_int, aq)
+        rvx = np.sum(qx * aq.eigvec[t_int], axis=1)
+        rvy = np.sum(qy * aq.eigvec[t_int], axis=1)
         return rvx[layers, :], rvy[layers, :]
 
     def discharge(self, t, derivative=0):
