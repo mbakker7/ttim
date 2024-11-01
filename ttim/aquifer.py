@@ -105,10 +105,10 @@ class AquiferData:
             self.initialize_interval(t_int)
 
     def initialize_interval(self, t_int):
-        self.eigval[t_int] = np.zeros((self.naq, self.model.nppar), "D")
-        self.lab[t_int] = np.zeros((self.naq, self.model.nppar), "D")
-        self.eigvec[t_int] = np.zeros((self.naq, self.naq, self.model.nppar), "D")
-        self.coef[t_int] = np.zeros((self.naq, self.naq, self.model.nppar), "D")
+        self.eigval[t_int] = np.zeros((self.naq, self.model.nppar), dtype=complex)
+        self.lab[t_int] = np.zeros((self.naq, self.model.nppar), dtype=complex)
+        self.eigvec[t_int] = np.zeros((self.naq, self.naq, self.model.nppar), dtype=complex)
+        self.coef[t_int] = np.zeros((self.naq, self.naq, self.model.nppar), dtype=complex)
         b = np.diag(np.ones(self.naq))
         for j in range(self.model.nppar):
             w, v = self.compute_lab_eigvec(self.model.p[t_int][j])

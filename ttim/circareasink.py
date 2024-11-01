@@ -103,8 +103,8 @@ class CircAreaSink(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        qx = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
-        qy = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
+        qx = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
+        qy = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         if aq == self.aq:
             qr = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
             r = np.sqrt((x - self.xc) ** 2 + (y - self.yc) ** 2)

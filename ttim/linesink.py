@@ -106,9 +106,9 @@ class LineSinkBase(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.nppar), dtype=complex)
         if aq == self.aq:
-            pot = np.zeros(self.model.npint, "D")
+            pot = np.zeros(self.model.nppar, dtype=complex)
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
                     pot[:] = besselnumba.bessellsuniv(
@@ -123,10 +123,10 @@ class LineSinkBase(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
-        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.nppar), dtype=complex)
+        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.nppar), dtype=complex)
         if aq == self.aq:
-            qxqy = np.zeros((2, self.model.npint), "D")
+            qxqy = np.zeros((2, self.model.nppar), dtype=complex)
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
                     if besselnumba.isinside(
@@ -380,8 +380,8 @@ class LineSinkStringBase(Element):
             self.resfacp.extend(ls.resfacp.tolist())  # Needed in solving
         self.resfach = np.array(self.resfach)
         self.resfacp = np.array(self.resfacp)
-        self.dischargeinf = np.zeros((self.nparam, self.aq.naq, self.model.npval), "D")
-        self.dischargeinflayers = np.zeros((self.nparam, self.model.npval), "D")
+        self.dischargeinf = np.zeros((self.nparam, self.aq.naq, self.model.npval), dtype=complex)
+        self.dischargeinflayers = np.zeros((self.nparam, self.model.npval), dtype=complex)
         self.xc, self.yc = np.zeros(self.nls), np.zeros(self.nls)
         for i in range(self.nls):
             self.dischargeinf[i * self.nlayers : (i + 1) * self.nlayers, :] = (
@@ -397,7 +397,7 @@ class LineSinkStringBase(Element):
         """Returns array (nunknowns, Nperiods)."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
+        rv = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         for i in range(self.nls):
             rv[i * self.nlayers : (i + 1) * self.nlayers, :] = self.lslist[i].potinf(
                 x, y, aq
@@ -408,8 +408,8 @@ class LineSinkStringBase(Element):
         """Returns array (nunknowns,Nperiods)."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rvx = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
-        rvy = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
+        rvx = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
+        rvy = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         for i in range(self.nls):
             qx, qy = self.lslist[i].disvecinf(x, y, aq)
             rvx[i * self.nlayers : (i + 1) * self.nlayers, :] = qx
@@ -884,7 +884,7 @@ class LineSinkHoBase(Element):
         self.L = np.abs(self.z1 - self.z2)
         #
         thetacp = np.arange(np.pi, 0, -np.pi / self.ncp) - 0.5 * np.pi / self.ncp
-        Zcp = np.zeros(self.ncp, "D")
+        Zcp = np.zeros(self.ncp, dtype=complex)
         Zcp.real = np.cos(thetacp)
         # control point just on positive site (this is handy later on)
         Zcp.imag = 1e-6
@@ -924,9 +924,9 @@ class LineSinkHoBase(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.nppar), dtype=complex)
         if aq == self.aq:
-            pot = np.zeros((self.order + 1, self.model.npint), "D")
+            pot = np.zeros((self.order + 1, self.model.nppar), dtype=complex)
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
                     if besselnumba.isinside(
@@ -954,10 +954,10 @@ class LineSinkHoBase(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
-        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.nppar), dtype=complex)
+        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.nppar), dtype=complex)
         if aq == self.aq:
-            qxqy = np.zeros((2 * (self.order + 1), self.model.npint), "D")
+            qxqy = np.zeros((2 * (self.order + 1), self.model.nppar), dtype=complex)
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
                     if besselnumba.isinside(

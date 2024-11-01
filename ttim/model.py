@@ -187,7 +187,7 @@ class TimModel(PlotTtim):
             layers = range(aq.naq)
         nlayers = len(layers)
         time = np.atleast_1d(t) - self.tstart  # used to be ).copy()
-        pot = np.zeros((self.ngvbc, aq.naq, self.nppar), "D")
+        pot = np.zeros((self.ngvbc, aq.naq, self.nppar), dtype=complex)
         for i in range(self.ngbc):
             pot[i, :] += self.gbclist[i].unitpotential(x, y, aq)
         for e in self.vzbclist:
@@ -233,7 +233,7 @@ class TimModel(PlotTtim):
             check_time = t_int in self.logtintervals
         assert check_time, "time not in tintervals"
         time = np.atleast_1d(time) - self.tstart  # used to be ).copy()
-        pot = np.zeros((self.ngvbc, aq.naq, self.nppar), "D")
+        pot = np.zeros((self.ngvbc, aq.naq, self.nppar), dtype=complex)
         for i in range(self.ngbc):
             pot[i, :] += self.gbclist[i].unitpotentialone(x, y, t_int, aq)
         for e in self.vzbclist:
@@ -273,8 +273,8 @@ class TimModel(PlotTtim):
             layers = range(aq.naq)
         nlayers = len(layers)
         time = np.atleast_1d(t) - self.tstart
-        disx = np.zeros((self.ngvbc, aq.naq, self.nppar), "D")
-        disy = np.zeros((self.ngvbc, aq.naq, self.nppar), "D")
+        disx = np.zeros((self.ngvbc, aq.naq, self.npval), dtype=complex)
+        disy = np.zeros((self.ngvbc, aq.naq, self.npval), dtype=complex)
         for i in range(self.ngbc):
             qx, qy = self.gbclist[i].unitdisvec(x, y, aq)
             disx[i, :] += qx
@@ -664,8 +664,8 @@ class TimModel(PlotTtim):
         if initialize:
             self.initialize_interval(t_int)
 
-        mat = np.empty((self.neq, self.neq, self.nppar), "D")
-        rhs = np.empty((self.neq, self.ngvbc, self.nppar), "D")
+        mat = np.empty((self.neq, self.neq, self.nppar), dtype=complex)
+        rhs = np.empty((self.neq, self.ngvbc, self.nppar), dtype=complex)
 
         ieq = 0
         for e in self.elementlist:

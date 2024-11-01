@@ -94,10 +94,12 @@ class WellBase(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.nppar), "D")
+        rv = np.zeros(
+            (self.nparam, aq.naq, self.model.nint, self.model.nppar), dtype=complex
+        )
         if aq == self.aq:
             r = np.sqrt((x - self.xw) ** 2 + (y - self.yw) ** 2)
-            pot = np.zeros(self.model.nppar, "D")
+            pot = np.zeros(self.model.nppar, dtype=complex)
             if r < self.rw:
                 r = self.rw  # If at well, set to at radius
             for i in range(self.aq.naq):
@@ -111,13 +113,13 @@ class WellBase(Element):
         return rv
 
     def potinf(self, x, y, t_int, aq=None):
-        """Can be called with only one x,y value for time interval jtime."""
+        """Can be called with only one x, y value for log time interval t_int."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.nppar), "D")
+        rv = np.zeros((self.nparam, aq.naq, self.model.nppar), dtype=complex)
         if aq == self.aq:
             r = np.sqrt((x - self.xw) ** 2 + (y - self.yw) ** 2)
-            pot = np.zeros(self.model.nppar, "D")
+            pot = np.zeros(self.model.nppar, dtype=complex)
             if r < self.rw:
                 r = self.rw  # If at well, set to at radius
             for i in range(self.aq.naq):

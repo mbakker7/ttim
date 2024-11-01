@@ -14,9 +14,9 @@ class HeadEquation:
         Well: q_s = Q / (2*pi*r_w*H)
         LineSink: q_s = sigma / H = Q / (L*H)
         """
-        mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), "D")
+        mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
         # rhs needs be initialized zero
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
+        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex)
         for icp in range(self.ncp):
             istart = icp * self.nlayers
             ieq = 0
@@ -52,8 +52,8 @@ class WellBoreStorageEquation:
         Element with total given discharge, uniform but unknown head and
         InternalStorageEquation.
         """
-        mat = np.zeros((self.nunknowns, self.model.neq, self.model.nppar), "D")
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.nppar), "D")
+        mat = np.zeros((self.nunknowns, self.model.neq, self.model.nppar), dtype=complex)
+        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.nppar), dtype=complex)
         ieq = 0
         for e in self.model.elementlist:
             if e.nunknowns > 0:
@@ -114,8 +114,8 @@ class HeadEquationNores:
         (really written as constant potential element) Returns matrix part nunknowns,
         neq, npval, complex Returns rhs part nunknowns, nvbc, npval, complex
         """
-        mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), "D")
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
+        mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
+        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex)
         for icp in range(self.ncp):
             istart = icp * self.nlayers
             ieq = 0
@@ -145,8 +145,8 @@ class LeakyWallEquation:
         Returns matrix part (nunknowns,neq,npval), complex
         Returns rhs part (nunknowns,nvbc,npval), complex.
         """
-        mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), "D")
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
+        mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
+        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex)
         for icp in range(self.ncp):
             istart = icp * self.nlayers
             ieq = 0
@@ -198,8 +198,8 @@ class MscreenEquation:
         head_out - c * q_s = h_in
         Set h_i - h_(i + 1) = 0 and Sum Q_i = Q
         """
-        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), "D")
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
+        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
+        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex)
         ieq = 0
         for icp in range(self.ncp):
             istart = icp * self.nlayers
@@ -265,8 +265,8 @@ class MscreenDitchEquation:
         In case of storage:
         Sum Q_i - A * p^2 * headin = Q
         """
-        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), "D")
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
+        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
+        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex)
         ieq = 0
         for icp in range(self.ncp):
             istart = icp * self.nlayers
@@ -337,8 +337,8 @@ class MscreenDitchEquation:
         mat[-1, istartself : istartself + self.nparam, :] = 1.0
         if self.Astorage is not None:
             # Used to store last equation in case of ditch storage
-            matlast = np.zeros((self.model.neq, self.model.npval), "D")
-            rhslast = np.zeros((self.model.npval), "D")
+            matlast = np.zeros((self.model.neq, self.model.npval), dtype=complex)
+            rhslast = np.zeros((self.model.npval), dtype=complex)
             ieq = 0
             for e in self.model.elementlist:
                 head = (
@@ -380,8 +380,8 @@ class MscreenDitchEquation:
 class InhomEquation:
     def equation(self):
         """Mix-in class that returns matrix rows for inhomogeneity conditions."""
-        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), "D")
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
+        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
+        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex)
         for icp in range(self.ncp):
             istart = icp * 2 * self.nlayers
             ieq = 0
