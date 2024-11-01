@@ -119,7 +119,7 @@ class AquiferData:
         self.lab[t_int][:] = 1.0 / np.sqrt(self.eigval[t_int])
 
         # used to check distances
-        # TO DO: This is odd. What shape is self.lababs?
+        # TO DO: lababs is 2D array (nint, 1). Can be 1D array. Or also a dict?
         self.lababs = np.abs([lab[:, 0] for lab in self.lab.values()])
 
     def compute_lab_eigvec(self, p, returnA=False, B=None):
