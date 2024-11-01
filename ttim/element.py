@@ -87,7 +87,7 @@ class Element(ABC):
 
     @abstractmethod
     def potinf(self, x, y, t_int, aq=None):
-        """Returns complex array of size (nparam, naq, npval)."""
+        """Returns complex array of size (nparam, naq, nppar)."""
 
     def potentialall(self, x, y, aq=None):
         """Returns complex array of size (ngvbc, naq, npval)."""
