@@ -259,7 +259,7 @@ class TimModel(PlotTtim):
         )
         return rv
 
-    def disvec(self, x, y, t, layers=None, aq=None, derivative=0):
+    def disvecall(self, x, y, t, layers=None, aq=None, derivative=0):
         """Compute discharge vectgor.
 
         Returns qx[naq, ntimes], qy[naq, ntimes] if layers=None, otherwise
