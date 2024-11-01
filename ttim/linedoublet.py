@@ -299,7 +299,7 @@ class LeakyLineDoubletString(Element, LeakyWallEquation):
         self.res = res
         self.order = order
         self.ldlist = []
-        xy = np.atleast_2d(xy).astype("d")
+        xy = np.atleast_2d(xy).astype(float)
         self.x, self.y = xy[:, 0], xy[:, 1]
         self.nld = len(self.x) - 1
         for i in range(self.nld):

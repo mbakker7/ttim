@@ -92,9 +92,9 @@ class BesselRatioApprox:
         self.Nterms = Nterms + 1
         self.krange = np.arange(self.Nterms)
         self.minonek = (-np.ones(self.Nterms)) ** self.krange
-        self.hankeltot = np.ones((self.Norder, 2 * self.Nterms), "d")
-        self.muk = np.ones((self.Norder, self.Nterms), "d")
-        self.nuk = np.ones((self.Norder, self.Nterms), "d")
+        self.hankeltot = np.ones((self.Norder, 2 * self.Nterms), dtype=float)
+        self.muk = np.ones((self.Norder, self.Nterms), dtype=float)
+        self.nuk = np.ones((self.Norder, self.Nterms), dtype=float)
         for n in range(self.Norder):
             mu = 4.0 * n**2
             for k in range(1, self.Nterms):

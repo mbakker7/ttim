@@ -542,7 +542,7 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
             name="HeadLineSinkString",
             label=label,
         )
-        xy = np.atleast_2d(xy).astype("d")
+        xy = np.atleast_2d(xy).astype(float)
         self.x = xy[:, 0]
         self.y = xy[:, 1]
         self.nls = len(self.x) - 1
@@ -698,7 +698,7 @@ class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
             name="LineSinkDitchString",
             label=label,
         )
-        xy = np.atleast_2d(xy).astype("d")
+        xy = np.atleast_2d(xy).astype(float)
         self.x, self.y = xy[:, 0], xy[:, 1]
         self.nls = len(self.x) - 1
         for i in range(self.nls):
@@ -794,7 +794,7 @@ class LineSinkDitchString2(LineSinkStringBase, MscreenDitchEquation):
             name="LineSinkDitchString",
             label=label,
         )
-        xy = np.atleast_2d(xy).astype("d")
+        xy = np.atleast_2d(xy).astype(float)
         self.x, self.y = xy[:, 0], xy[:, 1]
         self.nls = len(self.x) - 1
         for i in range(self.nls):

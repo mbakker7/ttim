@@ -22,21 +22,21 @@ class AquiferData:
     ):
         """Kzoverkh and model3d only need to be specified when model is model3d."""
         self.model = model
-        self.kaq = np.atleast_1d(kaq).astype("d")
-        self.z = np.atleast_1d(z).astype("d")
+        self.kaq = np.atleast_1d(kaq).astype(float)
+        self.z = np.atleast_1d(z).astype(float)
         self.naq = len(self.kaq)
         self.nlayers = len(self.z) - 1
-        self.Haq = np.atleast_1d(Haq).astype("d")
-        self.Hll = np.atleast_1d(Hll).astype("d")
+        self.Haq = np.atleast_1d(Haq).astype(float)
+        self.Hll = np.atleast_1d(Hll).astype(float)
         self.T = self.kaq * self.Haq
         self.Tcol = self.T.reshape(self.naq, 1)
-        self.c = np.atleast_1d(c).astype("d")
+        self.c = np.atleast_1d(c).astype(float)
         self.c[self.c > 1e100] = 1e100
-        self.Saq = np.atleast_1d(Saq).astype("d")
-        self.Sll = np.atleast_1d(Sll).astype("d")
+        self.Saq = np.atleast_1d(Saq).astype(float)
+        self.Sll = np.atleast_1d(Sll).astype(float)
         self.Sll[self.Sll < 1e-20] = 1e-20  # Cannot be zero
-        self.poraq = np.atleast_1d(poraq).astype("d")
-        self.porll = np.atleast_1d(porll).astype("d")
+        self.poraq = np.atleast_1d(poraq).astype(float)
+        self.porll = np.atleast_1d(porll).astype(float)
         self.ltype = np.atleast_1d(ltype)
         self.zaqtop = self.z[:-1][self.ltype == "a"]
         self.zaqbot = self.z[1:][self.ltype == "a"]
@@ -50,7 +50,7 @@ class AquiferData:
         self.phreatictop = phreatictop
         self.kzoverkh = kzoverkh
         if self.kzoverkh is not None:
-            self.kzoverkh = np.atleast_1d(self.kzoverkh).astype("d")
+            self.kzoverkh = np.atleast_1d(self.kzoverkh).astype(float)
             if len(self.kzoverkh) == 1:
                 self.kzoverkh = self.kzoverkh * np.ones(self.naq)
         self.model3d = model3d
