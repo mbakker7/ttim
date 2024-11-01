@@ -115,10 +115,11 @@ class AquiferData:
             # Eigenvectors are columns of v
             self.eigval[t_int][:, j] = w
             self.eigvec[t_int][:, :, j] = v
-            self.lab[t_int][:] = 1.0 / np.sqrt(self.eigval[t_int])
             self.coef[t_int][:, :, j] = np.linalg.solve(v, b).T
+        self.lab[t_int][:] = 1.0 / np.sqrt(self.eigval[t_int])
 
         # used to check distances
+        # TO DO: This is odd. What shape is self.lababs?
         self.lababs = np.abs([lab[:, 0] for lab in self.lab.values()])
 
     def compute_lab_eigvec(self, p, returnA=False, B=None):
