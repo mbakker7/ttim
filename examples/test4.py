@@ -57,7 +57,7 @@ ml2 = ttim.ModelMaq(
     M=20,
 )
 ml2.initialize()
-fp = np.zeros(41, "D")
+fp = np.zeros(41, dtype=complex)
 p = ml2.p
 for i in range(41):
     p0 = p[i].real
