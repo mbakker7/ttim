@@ -224,9 +224,14 @@ class TimModel(PlotTtim):
             layers = range(aq.naq)
         nlayers = len(layers)
         t_int = np.floor(np.log10(time)).astype(int)
-        # NOTE: this check no longer allows the right boundary of the time interval to 
-        # be computed, which was allowed in the previous version of TTim
-        assert t_int in self.logtintervals, "time not in tintervals"
+        # check if time is on right boundary of last interval
+        if t_int - np.max(self.logtintervals) == 1:
+            check_time = time < self.tintervals[t_int - 1][1]
+            if check_time:
+                t_int -= 1  # adjust t_int to the last interval
+        else: # otherwise check whether interval is in logtintervals
+            check_time = t_int in self.logtintervals
+        assert check_time, "time not in tintervals"
         time = np.atleast_1d(time) - self.tstart  # used to be ).copy()
         pot = np.zeros((self.ngvbc, aq.naq, self.nppar), "D")
         for i in range(self.ngbc):
