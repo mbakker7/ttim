@@ -238,10 +238,15 @@ class TimModel(PlotTtim):
             pot[i, :] += self.gbclist[i].unitpotentialone(x, y, t_int, aq)
         for e in self.vzbclist:
             pot += e.potential(x, y, t_int, aq)
+        # multiply by eigenvectors
         if layers is None:
-            pot = pot * aq.eigvec[t_int]
+            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec[t_int], 2)
         else:
-            pot = pot * aq.eigvec[t_int][layers]
+            pot = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec[t_int][layers, :], 2)
+        # if layers is None:
+        #     pot = pot * aq.eigvec[t_int]
+        # else:
+        #     pot = pot * aq.eigvec[t_int][layers]
         if derivative > 0:
             pot *= self.p[t_int] ** derivative
         if returnphi:
