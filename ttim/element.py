@@ -101,14 +101,14 @@ class Element(ABC):
             aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum(self.parameters[t_int] * self.potinf(x, y, t_int, aq), 1)
 
-    def unitpotential(self, x, y, aq=None):
-        """Returns complex array of size (naq, npval).
+    def unitpotential(self, x, y, t_int, aq=None):
+        """Returns complex array of size (naq, nppar).
 
         Can be more efficient for given elements.
         """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        return np.sum(self.potinf(x, y, aq), 0)
+        return np.sum(self.potinf(x, y, t_int, aq), 0)
 
     def unitpotentialone(self, x, y, jtime, aq=None):
         """Returns complex array of size (naq, npval).
@@ -179,15 +179,15 @@ class Element(ABC):
         phi = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec, 2)
         return phi[:, layers, :]
 
-    def unitpotentiallayers(self, x, y, layers=0, aq=None):
-        """Returns complex array of size (len(layers), npval).
+    def unitpotentiallayers(self, x, y, t_int, layers=0, aq=None):
+        """Returns complex array of size (len(layers), nppar).
 
         Only used in building equations.
         """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        pot = self.unitpotential(x, y, aq)
-        phi = np.sum(pot[np.newaxis, :, :] * aq.eigvec, 1)
+        pot = self.unitpotential(x, y, t_int, aq)
+        phi = np.sum(pot[np.newaxis, :, :] * aq.eigvec[t_int], 1)
         return phi[layers, :]
 
     def disvecinflayers(self, x, y, t_int, layers=0, aq=None):

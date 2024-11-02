@@ -651,7 +651,7 @@ class TimModel(PlotTtim):
                 print("No unknowns. Solution complete")
             return
         for t_int in self.logtintervals:
-            self.solve_interval(t_int, initialize=False)
+            self.solve_interval(t_int, initialize=True)
 
         if silent is False:
             print("solution complete")

@@ -2,45 +2,46 @@ import numpy as np
 
 
 class HeadEquation:
-    def equation(self):
-        """Matrix rows for head-specified conditions.
+    def equation(self, t_int):
+        """Matrix rows for head-specified condition for log time interval t_int.
 
         Really written as constant potential element.
         Works for nunknowns = 1
-        Returns matrix part nunknowns,neq,npval, complex.
+        Returns matrix part nunknowns, neq, nppar, complex.
 
         Returns rhs part nunknowns,nvbc,npval, complex
         Phi_out - c*T*q_s = Phi_in
         Well: q_s = Q / (2*pi*r_w*H)
         LineSink: q_s = sigma / H = Q / (L*H)
         """
-        mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
+        mat = np.empty((self.nunknowns, self.model.neq, self.model.nppar), dtype=complex)
         # rhs needs be initialized zero
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex)
+        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.nppar), dtype=complex)
         for icp in range(self.ncp):
             istart = icp * self.nlayers
             ieq = 0
             for e in self.model.elementlist:
                 if e.nunknowns > 0:
                     mat[istart : istart + self.nlayers, ieq : ieq + e.nunknowns, :] = (
-                        e.potinflayers(self.xc[icp], self.yc[icp], self.layers)
+                        e.potinflayers(self.xc[icp], self.yc[icp], t_int, self.layers)
                     )
-                    if e == self:
-                        for i in range(self.nlayers):
-                            mat[istart + i, ieq + istart + i, :] -= (
-                                self.resfacp[istart + i]
-                                * e.dischargeinflayers[istart + i]
-                            )
+                    ## TO DO: Add resistance
+                    # if e == self:
+                    #     for i in range(self.nlayers):
+                    #         mat[istart + i, ieq + istart + i, :] -= (
+                    #             self.resfacp[istart + i]
+                    #             * e.dischargeinflayers[istart + i]
+                    #         )
                     ieq += e.nunknowns
             for i in range(self.model.ngbc):
                 rhs[istart : istart + self.nlayers, i, :] -= self.model.gbclist[
                     i
-                ].unitpotentiallayers(self.xc[icp], self.yc[icp], self.layers)
+                ].unitpotentiallayers(self.xc[icp], self.yc[icp], t_int, self.layers)
             if self.type == "v":
                 iself = self.model.vbclist.index(self)
                 for i in range(self.nlayers):
                     rhs[istart + i, self.model.ngbc + iself, :] = (
-                        self.pc[istart + i] / self.model.p
+                        self.pc[istart + i] / self.model.p[t_int]
                     )
         return mat, rhs
 

@@ -448,12 +448,18 @@ class HeadWell(WellBase, HeadEquation):
         self.nunknowns = self.nparam
 
     def initialize(self):
-        WellBase.initialize(self)
-        self.parameters = np.zeros(
-            (self.model.ngvbc, self.nparam, self.model.npval), "D"
-        )
+        super().initialize()
+        self.parameters = {}
+        for t_int in self.model.logtintervals:
+            self.initialize_interval(t_int)
         # Needed in solving for a unit head
         self.pc = self.aq.T[self.layers]
+
+    def initialize_interval(self, t_int):
+        super().initialize_interval(t_int)
+        self.parameters[t_int] = np.zeros(
+            (self.model.ngvbc, self.nparam, self.model.nppar), "D"
+        )
 
 
 class WellTest(WellBase):
