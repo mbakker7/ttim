@@ -161,7 +161,9 @@ class Element(ABC):
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         pot = self.potinf(x, y, t_int, aq)
-        rv = pot * aq.eigvec[t_int]
+        # rv = pot * aq.eigvec[t_int]
+        # replaced with old version
+        rv = np.sum(pot[:, np.newaxis, :, :] * aq.eigvec[t_int], 2)
         # first axis needs to be the number of layers
         rv = rv.swapaxes(0, 1)
         return rv[layers, :]
