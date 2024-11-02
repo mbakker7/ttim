@@ -99,7 +99,9 @@ class Element(ABC):
         """Returns complex array of size (ngvbc, naq, nppar)."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        return np.sum(self.parameters[t_int] * self.potinf(x, y, t_int, aq), 1)
+        # np.sum(self.parameters[:, :, np.newaxis, :] * self.potinf(x, y, aq), 1)
+        return np.sum(self.parameters[t_int][:, :, np.newaxis, :] * 
+                      self.potinf(x, y, t_int, aq), 1)
 
     def unitpotential(self, x, y, t_int, aq=None):
         """Returns complex array of size (naq, nppar).
