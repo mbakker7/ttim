@@ -305,7 +305,7 @@ class DischargeWell(WellBase):
     def initialize_interval(self, t_int):
         super().initialize_interval(t_int)
         self.parameters[t_int] = np.zeros(
-            (self.model.ngvbc, self.nparam, self.model.nppar), "D"
+            (self.model.ngvbc, self.nparam, self.model.nppar), dtype=complex
         )
 
 
@@ -400,7 +400,7 @@ class Well(WellBase, WellBoreStorageEquation):
     def initialize_interval(self, t_int):
         super().initialize_interval(t_int)
         self.parameters[t_int] = np.zeros(
-            (self.model.ngvbc, self.nparam, self.model.nppar), "D"
+            (self.model.ngvbc, self.nparam, self.model.nppar), dtype=complex
         )
 
     def setflowcoef(self, t_int):
@@ -474,7 +474,7 @@ class HeadWell(WellBase, HeadEquation):
     def initialize_interval(self, t_int):
         super().initialize_interval(t_int)
         self.parameters[t_int] = np.zeros(
-            (self.model.ngvbc, self.nparam, self.model.nppar), "D"
+            (self.model.ngvbc, self.nparam, self.model.nppar), dtype=complex
         )
 
 
