@@ -233,7 +233,7 @@ class WellBase(Element):
 
 
 class DischargeWell(WellBase):
-    r"""Well with a specified discharge for each layer that the well is screened in.
+    r"""Well with one specified discharge for each layer that the well is screened in.
 
     This is not very common and is likely only used for testing and comparison with
     other codes. The discharge must be specified for each screened layer. The resistance
@@ -265,13 +265,17 @@ class DischargeWell(WellBase):
     label : string or None (default: None)
         label of the well
 
+    Implementation
+    --------------
+    This element doesn't compute or store parameters as everything is given.
+
     Examples
     --------
     Example of a well that pumps with a discharge of 100 between times
     10 and 50, with a discharge of 20 between times 50 and 200, and zero
-    discharge after time 200.
+    discharge after time 200. All from layer 0 (default).
 
-    >>> Well(ml, tsandQ=[(10, 100), (50, 20), (200, 0)])
+    >>> DischargeWell(ml, tsandQ=[(10, 100), (50, 20), (200, 0)])
     """
 
     def __init__(
@@ -290,6 +294,18 @@ class DischargeWell(WellBase):
             type="g",
             name="DischargeWell",
             label=label,
+        )
+
+    def initialize(self):
+        super().initialize()
+        self.parameters = {}
+        for t_int in self.model.logtintervals:
+            self.initialize_interval(t_int)
+
+    def initialize_interval(self, t_int):
+        super().initialize_interval(t_int)
+        self.parameters[t_int] = np.zeros(
+            (self.model.ngvbc, self.nparam, self.model.nppar), "D"
         )
 
 

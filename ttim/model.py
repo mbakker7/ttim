@@ -235,7 +235,7 @@ class TimModel(PlotTtim):
         time = np.atleast_1d(time) - self.tstart  # used to be ).copy()
         pot = np.zeros((self.ngvbc, aq.naq, self.nppar), dtype=complex)
         for i in range(self.ngbc):
-            pot[i, :] += self.gbclist[i].unitpotentialone(x, y, t_int, aq)
+            pot[i, :] += self.gbclist[i].unitpotential(x, y, t_int, aq)
         for e in self.vzbclist:
             pot += e.potential(x, y, t_int, aq)
         # multiply by eigenvectors
