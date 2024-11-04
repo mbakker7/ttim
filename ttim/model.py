@@ -234,8 +234,10 @@ class TimModel(PlotTtim):
         assert check_time, "time not in tintervals"
         time = np.atleast_1d(time) - self.tstart  # used to be ).copy()
         pot = np.zeros((self.ngvbc, aq.naq, self.nppar), dtype=complex)
+        # compute potential of all given elements
         for i in range(self.ngbc):
             pot[i, :] += self.gbclist[i].unitpotential(x, y, t_int, aq)
+        # compute potential of all variable or zero boundary condition elements
         for e in self.vzbclist:
             pot += e.potential(x, y, t_int, aq)
         # multiply by eigenvectors
