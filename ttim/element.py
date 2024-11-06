@@ -332,5 +332,5 @@ class Element:
         """
         pass
 
-    def plot(self):
+    def plot(self, ax=None):
         pass
