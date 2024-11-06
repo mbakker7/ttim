@@ -1,4 +1,5 @@
 from typing import Optional
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -47,6 +48,9 @@ class PlotTtim:
         if labels:
             lli = 1 if self._ml.aq.topboundary == "con" else 0
             aqi = 0
+        else:
+            lli = None
+            aqi = None
 
         for i in range(self._ml.aq.nlayers):
             if self._ml.aq.ltype[i] == "l":
@@ -67,7 +71,10 @@ class PlotTtim:
                     ax.text(
                         0.75 * r if labels else 0.5 * r,
                         np.mean(self._ml.aq.z[i : i + 2]),
-                        f"$c$ = {self._ml.aq.c[lli]}, $S_s$ = {self._ml.aq.Sll[lli]:.2e}",
+                        (
+                            f"$c$ = {self._ml.aq.c[lli]}, "
+                            f"$S_s$ = {self._ml.aq.Sll[lli]:.2e}",
+                        ),
                         ha="center",
                         va="center",
                     )
