@@ -11,7 +11,7 @@ from .invlapnumba import compute_laplace_parameters_numba, invlap, invlapcomp
 from .util import PlotTtim
 
 
-class TimModel(PlotTtim):
+class TimModel:
     def __init__(
         self,
         kaq=[1, 1],
@@ -67,6 +67,17 @@ class TimModel(PlotTtim):
         self.timmlmodel = timmlmodel
         if self.timmlmodel is not None:
             self.timmlmodel.solve()
+
+        self.plots = PlotTtim(self)
+        self.plot = self.plots.topview
+
+        # NOTE: reinstate later, after deprecation below is removed?
+        # self.xsection = self.plots.xsection
+
+    def xsection(*args, **kwargs):
+        raise DeprecationWarning(
+            "This method is deprecated. Use `ml.plots.head_along_line()` instead."
+        )
 
     def __repr__(self):
         return "Model"
@@ -349,7 +360,7 @@ class TimModel(PlotTtim):
                 )
                 qz = (h[1, 0] - h[0, 0]) / aq.c[
                     layer
-                ]  # TO DO include storage in leaky layer
+                ]  # TODO: include storage in leaky layer
             vz = qz / aq.porll[layer]
         else:  # in aquifer layer
             h = self.head(x, y, t, layers=layer, aq=aq, neglect_steady=True)
@@ -387,7 +398,7 @@ class TimModel(PlotTtim):
                     )[:, 0]
             # this works because c[0] = 1e100 for impermeable top
             qztop = (h[1] - h[0]) / self.aq.c[layer]
-            # TO DO modify for infiltration in top aquifer
+            # TODO: modify for infiltration in top aquifer
             # if layer == 0:
             #    qztop += self.qztop(x, y)
             if layer < aq.naq - 1:
