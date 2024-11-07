@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 
 from ttim import besselnumba
 
@@ -583,13 +582,12 @@ def test_besselldv2():
     assert np.allclose(a, b), "not equal"
 
 
-@pytest.mark.xfail(reason="Something wrong with numba types")
 def test_besselldpart():
     x = 5.0
     y = 5.0
     z1 = 1.0 + 1.0j
     z2 = 5.0 + 5.0j
-    lab = np.array([100.0])
+    lab = 100.0
     order = 1
     d1 = 1.0
     d2 = -1.0
@@ -601,13 +599,12 @@ def test_besselldpart():
     assert np.allclose(a, b), "not equal"
 
 
-@pytest.mark.xfail(reason="Something wrong with numba types")
 def test_besselld_int_ho_qxqy():
     x = 5.0
     y = 5.0
     z1 = 1.0 + 1.0j
     z2 = 5.0 + 5.0j
-    lab = np.array([100.0])
+    lab = 100.0
     order = 1
     d1 = 1.0
     d2 = -1.0
