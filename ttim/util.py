@@ -18,6 +18,7 @@ class PlotTtim:
         """
         if ax is None:
             _, ax = plt.subplots(figsize=figsize)
+            ax.set_aspect("equal", adjustable="box")
         if layers is not None and isinstance(layers, int):
             layers = [layers]
         for e in self._ml.elementlist:
@@ -25,7 +26,6 @@ class PlotTtim:
                 e.plot(ax=ax)
         if win is not None:
             ax.axis(win)
-            ax.axis("scaled")
         return ax
 
     def xsection(
@@ -147,13 +147,13 @@ class PlotTtim:
         nlayers, ntime, npoints = h.shape
         for i in range(nlayers):
             for j in range(ntime):
+                lbl = f"head (t={t[j]}, layer={layers[i]})"
                 if color is None:
-                    ax.plot(s, h[i, j, :], lw=lw)
+                    ax.plot(s, h[i, j, :], lw=lw, label=lbl)
                 else:
-                    ax.plot(s, h[i, j, :], color, lw=lw)
+                    ax.plot(s, h[i, j, :], color, lw=lw, label=lbl)
         if legend:
-            legendlist = ["layer " + str(i) for i in layers]
-            ax.legend(legendlist, loc=(0, 1), ncol=3, frameon=False)
+            ax.legend(loc=(0, 1), ncol=3, frameon=False)
         return ax
 
     def contour(
@@ -213,7 +213,7 @@ class PlotTtim:
         h = self._ml.headgrid(xg, yg, t, layers)
         if ax is None:
             _, ax = plt.subplots(figsize=figsize)
-            ax.axis("scaled")
+            ax.set_aspect("equal", adjustable="box")
         # color
         if color is None:
             c = plt.rcParams["axes.prop_cycle"].by_key()["color"]

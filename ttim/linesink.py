@@ -1000,8 +1000,10 @@ class LineSinkHoBase(Element):
             :, np.newaxis
         ] * self.discharge(t)
 
-    def plot(self):
-        plt.plot([self.x1, self.x2], [self.y1, self.y2], "k")
+    def plot(self, ax=None):
+        if ax is None:
+            _, ax = plt.subplots()
+        ax.plot([self.x1, self.x2], [self.y1, self.y2], "k")
 
 
 class HeadLineSinkHo(LineSinkHoBase, HeadEquationNores):
