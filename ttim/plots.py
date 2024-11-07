@@ -168,8 +168,8 @@ class PlotTtim:
         layers=0,
         levels=20,
         layout=True,
-        labels=False,
-        decimals=0,
+        labels=True,
+        decimals=1,
         color=None,
         ax=None,
         figsize=None,
@@ -194,7 +194,7 @@ class PlotTtim:
             plot layout of elements
         labels : boolean (default True)
             print labels along contours
-        decimals : integer (default 0)
+        decimals : integer (default 1)
             number of decimals of labels along contours
         color : str or list of strings
             color of contour lines
@@ -237,7 +237,7 @@ class PlotTtim:
                 xg, yg, h[i, 0], levels, colors=c[i], negative_linestyles="solid"
             )
             cslist.append(cs)
-            handles, labels = cs.legend_elements()
+            handles, _ = cs.legend_elements()
             cshandlelist.append(handles[0])
             if labels:
                 fmt = f"%1.{decimals}f"
