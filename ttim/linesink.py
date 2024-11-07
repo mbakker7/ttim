@@ -35,8 +35,7 @@ class LineSinkBase(Element):
         label=None,
         addtomodel=True,
     ):
-        Element.__init__(
-            self,
+        super().__init__(
             model,
             nparam=1,
             nunknowns=0,
@@ -106,9 +105,11 @@ class LineSinkBase(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+        rv = np.zeros(
+            (self.nparam, aq.naq, self.model.nint, self.model.npint), dtype=complex
+        )
         if aq == self.aq:
-            pot = np.zeros(self.model.npint, "D")
+            pot = np.zeros(self.model.npint, dtype=complex)
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
                     pot[:] = besselnumba.bessellsuniv(
@@ -123,10 +124,14 @@ class LineSinkBase(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
-        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+        rvx = np.zeros(
+            (self.nparam, aq.naq, self.model.nint, self.model.npint), dtype=complex
+        )
+        rvy = np.zeros(
+            (self.nparam, aq.naq, self.model.nint, self.model.npint), dtype=complex
+        )
         if aq == self.aq:
-            qxqy = np.zeros((2, self.model.npint), "D")
+            qxqy = np.zeros((2, self.model.npint), dtype=complex)
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
                     if besselnumba.isinside(
@@ -195,8 +200,7 @@ class LineSink(LineSinkBase):
         addtomodel=True,
     ):
         self.storeinput(inspect.currentframe())
-        LineSinkBase.__init__(
-            self,
+        super().__init__(
             model,
             x1=x1,
             y1=y1,
@@ -302,8 +306,7 @@ class HeadLineSink(LineSinkBase, HeadEquation):
             etype = "z"
         else:
             etype = "v"
-        LineSinkBase.__init__(
-            self,
+        super().__init__(
             model,
             x1=x1,
             y1=y1,
@@ -321,9 +324,9 @@ class HeadLineSink(LineSinkBase, HeadEquation):
         self.nunknowns = self.nparam
 
     def initialize(self):
-        LineSinkBase.initialize(self)
+        super().initialize()
         self.parameters = np.zeros(
-            (self.model.ngvbc, self.nparam, self.model.npval), "D"
+            (self.model.ngvbc, self.nparam, self.model.npval), dtype=complex
         )
         # Needed in solving, solve for a unit head
         self.pc = self.aq.T[self.layers]
@@ -339,8 +342,7 @@ class LineSinkStringBase(Element):
         name="LineSinkStringBase",
         label=None,
     ):
-        Element.__init__(
-            self,
+        super().__init__(
             model,
             nparam=1,
             nunknowns=0,
@@ -369,7 +371,7 @@ class LineSinkStringBase(Element):
         self.ylslayout = np.hstack((self.yls[:, 0], self.yls[-1, 1]))
         self.aq = self.model.aq.find_aquifer_data(self.lslist[0].xc, self.lslist[0].yc)
         self.parameters = np.zeros(
-            (self.model.ngvbc, self.nparam, self.model.npval), "D"
+            (self.model.ngvbc, self.nparam, self.model.npval), dtype=complex
         )
         self.setbc()
         # As parameters are only stored for the element not the list
@@ -382,8 +384,12 @@ class LineSinkStringBase(Element):
             self.resfacp.extend(ls.resfacp.tolist())  # Needed in solving
         self.resfach = np.array(self.resfach)
         self.resfacp = np.array(self.resfacp)
-        self.dischargeinf = np.zeros((self.nparam, self.aq.naq, self.model.npval), "D")
-        self.dischargeinflayers = np.zeros((self.nparam, self.model.npval), "D")
+        self.dischargeinf = np.zeros(
+            (self.nparam, self.aq.naq, self.model.npval), dtype=complex
+        )
+        self.dischargeinflayers = np.zeros(
+            (self.nparam, self.model.npval), dtype=complex
+        )
         self.xc, self.yc = np.zeros(self.nls), np.zeros(self.nls)
         for i in range(self.nls):
             self.dischargeinf[i * self.nlayers : (i + 1) * self.nlayers, :] = (
@@ -399,7 +405,7 @@ class LineSinkStringBase(Element):
         """Returns array (nunknowns, Nperiods)."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
+        rv = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         for i in range(self.nls):
             rv[i * self.nlayers : (i + 1) * self.nlayers, :] = self.lslist[i].potinf(
                 x, y, aq
@@ -410,8 +416,8 @@ class LineSinkStringBase(Element):
         """Returns array (nunknowns,Nperiods)."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rvx = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
-        rvy = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
+        rvx = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
+        rvy = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         for i in range(self.nls):
             qx, qy = self.lslist[i].disvecinf(x, y, aq)
             rvx[i * self.nlayers : (i + 1) * self.nlayers, :] = qx
@@ -535,8 +541,7 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
             etype = "z"
         else:
             etype = "v"
-        LineSinkStringBase.__init__(
-            self,
+        super().__init__(
             model,
             tsandbc=tsandh,
             layers=layers,
@@ -544,7 +549,7 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
             name="HeadLineSinkString",
             label=label,
         )
-        xy = np.atleast_2d(xy).astype("d")
+        xy = np.atleast_2d(xy).astype(float)
         self.x = xy[:, 0]
         self.y = xy[:, 1]
         self.nls = len(self.x) - 1
@@ -571,7 +576,7 @@ class HeadLineSinkString(LineSinkStringBase, HeadEquation):
                     addtomodel=False,
                 )
             )
-        LineSinkStringBase.initialize(self)
+        super().initialize()
         self.pc = np.zeros(self.nls * self.nlayers)
         for i in range(self.nls):
             self.pc[i * self.nlayers : (i + 1) * self.nlayers] = self.lslist[i].pc
@@ -601,8 +606,7 @@ class MscreenLineSink(LineSinkBase, MscreenEquation):
     ):
         # assert len(layers) > 1, "number of layers must be at least 2"
         self.storeinput(inspect.currentframe())
-        LineSinkBase.__init__(
-            self,
+        super().__init__(
             model,
             x1=x1,
             y1=y1,
@@ -625,9 +629,9 @@ class MscreenLineSink(LineSinkBase, MscreenEquation):
             self.vres = self.vres[0] * np.ones(self.nlayers - 1)
 
     def initialize(self):
-        LineSinkBase.initialize(self)
+        super().initialize()
         self.parameters = np.zeros(
-            (self.model.ngvbc, self.nparam, self.model.npval), "D"
+            (self.model.ngvbc, self.nparam, self.model.npval), dtype=complex
         )
         # Qv = (hn - hn-1) / vresfac[n - 1]
         self.vresfac = self.vres / (self.wv * self.L)
@@ -691,8 +695,7 @@ class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
         label=None,
     ):
         self.storeinput(inspect.currentframe())
-        LineSinkStringBase.__init__(
-            self,
+        super().__init__(
             model,
             tsandbc=tsandQ,
             layers=layers,
@@ -700,7 +703,7 @@ class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
             name="LineSinkDitchString",
             label=label,
         )
-        xy = np.atleast_2d(xy).astype("d")
+        xy = np.atleast_2d(xy).astype(float)
         self.x, self.y = xy[:, 0], xy[:, 1]
         self.nls = len(self.x) - 1
         for i in range(self.nls):
@@ -723,7 +726,7 @@ class LineSinkDitchString(LineSinkStringBase, MscreenDitchEquation):
         self.model.addelement(self)
 
     def initialize(self):
-        LineSinkStringBase.initialize(self)
+        super().initialize()
         # set vresfac to zero, as I don't quite know what it would mean if
         # it is not zero
         self.vresfac = np.zeros_like(self.resfach)
@@ -787,8 +790,7 @@ class LineSinkDitchString2(LineSinkStringBase, MscreenDitchEquation):
         label=None,
     ):
         self.storeinput(inspect.currentframe())
-        LineSinkStringBase.__init__(
-            self,
+        super().__init__(
             model,
             tsandbc=tsandQ,
             layers=layers,
@@ -796,7 +798,7 @@ class LineSinkDitchString2(LineSinkStringBase, MscreenDitchEquation):
             name="LineSinkDitchString",
             label=label,
         )
-        xy = np.atleast_2d(xy).astype("d")
+        xy = np.atleast_2d(xy).astype(float)
         self.x, self.y = xy[:, 0], xy[:, 1]
         self.nls = len(self.x) - 1
         for i in range(self.nls):
@@ -819,7 +821,7 @@ class LineSinkDitchString2(LineSinkStringBase, MscreenDitchEquation):
         self.model.addelement(self)
 
     def initialize(self):
-        LineSinkStringBase.initialize(self)
+        super().initialize()
         # set vresfac to zero, as I don't quite know what it would mean if
         # it is not zero
         self.vresfac = np.zeros_like(self.resfach)
@@ -848,8 +850,7 @@ class LineSinkHoBase(Element):
         label=None,
         addtomodel=True,
     ):
-        Element.__init__(
-            self,
+        super().__init__(
             model,
             nparam=1,
             nunknowns=0,
@@ -886,7 +887,7 @@ class LineSinkHoBase(Element):
         self.L = np.abs(self.z1 - self.z2)
         #
         thetacp = np.arange(np.pi, 0, -np.pi / self.ncp) - 0.5 * np.pi / self.ncp
-        Zcp = np.zeros(self.ncp, "D")
+        Zcp = np.zeros(self.ncp, dtype=complex)
         Zcp.real = np.cos(thetacp)
         # control point just on positive site (this is handy later on)
         Zcp.imag = 1e-6
@@ -926,9 +927,11 @@ class LineSinkHoBase(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+        rv = np.zeros(
+            (self.nparam, aq.naq, self.model.nint, self.model.npint), dtype=complex
+        )
         if aq == self.aq:
-            pot = np.zeros((self.order + 1, self.model.npint), "D")
+            pot = np.zeros((self.order + 1, self.model.npint), dtype=complex)
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
                     if besselnumba.isinside(
@@ -956,10 +959,14 @@ class LineSinkHoBase(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
-        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+        rvx = np.zeros(
+            (self.nparam, aq.naq, self.model.nint, self.model.npint), dtype=complex
+        )
+        rvy = np.zeros(
+            (self.nparam, aq.naq, self.model.nint, self.model.npint), dtype=complex
+        )
         if aq == self.aq:
-            qxqy = np.zeros((2 * (self.order + 1), self.model.npint), "D")
+            qxqy = np.zeros((2 * (self.order + 1), self.model.npint), dtype=complex)
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
                     if besselnumba.isinside(
@@ -1031,8 +1038,7 @@ class HeadLineSinkHo(LineSinkHoBase, HeadEquationNores):
             etype = "z"
         else:
             etype = "v"
-        LineSinkHoBase.__init__(
-            self,
+        super().__init__(
             model,
             x1=x1,
             y1=y1,
@@ -1051,9 +1057,9 @@ class HeadLineSinkHo(LineSinkHoBase, HeadEquationNores):
         self.nunknowns = self.nparam
 
     def initialize(self):
-        LineSinkHoBase.initialize(self)
+        super().initialize()
         self.parameters = np.zeros(
-            (self.model.ngvbc, self.nparam, self.model.npval), "D"
+            (self.model.ngvbc, self.nparam, self.model.npval), dtype=complex
         )
         self.pc = np.empty(self.nparam)
         for i, T in enumerate(self.aq.T[self.layers]):
