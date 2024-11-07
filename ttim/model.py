@@ -1,5 +1,6 @@
 # from .invlap import *
 import inspect  # Used for storing the input
+from warnings import warn
 
 import numpy as np
 
@@ -78,6 +79,14 @@ class TimModel:
         raise DeprecationWarning(
             "This method is deprecated. Use `ml.plots.head_along_line()` instead."
         )
+
+    def contour(self, *args, **kwargs):
+        warn(
+            category=DeprecationWarning,
+            message="This method is deprecated. Use `ml.plots.contour()` instead.",
+            stacklevel=1,
+        )
+        self.plots.contour(*args, **kwargs)
 
     def __repr__(self):
         return "Model"
