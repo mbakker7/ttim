@@ -1601,7 +1601,7 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     zminzbar[20] = 1
     for n in range(1, 21):
         # Ordered from high power to low power
-        zminzbar[20 - n] = zminzbar[21 - n] * (zeta - zetabar)
+        zminzbar[20 - n] = (zminzbar[21 - n] * (zeta - zetabar))[0]
 
     gamnew = np.zeros((21, 21), dtype=np.complex128)
     gam2 = np.zeros((21, 21), dtype=np.complex128)
@@ -1652,23 +1652,35 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
             )
 
         omega[p] = 0
-        term1 = 1
-        term2 = 1
+        term1 = 1.0 + 0j
+        term2 = 1.0 + 0j
         for n in range(41):
-            term1 = term1 * d1minzeta
-            term2 = term2 * d2minzeta
-            omega[p] = omega[p] + (
-                alphanew[n] * log2 - alphanew[n] / (n + 1) + betanew[n]
-            ) * term2 / (n + 1)
-            omega[p] = omega[p] - (
-                alphanew[n] * log1 - alphanew[n] / (n + 1) + betanew[n]
-            ) * term1 / (n + 1)
-            omega[p] = omega[p] + (
-                alphanew2[n] * np.conj(log2) - alphanew2[n] / (n + 1)
-            ) * np.conj(term2) / (n + 1)
-            omega[p] = omega[p] - (
-                alphanew2[n] * np.conj(log1) - alphanew2[n] / (n + 1)
-            ) * np.conj(term1) / (n + 1)
+            term1 = term1 * d1minzeta[0]
+            term2 = term2 * d2minzeta[0]
+            omega[p] = (
+                omega[p]
+                + (alphanew[n] * log2 - alphanew[n] / (n + 1) + betanew[n])
+                * term2
+                / (n + 1)
+            )[0]
+            omega[p] = (
+                omega[p]
+                - (alphanew[n] * log1 - alphanew[n] / (n + 1) + betanew[n])
+                * term1
+                / (n + 1)
+            )[0]
+            omega[p] = (
+                omega[p]
+                + (alphanew2[n] * np.conj(log2) - alphanew2[n] / (n + 1))
+                * np.conj(term2)
+                / (n + 1)
+            )[0]
+            omega[p] = (
+                omega[p]
+                - (alphanew2[n] * np.conj(log1) - alphanew2[n] / (n + 1))
+                * np.conj(term1)
+                / (n + 1)
+            )[0]
 
     omegalap = lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2) / complex(0, 1)
     omegaom = besselldpart(x, y, z1, z2, lab, order, d1, d2)
@@ -1854,7 +1866,7 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
     zminzbar[-1] = 1.0
     for n in range(1, 21):
         # Ordered from high power to low power
-        zminzbar[20 - n] = zminzbar[21 - n] * (zeta - zetabar)
+        zminzbar[20 - n] = (zminzbar[21 - n] * (zeta - zetabar))[0]
 
     gamnew = np.zeros((21, 21), dtype=np.complex128)
     gam2 = np.zeros((21, 21), dtype=np.complex128)
@@ -1902,23 +1914,35 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
             )
 
         omega[p] = 0.0
-        term1 = 1.0
-        term2 = 1.0
+        term1 = 1.0 + 0j
+        term2 = 1.0 + 0j
         for n in range(40 + p + 1):
-            term1 = term1 * d1minzeta
-            term2 = term2 * d2minzeta
-            omega[p] = omega[p] + (
-                alphanew[n] * log2 - alphanew[n] / (n + 1) + betanew[n]
-            ) * term2 / (n + 1)
-            omega[p] = omega[p] - (
-                alphanew[n] * log1 - alphanew[n] / (n + 1) + betanew[n]
-            ) * term1 / (n + 1)
-            omega[p] = omega[p] + (
-                alphanew2[n] * np.conj(log2) - alphanew2[n] / (n + 1)
-            ) * np.conj(term2) / (n + 1)
-            omega[p] = omega[p] - (
-                alphanew2[n] * np.conj(log1) - alphanew2[n] / (n + 1)
-            ) * np.conj(term1) / (n + 1)
+            term1 = term1 * d1minzeta[0]
+            term2 = term2 * d2minzeta[0]
+            omega[p] = (
+                omega[p]
+                + (alphanew[n] * log2 - alphanew[n] / (n + 1) + betanew[n])
+                * term2
+                / (n + 1)
+            )[0]
+            omega[p] = (
+                omega[p]
+                - (alphanew[n] * log1 - alphanew[n] / (n + 1) + betanew[n])
+                * term1
+                / (n + 1)
+            )[0]
+            omega[p] = (
+                omega[p]
+                + (alphanew2[n] * np.conj(log2) - alphanew2[n] / (n + 1))
+                * np.conj(term2)
+                / (n + 1)
+            )[0]
+            omega[p] = (
+                omega[p]
+                - (alphanew2[n] * np.conj(log1) - alphanew2[n] / (n + 1))
+                * np.conj(term1)
+                / (n + 1)
+            )[0]
 
     # + real( lapld_int_ho(x,y,z1,z2,order) )
     omega = biglab / (2.0 * np.pi * biglabcomplex**2) * omega
