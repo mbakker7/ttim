@@ -159,7 +159,7 @@ class TimModel(PlotTtim):
             layers = range(aq.naq)
         nlayers = len(layers)
         time = np.atleast_1d(t) - self.tstart  # used to be ).copy()
-        pot = np.zeros((self.ngvbc, aq.naq, self.npval), "D")
+        pot = np.zeros((self.ngvbc, aq.naq, self.npval), dtype=complex)
         for i in range(self.ngbc):
             pot[i, :] += self.gbclist[i].unitpotential(x, y, aq)
         for e in self.vzbclist:
@@ -198,7 +198,7 @@ class TimModel(PlotTtim):
         time = np.atleast_1d(time) - self.tstart  # used to be ).copy()
         jtime = np.searchsorted(self.tintervals, time)[0] - 1
         assert 0 <= jtime <= len(self.tintervals), "time not in tintervals"
-        pot = np.zeros((self.ngvbc, aq.naq, self.npint), "D")
+        pot = np.zeros((self.ngvbc, aq.naq, self.npint), dtype=complex)
         for i in range(self.ngbc):
             pot[i, :] += self.gbclist[i].unitpotentialone(x, y, jtime, aq)
         for e in self.vzbclist:
@@ -238,8 +238,8 @@ class TimModel(PlotTtim):
             layers = range(aq.naq)
         nlayers = len(layers)
         time = np.atleast_1d(t) - self.tstart
-        disx = np.zeros((self.ngvbc, aq.naq, self.npval), "D")
-        disy = np.zeros((self.ngvbc, aq.naq, self.npval), "D")
+        disx = np.zeros((self.ngvbc, aq.naq, self.npval), dtype=complex)
+        disy = np.zeros((self.ngvbc, aq.naq, self.npval), dtype=complex)
         for i in range(self.ngbc):
             qx, qy = self.gbclist[i].unitdisvec(x, y, aq)
             disx[i, :] += qx
@@ -557,8 +557,8 @@ class TimModel(PlotTtim):
             if silent is False:
                 print("No unknowns. Solution complete")
             return
-        mat = np.empty((self.neq, self.neq, self.npval), "D")
-        rhs = np.empty((self.neq, self.ngvbc, self.npval), "D")
+        mat = np.empty((self.neq, self.neq, self.npval), dtype=complex)
+        rhs = np.empty((self.neq, self.ngvbc, self.npval), dtype=complex)
         ieq = 0
         for e in self.elementlist:
             if e.nunknowns > 0:

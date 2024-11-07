@@ -77,10 +77,12 @@ class CircAreaSink(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+        rv = np.zeros(
+            (self.nparam, aq.naq, self.model.nint, self.model.npint), dtype=complex
+        )
         if aq == self.aq:
             r = np.sqrt((x - self.xc) ** 2 + (y - self.yc) ** 2)
-            # pot = np.zeros(self.model.npint, "D")
+            # pot = np.zeros(self.model.npint, dtype=complex)
             if r < self.R:
                 for i in range(self.aq.naq):
                     for j in range(self.model.nint):
@@ -103,10 +105,12 @@ class CircAreaSink(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        qx = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
-        qy = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
+        qx = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
+        qy = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         if aq == self.aq:
-            qr = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+            qr = np.zeros(
+                (self.nparam, aq.naq, self.model.nint, self.model.npint), dtype=complex
+            )
             r = np.sqrt((x - self.xc) ** 2 + (y - self.yc) ** 2)
             if r < self.R:
                 for i in range(self.aq.naq):

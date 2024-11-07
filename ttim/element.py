@@ -38,7 +38,7 @@ class Element:
         self.layers = np.atleast_1d(layers)
         self.nlayers = len(self.layers)
         #
-        tsandbc = np.atleast_2d(tsandbc).astype("d")
+        tsandbc = np.atleast_2d(tsandbc).astype(float)
         tsandbc_error = (
             "tsandQ or tsandh need to be 2D lists"
             + " or arrays, like [(0, 1), (2, 5), (8, 0)] "
@@ -224,7 +224,7 @@ class Element:
         """
         # Could potentially be more efficient if s is pre-computed for
         # all elements, but may not be worthwhile to store as it is quick now
-        time = np.atleast_1d(t).astype("d")
+        time = np.atleast_1d(t).astype(float)
         rv = np.zeros((self.nlayers, len(time)))
         if self.type == "g":
             s = self.dischargeinflayers * self.model.p**derivative
@@ -274,7 +274,7 @@ class Element:
         """
         # Could potentially be more efficient if s is pre-computed for
         # all elements, but may not be worthwhile to store as it is quick now
-        time = np.atleast_1d(t).astype("d")
+        time = np.atleast_1d(t).astype(float)
         if (time[0] < self.model.tmin) or (time[-1] > self.model.tmax):
             print(
                 "Warning, some of the times are smaller than tmin or"
