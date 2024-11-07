@@ -19,6 +19,7 @@ from .linesink import (
     LineSink,
     LineSinkDitchString,
 )
+from .linesink1d import DischargeLineSink1D, HeadLineSink1D, LineSink1D, LineSink1DBase
 
 # Import all classes and functions
 from .model import Model3D, ModelMaq
