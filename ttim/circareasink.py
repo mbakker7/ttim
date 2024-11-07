@@ -127,8 +127,10 @@ class CircAreaSink(Element):
             qy[:] = qr * (y - self.yc) / r
         return qx, qy
 
-    def plot(self):
-        plt.plot(
+    def plot(self, ax=None):
+        if ax is None:
+            _, ax = plt.subplots()
+        ax.plot(
             self.xc + self.R * np.cos(np.linspace(0, 2 * np.pi, 100)),
             self.yc + self.R * np.sin(np.linspace(0, 2 * np.pi, 100)),
             "k",

@@ -163,8 +163,10 @@ class WellBase(Element):
             self.layers
         ] - self.resfach[:, np.newaxis] * self.discharge(t, derivative=derivative)
 
-    def plot(self):
-        plt.plot(self.xw, self.yw, "k.")
+    def plot(self, ax=None):
+        if ax is None:
+            _, ax = plt.subplots()
+        ax.plot(self.xw, self.yw, "k.")
 
     def changetrace(
         self, xyzt1, xyzt2, aq, layer, ltype, modellayer, direction, hstepmax
