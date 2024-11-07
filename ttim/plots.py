@@ -136,6 +136,7 @@ class PlotTtim:
         figsize=None,
         ax=None,
         legend=True,
+        grid=True,
     ):
         layers = np.atleast_1d(layers)
         t = np.atleast_1d(t)
@@ -155,6 +156,8 @@ class PlotTtim:
                     ax.plot(s, h[i, j, :], color, lw=lw, label=lbl)
         if legend:
             ax.legend(loc=(0, 1), ncol=3, frameon=False)
+        if grid:
+            ax.grid(True)
         return ax
 
     def contour(
