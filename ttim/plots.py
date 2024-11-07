@@ -128,7 +128,7 @@ class PlotTtim:
         y1=0,
         y2=0,
         npoints=100,
-        t=1,
+        t=1.0,
         layers=0,
         sstart=0,
         color=None,
@@ -138,6 +138,7 @@ class PlotTtim:
         legend=True,
     ):
         layers = np.atleast_1d(layers)
+        t = np.atleast_1d(t)
         if ax is None:
             _, ax = plt.subplots(figsize=figsize)
         x = np.linspace(x1, x2, npoints)

@@ -9,7 +9,7 @@ from .aquifer_parameters import param_3d, param_maq
 
 # from .bessel import *
 from .invlapnumba import compute_laplace_parameters_numba, invlap, invlapcomp
-from .util import PlotTtim
+from .plots import PlotTtim
 
 
 class TimModel:
