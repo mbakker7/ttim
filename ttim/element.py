@@ -1,11 +1,12 @@
 import inspect  # Used for storing the input
+from abc import ABC, abstractmethod
 
 import numpy as np
 
 from .invlapnumba import invlapcomp
 
 
-class Element:
+class Element(ABC):
     def __init__(
         self,
         model,
@@ -68,6 +69,7 @@ class Element:
             self.bc = self.bcin.copy()
         self.ntstart = len(self.tstart)
 
+    @abstractmethod
     def initialize(self):
         """Initialize the element.
 
@@ -78,17 +80,18 @@ class Element:
         are initialized when Model.solve is called The initialization class needs to be
         overloaded by all derived classes
         """
-        pass
 
+    @abstractmethod
     def potinf(self, x, y, aq=None):
         """Returns complex array of size (nparam, naq, npval)."""
-        raise Exception("Must overload Element.potinf()")
 
     def potential(self, x, y, aq=None):
         """Returns complex array of size (ngvbc, naq, npval)."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        return np.sum(self.parameters[:, :, np.newaxis, :] * self.potinf(x, y, aq), 1)
+        return np.sum(
+            self.parameters[:, :, np.newaxis, :] * self.potinf(x, y, aq), axis=1
+        )
 
     def unitpotential(self, x, y, aq=None):
         """Returns complex array of size (naq, npval).
@@ -108,9 +111,9 @@ class Element:
             aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum(self.potinfone(x, y, jtime, aq), 0)
 
+    @abstractmethod
     def disvecinf(self, x, y, aq=None):
         """Returns 2 complex arrays of size (nparam, naq, npval)."""
-        raise Exception("Must overload Element.disvecinf()")
 
     def disvec(self, x, y, aq=None):
         """Returns 2 complex arrays of size (ngvbc, naq, npval)."""
@@ -324,13 +327,13 @@ class Element:
         rv += ")\n"
         return rv
 
-    def run_after_solve(self):
+    def run_after_solve(self):  # noqa: B027
         """Function to run after a solution is completed.
 
-        for most elements nothing needs to be done, but for strings of elements some
-        arrays may need to be filled
+        For most elements nothing needs to be done, but for strings of elements some
+        arrays may need to be filled.
         """
-        pass
 
-    def plot(self):
-        pass
+    @abstractmethod
+    def plot(self, ax=None):
+        """Plot the element."""
