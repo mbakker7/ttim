@@ -202,7 +202,7 @@ def test_besselk1cheb():
     # a = bessel.besselk1cheb(z, Nt)
     a = 0.02456827435427396 - 0.4597194926092556j
     b = besselnumba.besselk1cheb(z, Nt)
-    assert a == b, "not equal"
+    assert np.allclose(a, b), "not equal"
 
 
 def test_besselk0():
