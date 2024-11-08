@@ -1,5 +1,6 @@
 # from .invlap import *
 import inspect  # Used for storing the input
+from warnings import warn
 
 import numpy as np
 
@@ -8,10 +9,10 @@ from .aquifer_parameters import param_3d, param_maq
 
 # from .bessel import *
 from .invlapnumba import compute_laplace_parameters_numba, invlap, invlapcomp
-from .util import PlotTtim
+from .plots import PlotTtim
 
 
-class TimModel(PlotTtim):
+class TimModel:
     def __init__(
         self,
         kaq=[1, 1],
@@ -67,6 +68,25 @@ class TimModel(PlotTtim):
         self.timmlmodel = timmlmodel
         if self.timmlmodel is not None:
             self.timmlmodel.solve()
+
+        self.plots = PlotTtim(self)
+        self.plot = self.plots.topview
+
+        # NOTE: reinstate later, after deprecation below is removed?
+        # self.xsection = self.plots.xsection
+
+    def xsection(*args, **kwargs):
+        raise DeprecationWarning(
+            "This method is deprecated. Use `ml.plots.head_along_line()` instead."
+        )
+
+    def contour(self, *args, **kwargs):
+        warn(
+            category=DeprecationWarning,
+            message="This method is deprecated. Use `ml.plots.contour()` instead.",
+            stacklevel=1,
+        )
+        self.plots.contour(*args, **kwargs)
 
     def __repr__(self):
         return "Model"
@@ -159,7 +179,7 @@ class TimModel(PlotTtim):
             layers = range(aq.naq)
         nlayers = len(layers)
         time = np.atleast_1d(t) - self.tstart  # used to be ).copy()
-        pot = np.zeros((self.ngvbc, aq.naq, self.npval), "D")
+        pot = np.zeros((self.ngvbc, aq.naq, self.npval), dtype=complex)
         for i in range(self.ngbc):
             pot[i, :] += self.gbclist[i].unitpotential(x, y, aq)
         for e in self.vzbclist:
@@ -198,7 +218,7 @@ class TimModel(PlotTtim):
         time = np.atleast_1d(time) - self.tstart  # used to be ).copy()
         jtime = np.searchsorted(self.tintervals, time)[0] - 1
         assert 0 <= jtime <= len(self.tintervals), "time not in tintervals"
-        pot = np.zeros((self.ngvbc, aq.naq, self.npint), "D")
+        pot = np.zeros((self.ngvbc, aq.naq, self.npint), dtype=complex)
         for i in range(self.ngbc):
             pot[i, :] += self.gbclist[i].unitpotentialone(x, y, jtime, aq)
         for e in self.vzbclist:
@@ -238,8 +258,8 @@ class TimModel(PlotTtim):
             layers = range(aq.naq)
         nlayers = len(layers)
         time = np.atleast_1d(t) - self.tstart
-        disx = np.zeros((self.ngvbc, aq.naq, self.npval), "D")
-        disy = np.zeros((self.ngvbc, aq.naq, self.npval), "D")
+        disx = np.zeros((self.ngvbc, aq.naq, self.npval), dtype=complex)
+        disy = np.zeros((self.ngvbc, aq.naq, self.npval), dtype=complex)
         for i in range(self.ngbc):
             qx, qy = self.gbclist[i].unitdisvec(x, y, aq)
             disx[i, :] += qx
@@ -349,7 +369,7 @@ class TimModel(PlotTtim):
                 )
                 qz = (h[1, 0] - h[0, 0]) / aq.c[
                     layer
-                ]  # TO DO include storage in leaky layer
+                ]  # TODO: include storage in leaky layer
             vz = qz / aq.porll[layer]
         else:  # in aquifer layer
             h = self.head(x, y, t, layers=layer, aq=aq, neglect_steady=True)
@@ -387,7 +407,7 @@ class TimModel(PlotTtim):
                     )[:, 0]
             # this works because c[0] = 1e100 for impermeable top
             qztop = (h[1] - h[0]) / self.aq.c[layer]
-            # TO DO modify for infiltration in top aquifer
+            # TODO: modify for infiltration in top aquifer
             # if layer == 0:
             #    qztop += self.qztop(x, y)
             if layer < aq.naq - 1:
@@ -557,8 +577,8 @@ class TimModel(PlotTtim):
             if silent is False:
                 print("No unknowns. Solution complete")
             return
-        mat = np.empty((self.neq, self.neq, self.npval), "D")
-        rhs = np.empty((self.neq, self.ngvbc, self.npval), "D")
+        mat = np.empty((self.neq, self.neq, self.npval), dtype=complex)
+        rhs = np.empty((self.neq, self.ngvbc, self.npval), dtype=complex)
         ieq = 0
         for e in self.elementlist:
             if e.nunknowns > 0:

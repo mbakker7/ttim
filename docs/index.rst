@@ -78,7 +78,7 @@ Quick Example
             ml.solve()
 
             # Plot head contours at t=2 days
-            ml.contour(win=[-30, 55, -30, 30], ngr=40, t=2, labels=True, decimals=1)
+            ml.plots.contour(win=[-30, 55, -30, 30], ngr=40, t=2, labels=True, decimals=1)
             
 
     .. tab-item:: Result
