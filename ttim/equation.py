@@ -75,15 +75,7 @@ class WellBoreStorageEquation:
                 )
                 if e == self:
                     disterm = (
-                        self.dischargeinflayers
-                        * self.res
-                        / (
-                            2
-                            * np.pi
-                            * self.rw
-                            * self.aq.Haq[self.layers][:, np.newaxis]
-                        )
-                    )
+                        self.dischargeinflayers * self.resfach[:, np.newaxis])
                     if self.nunknowns > 1:  # Multiple layers
                         for i in range(self.nunknowns - 1):
                             mat[i, ieq + i, :] -= disterm[i]
