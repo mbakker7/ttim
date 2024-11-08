@@ -51,6 +51,7 @@ ci = [
     "jupyter",
     "shapely",
     "coveralls",
+    "timml",
 ]
 docs = [
     "ttim[ci]",
