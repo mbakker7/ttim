@@ -12,6 +12,7 @@ __author__ = "Mark Bakker"
 from .circareasink import CircAreaSink
 from .fit import Calibrate
 from .linedoublet import LeakyLineDoublet, LeakyLineDoubletString
+from .linedoublet1d import LeakyLineDoublet1D, LineDoublet1DBase
 from .linesink import (
     HeadLineSink,
     HeadLineSinkHo,
