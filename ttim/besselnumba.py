@@ -1652,8 +1652,8 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
             )
 
         omega[p] = 0
-        term1 = 1
-        term2 = 1
+        term1 = 1.0 + 0j
+        term2 = 1.0 + 0j
         for n in range(41):
             term1 = term1 * d1minzeta
             term2 = term2 * d2minzeta
@@ -1902,8 +1902,8 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
             )
 
         omega[p] = 0.0
-        term1 = 1.0
-        term2 = 1.0
+        term1 = 1.0 + 0j
+        term2 = 1.0 + 0j
         for n in range(40 + p + 1):
             term1 = term1 * d1minzeta
             term2 = term2 * d2minzeta
