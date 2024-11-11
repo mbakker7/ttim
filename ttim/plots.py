@@ -73,7 +73,7 @@ class PlotTtim:
                         np.mean(self._ml.aq.z[i : i + 2]),
                         (
                             f"$c$ = {self._ml.aq.c[lli]}, "
-                            f"$S_s$ = {self._ml.aq.Sll[lli]:.2e}",
+                            f"$S_s$ = {self._ml.aq.Sll[lli]:.2e}"
                         ),
                         ha="center",
                         va="center",
