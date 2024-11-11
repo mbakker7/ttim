@@ -161,11 +161,11 @@ class AquiferData:
     def potential_to_head(self, pot, layers):
         return pot / self.Tcol[layers]
 
-    def isInside(self, x, y):
+    def is_inside(self, x, y):
         print("Must overload AquiferData.isInside method")
         return True
 
-    def inWhichLayer(self, z):
+    def in_which_layer(self, z):
         """Get layer given elevation z.
 
         Returns -9999 if above top of system, +9999 if below bottom of system, negative
@@ -252,7 +252,7 @@ class Aquifer(AquiferData):
     def find_aquifer_data(self, x, y):
         rv = self
         for aq in self.inhomlist:
-            if aq.isInside(x, y):
+            if aq.is_inside(x, y):
                 if aq.area < rv.area:
                     rv = aq
         return rv
