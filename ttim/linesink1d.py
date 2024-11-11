@@ -11,7 +11,7 @@ class LineSink1DBase(Element):
     All LineSink1D elements are derived from this class
     """
 
-    tiny = 1e-6
+    tiny = 1e-8
 
     def __init__(
         self,
