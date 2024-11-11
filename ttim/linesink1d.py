@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from ttim.element import Element
-from ttim.equation import HeadEquation
+from ttim.equation import FluxDiffEquation, HeadDiffEquation, HeadEquation
 
 
 class LineSink1DBase(Element):
@@ -10,6 +10,8 @@ class LineSink1DBase(Element):
 
     All LineSink1D elements are derived from this class
     """
+
+    tiny = 1e-6
 
     def __init__(
         self,
@@ -238,3 +240,68 @@ class HeadLineSink1D(LineSink1DBase, HeadEquation):
         )
         # Needed in solving, solve for a unit head
         self.pc = self.aq.T[self.layers]
+
+
+class HeadDiffLineSink1D(LineSink1DBase, HeadDiffEquation):
+    def __init__(self, model, xls=0, layers=0, label=None):
+        super().__init__(
+            model,
+            xls,
+            tsandbc=[(0, 0)],
+            res=0.0,
+            wh="H",
+            layers=layers,
+            type="v",
+            name="HeadDiffLineSink1D",
+            label=label,
+        )
+        self.nunknowns = self.nparam
+
+    def initialize(self):
+        super().initialize()
+        self.xcout = self.xc + self.tiny
+        self.xcin = self.xc - self.tiny
+        self.ycout = np.zeros(1)
+        self.ycin = np.zeros(1)
+        self.cosout = -np.ones(1)
+        self.sinout = np.zeros(1)
+        self.aqout = self.model.aq.find_aquifer_data(self.xcout[0], 0)
+        self.aqin = self.model.aq.find_aquifer_data(self.xcin[0], 0)
+
+        self.parameters = np.zeros(
+            (self.model.ngvbc, self.nparam, self.model.npval), dtype=complex
+        )
+        # Needed in solving, solve for a unit head
+        # self.pc = self.aq.T[self.layers]
+
+
+class FluxDiffLineSink1D(LineSink1DBase, FluxDiffEquation):
+    def __init__(self, model, xls=0, layers=0, label=None):
+        super().__init__(
+            model,
+            xls,
+            tsandbc=[(0, 0)],
+            res=0.0,
+            wh="H",
+            layers=layers,
+            type="v",
+            name="FluxDiffLineSink1D",
+            label=label,
+        )
+        self.nunknowns = self.nparam
+
+    def initialize(self):
+        super().initialize()
+        self.xcout = self.xc - self.tiny
+        self.xcin = self.xc + self.tiny
+        self.ycout = np.zeros(1)
+        self.ycin = np.zeros(1)
+        self.cosout = -np.ones(1)
+        self.sinout = np.zeros(1)
+        self.aqout = self.model.aq.find_aquifer_data(self.xcout[0], 0)
+        self.aqin = self.model.aq.find_aquifer_data(self.xcin[0], 0)
+        self.parameters = np.zeros(
+            (self.model.ngvbc, self.nparam, self.model.npval), dtype=complex
+        )
+        # Needed in solving, solve for a unit head
+        # self.pc = self.aq.T[self.layers]
