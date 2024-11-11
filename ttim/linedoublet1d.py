@@ -11,6 +11,8 @@ class LineDoublet1DBase(Element):
     All LineDoublet1D elements are derived from this class
     """
 
+    tiny = 1e-6
+
     def __init__(
         self,
         model,
@@ -48,10 +50,10 @@ class LineDoublet1DBase(Element):
 
     def initialize(self):
         # control point just on the positive side
-        self.xc = np.array([self.xld + 1e-6])
+        self.xc = np.array([self.xld + self.tiny])
         self.yc = np.zeros(1)
         # control point on the negative side
-        self.xcneg = np.array([self.xld - 1e-6])
+        self.xcneg = np.array([self.xld - self.tiny])
         self.ycneg = np.zeros(1)
         self.cosout = -np.ones(1)
         self.sinout = np.zeros(1)
