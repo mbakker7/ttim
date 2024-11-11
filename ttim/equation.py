@@ -409,7 +409,7 @@ class InhomEquation:
         for icp in range(self.ncp):
             istart = icp * 2 * self.nlayers
             ieq = 0
-            for e in self.model.elementList:
+            for e in self.model.elementlist:
                 if e.nunknowns > 0:
                     mat[istart : istart + self.nlayers, ieq : ieq + e.nunknowns, :] = (
                         e.potinflayers(
@@ -457,4 +457,82 @@ class InhomEquation:
                 ) * np.cos(self.thetacp[icp]) + (qyin - qyout) * np.sin(
                     self.thetacp[icp]
                 )
+        return mat, rhs
+
+
+class HeadDiffEquation:
+    def equation(self):
+        """Mix-in class that returns matrix rows for continuity of head."""
+        mat = np.empty(
+            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
+        )
+        rhs = np.zeros(
+            (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
+        )
+        for icp in range(self.ncp):
+            istart = icp * self.nlayers
+            ieq = 0
+            for e in self.model.elementlist:
+                if e.nunknowns > 0:
+                    mat[istart : istart + self.nlayers, ieq : ieq + e.nunknowns, :] = (
+                        e.potinflayers(
+                            self.xcin[icp], self.ycin[icp], self.layers, self.aqin
+                        )
+                        / self.aqin.T[self.layers][:, np.newaxis, np.newaxis]
+                        - e.potinflayers(
+                            self.xcout[icp], self.ycout[icp], self.layers, self.aqout
+                        )
+                        / self.aqout.T[self.layers][:, np.newaxis, np.newaxis]
+                    )
+                    ieq += e.nunknowns
+            for i in range(self.model.ngbc):
+                rhs[istart : istart + self.nlayers, i, :] -= (
+                    self.model.gbclist[i].unitpotentiallayers(
+                        self.xcin[icp], self.ycin[icp], self.layers, self.aqin
+                    )
+                    / self.aqin.T[self.layers][:, np.newaxis]
+                    - self.model.gbclist[i].unitpotentiallayers(
+                        self.xcout[icp], self.ycout[icp], self.layers, self.aqout
+                    )
+                    / self.aqout.T[self.layers][:, np.newaxis]
+                )
+        return mat, rhs
+
+
+class FluxDiffEquation:
+    def equation(self):
+        """Mix-in class that returns matrix rows for continuity of flow."""
+        mat = np.zeros(
+            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
+        )
+        rhs = np.zeros(
+            (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
+        )
+        for icp in range(self.ncp):
+            istart = icp * self.nlayers
+            ieq = 0
+            for e in self.model.elementlist:
+                if e.nunknowns > 0:
+                    qxin, _ = e.disvecinflayers(
+                        self.xcin[icp], self.ycin[icp], self.layers, self.aqin
+                    )
+                    qxout, _ = e.disvecinflayers(
+                        self.xcout[icp], self.ycout[icp], self.layers, self.aqout
+                    )
+                    mat[
+                        istart : istart + self.nlayers,
+                        ieq : ieq + e.nunknowns,
+                        :,
+                    ] = (qxin - qxout) * self.cosout
+                    ieq += e.nunknowns
+            for i in range(self.model.ngbc):
+                qxin, _ = self.model.gbclist[i].unitdisveclayers(
+                    self.xcin[icp], self.ycin[icp], self.layers, self.aqin
+                )
+                qxout, _ = self.model.gbclist[i].unitdisveclayers(
+                    self.xcout[icp], self.ycout[icp], self.layers, self.aqout
+                )
+                rhs[istart : istart + self.nlayers, i, :] -= (
+                    qxin - qxout
+                ) * self.cosout
         return mat, rhs
