@@ -256,3 +256,7 @@ class Aquifer(AquiferData):
                 if aq.area < rv.area:
                     rv = aq
         return rv
+
+    def add_inhom(self, inhom):
+        self.inhomlist.append(inhom)
+        return len(self.inhomlist) - 1
