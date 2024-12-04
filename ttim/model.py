@@ -92,6 +92,7 @@ class TimModel:
         return "Model"
 
     def initialize(self):
+        self.aq.initialize()
         self.gvbclist = self.gbclist + self.vbclist
         self.vzbclist = self.vbclist + self.zbclist
         # Given elements are first in list
@@ -100,7 +101,6 @@ class TimModel:
         self.nvbc = len(self.vbclist)
         self.nzbc = len(self.zbclist)
         self.ngvbc = self.ngbc + self.nvbc
-        self.aq.initialize()
         for e in self.elementlist:
             e.initialize()
         # lists used for inverse transform
