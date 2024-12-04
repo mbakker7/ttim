@@ -488,11 +488,11 @@ class HeadDiffEquation:
             for i in range(self.model.ngbc):
                 rhs[istart : istart + self.nlayers, i, :] -= (
                     self.model.gbclist[i].unitpotentiallayers(
-                        self.xcin[icp], self.ycin[icp], self.layers, self.aqin
+                        self.xc[icp], self.yc[icp], self.layers, self.aqin
                     )
                     / self.aqin.T[self.layers][:, np.newaxis]
                     - self.model.gbclist[i].unitpotentiallayers(
-                        self.xcout[icp], self.ycout[icp], self.layers, self.aqout
+                        self.xc[icp], self.yc[icp], self.layers, self.aqout
                     )
                     / self.aqout.T[self.layers][:, np.newaxis]
                 )
@@ -523,16 +523,14 @@ class FluxDiffEquation:
                         istart : istart + self.nlayers,
                         ieq : ieq + e.nunknowns,
                         :,
-                    ] = (qxin - qxout) * self.cosout
+                    ] = qxin - qxout
                     ieq += e.nunknowns
             for i in range(self.model.ngbc):
                 qxin, _ = self.model.gbclist[i].unitdisveclayers(
-                    self.xcin[icp], self.ycin[icp], self.layers, self.aqin
+                    self.xc[icp], self.yc[icp], self.layers, self.aqin
                 )
                 qxout, _ = self.model.gbclist[i].unitdisveclayers(
-                    self.xcout[icp], self.ycout[icp], self.layers, self.aqout
+                    self.xc[icp], self.yc[icp], self.layers, self.aqout
                 )
-                rhs[istart : istart + self.nlayers, i, :] -= (
-                    qxin - qxout
-                ) * self.cosout
+                rhs[istart : istart + self.nlayers, i, :] -= qxin - qxout
         return mat, rhs
