@@ -11,6 +11,7 @@ __name__ = "ttim"
 __author__ = "Mark Bakker"
 from .circareasink import CircAreaSink
 from .fit import Calibrate
+from .inhom1d import StripInhom3D, StripInhomMaq
 from .linedoublet import LeakyLineDoublet, LeakyLineDoubletString
 from .linedoublet1d import LeakyLineDoublet1D, LineDoublet1DBase
 from .linesink import (
