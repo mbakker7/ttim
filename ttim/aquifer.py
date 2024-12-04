@@ -250,6 +250,9 @@ class Aquifer(AquiferData):
         for inhom in self.inhomlist:
             inhom.initialize()
 
+    def is_inside(self, x, y):
+        return True
+
     def find_aquifer_data(self, x, y):
         rv = self
         for aq in self.inhomlist:
