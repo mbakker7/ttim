@@ -162,8 +162,9 @@ class AquiferData:
         return pot / self.Tcol[layers]
 
     def is_inside(self, x, y):
-        print("Must overload AquiferData.isInside method")
-        return True
+        raise NotImplementedError(
+            f"Must overload is_inside in {self.__class__.__name__} class."
+        )
 
     def in_which_layer(self, z):
         """Get layer given elevation z.
