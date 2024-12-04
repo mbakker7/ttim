@@ -24,6 +24,7 @@ class LineSink1DBase(Element):
         type="",
         name="LineSink1DBase",
         label=None,
+        aq=None,
     ):
         Element.__init__(
             self,
@@ -42,6 +43,7 @@ class LineSink1DBase(Element):
         self.xls = float(xls)
         self.res = np.atleast_1d(res).astype(np.float64)
         self.wh = wh
+        self.aq = aq
         self.model.addelement(self)
 
     def __repr__(self):
@@ -53,7 +55,8 @@ class LineSink1DBase(Element):
         self.xc = np.array([self.xls])
         self.yc = np.zeros(1)
         self.ncp = 1
-        self.aq = self.model.aq.find_aquifer_data(self.xc[0], self.yc[0])
+        if self.aq is None:
+            self.aq = self.model.aq.find_aquifer_data(self.xc[0], self.yc[0])
         self.setbc()
         coef = self.aq.coef[self.layers, :]
         self.setflowcoef()
@@ -218,7 +221,14 @@ class LineSink1D(LineSink1DBase):
 
 class HeadLineSink1D(LineSink1DBase, HeadEquation):
     def __init__(
-        self, model, xls=0, tsandh=[(0, 1)], res=0, wh="H", layers=0, label=None
+        self,
+        model,
+        xls=0,
+        tsandh=[(0, 1)],
+        res=0,
+        wh="H",
+        layers=0,
+        label=None,
     ):
         super().__init__(
             model,
@@ -243,7 +253,14 @@ class HeadLineSink1D(LineSink1DBase, HeadEquation):
 
 
 class HeadDiffLineSink1D(LineSink1DBase, HeadDiffEquation):
-    def __init__(self, model, xls=0, layers=0, label=None):
+    def __init__(
+        self,
+        model,
+        xls=0,
+        layers=0,
+        label=None,
+        aq=None,
+    ):
         super().__init__(
             model,
             xls,
@@ -251,9 +268,10 @@ class HeadDiffLineSink1D(LineSink1DBase, HeadDiffEquation):
             res=0.0,
             wh="H",
             layers=layers,
-            type="v",
+            type="z",
             name="HeadDiffLineSink1D",
             label=label,
+            aq=aq,
         )
         self.nunknowns = self.nparam
 
@@ -276,7 +294,7 @@ class HeadDiffLineSink1D(LineSink1DBase, HeadDiffEquation):
 
 
 class FluxDiffLineSink1D(LineSink1DBase, FluxDiffEquation):
-    def __init__(self, model, xls=0, layers=0, label=None):
+    def __init__(self, model, xls=0, layers=0, label=None, aq=None):
         super().__init__(
             model,
             xls,
@@ -284,9 +302,10 @@ class FluxDiffLineSink1D(LineSink1DBase, FluxDiffEquation):
             res=0.0,
             wh="H",
             layers=layers,
-            type="v",
+            type="z",
             name="FluxDiffLineSink1D",
             label=label,
+            aq=aq,
         )
         self.nunknowns = self.nparam
 
