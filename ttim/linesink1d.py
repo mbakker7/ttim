@@ -26,8 +26,7 @@ class LineSink1DBase(Element):
         label=None,
         aq=None,
     ):
-        Element.__init__(
-            self,
+        super().__init__(
             model,
             nparam=1,
             nunknowns=0,
