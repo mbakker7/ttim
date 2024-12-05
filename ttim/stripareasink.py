@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 
 from ttim.element import Element
@@ -63,6 +64,30 @@ class StripAreaSinkInhom(Element):
         qy = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         return qx, qy
 
+    def plot(self, ax, n_arrows=10, **kwargs):
+        Ly = self.model.aq.z[0] - self.model.aq.z[-1]
+        Lx = self.x2 - self.x1
+
+        for i in np.linspace(self.x1, self.x2, n_arrows):
+            xtail = i
+            ytail = self.model.aq.z[0] + Ly / 20.0
+            dx = 0
+            dy = -0.9 * Ly / 20.0
+            ax.arrow(
+                xtail,
+                ytail,
+                dx,
+                dy,
+                width=kwargs.pop("width", Lx / 300.0),
+                length_includes_head=kwargs.pop("length_includes_head", True),
+                head_width=kwargs.pop("head_width", 4 * Lx / 300.0),
+                head_length=kwargs.pop("head_length", 0.4 * Ly / 20.0),
+                color=kwargs.pop("color", "k"),
+                joinstyle=kwargs.pop("joinstyle", "miter"),
+                capstyle=kwargs.pop("capstyle", "projecting"),
+            )
+
+
 class StripHstarInhom(Element):
     def __init__(
         self,
@@ -125,3 +150,53 @@ class StripHstarInhom(Element):
         qy = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         return qx, qy
 
+    def plot(self, ax=None, **kwargs):
+        if ax is None:
+            _, ax = plt.subplots()
+        ztop = self.model.aq.z[0]
+        Ly = self.model.aq.z[0] - self.model.aq.z[-1]
+        dy = Ly / 20.0
+        if np.isfinite(self.x1):
+            x1 = self.x1
+            ax.plot(
+                [x1, x1],
+                [ztop, ztop + 1.5 * dy],
+                color="k",
+                lw=1.0,
+                ls="dotted",
+            )
+        else:
+            x1 = ax.get_xlim()[0]
+
+        if np.isfinite(self.x2):
+            x2 = self.x2
+            ax.plot(
+                [x2, x2],
+                [ztop, ztop + 1.5 * dy],
+                color="k",
+                lw=1.0,
+                ls="dotted",
+            )
+        else:
+            x2 = ax.get_xlim()[1]
+
+        Lx = x2 - x1
+        dx = Lx / 200.0
+        xc = (x1 + x2) / 2.0
+
+        # water level
+        c = kwargs.pop("color", "k")
+        lw = kwargs.pop("lw", 1.0)
+        ax.plot([x1, x2], [ztop + dy, ztop + dy], lw=lw, color=c, **kwargs)
+        ax.plot(
+            [xc - 1.75 * dx, xc + 1.75 * dx],
+            [ztop + 0.8 * dy, ztop + 0.8 * dy],
+            lw=0.75 * lw,
+            color=c,
+        )
+        ax.plot(
+            [xc - dx, xc + dx],
+            [ztop + 0.65 * dy, ztop + 0.65 * dy],
+            lw=0.75 * lw,
+            color=c,
+        )
