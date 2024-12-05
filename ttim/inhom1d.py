@@ -103,14 +103,16 @@ class StripInhom(AquiferData):
                 FluxDiffLineSink1D(
                     self.model, self.x1, range(self.naq), label=None, aq=aqin
                 )
-            if self.tsandN is not None:
-                assert self.model.aq.topboundary == "con", Exception(
-                    "Infiltration can only be applied to a confined aquifer."
-                )
-                StripAreaSinkInhom(self.model, self.x1, self.x2, tsandN=self.tsandN)
-        if aqin.ltype[0] == "l":
-            assert self.hstar is not None, "Error: hstar needs to be set"
-            raise NotImplementedError("hstar not yet implemented.")
+        if self.tsandN is not None:
+            assert self.topboundary == "con", Exception(
+                "Infiltration can only be applied to a confined aquifer."
+            )
+            StripAreaSinkInhom(self.model, self.x1, self.x2, tsandN=self.tsandN)
+        if self.tsandhstar is not None:
+            assert self.topboundary == "sem", Exception(
+                "hstar can only be implemented on top of a semi-confined aquifer."
+            )
+            StripHstarInhom(self.model, self.x1, self.x2, tsandhstar=self.tsandhstar)
 
 
 class StripInhomMaq(StripInhom):
