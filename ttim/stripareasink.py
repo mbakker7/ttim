@@ -53,7 +53,7 @@ class StripAreaSinkInhom(Element):
             aq = self.model.aq.find_aquifer_data(x, 0.0)
         rv = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         if aq == self.aq:
-            if (x > self.x1) and (x < self.x2):
+            if (x > self.x1) and (x < self.x2): # we really need this?
                 rv[:] = self.term
         return rv
 

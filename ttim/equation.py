@@ -488,11 +488,11 @@ class HeadDiffEquation:
             for i in range(self.model.ngbc):
                 rhs[istart : istart + self.nlayers, i, :] -= (
                     self.model.gbclist[i].unitpotentiallayers(
-                        self.xc[icp], self.yc[icp], self.layers, self.aqin
+                        self.xcin[icp], self.ycin[icp], self.layers, self.aqin
                     )
                     / self.aqin.T[self.layers][:, np.newaxis]
                     - self.model.gbclist[i].unitpotentiallayers(
-                        self.xc[icp], self.yc[icp], self.layers, self.aqout
+                        self.xcout[icp], self.ycout[icp], self.layers, self.aqout
                     )
                     / self.aqout.T[self.layers][:, np.newaxis]
                 )
