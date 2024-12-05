@@ -41,8 +41,17 @@ class PlotTtim:
         if xy is not None:
             (x0, y0), (x1, y1) = xy
             r = np.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
-            ax.set_xlim(0, r)
+            if y0 == 0 and y1 == 0:
+                r0 = x0
+                ax.set_xlim(x0, x1)
+            elif x0 == 0 and x1 == 0:
+                ax.set_ylim(y0, y1)
+                r0 = y0
+            else:
+                ax.set_xlim(0, r)
+                r0 = 0.0
         else:
+            r0 = 0.0
             r = 1.0
 
         if labels:
@@ -61,7 +70,7 @@ class PlotTtim:
                 )
                 if labels:
                     ax.text(
-                        0.5 * r if not params else 0.25 * r,
+                        r0 + 0.5 * r if not params else r0 + 0.25 * r,
                         np.mean(self._ml.aq.z[i : i + 2]),
                         f"leaky layer {lli}",
                         ha="center",
@@ -69,7 +78,7 @@ class PlotTtim:
                     )
                 if params:
                     ax.text(
-                        0.75 * r if labels else 0.5 * r,
+                        r0 + 0.75 * r if labels else r0 + 0.5 * r,
                         np.mean(self._ml.aq.z[i : i + 2]),
                         (
                             f"$c$ = {self._ml.aq.c[lli]}, "
@@ -83,7 +92,7 @@ class PlotTtim:
 
             if labels and self._ml.aq.ltype[i] == "a":
                 ax.text(
-                    0.5 * r if not params else 0.25 * r,
+                    r0 + 0.5 * r if not params else r0 + 0.25 * r,
                     np.mean(self._ml.aq.z[i : i + 2]),
                     f"aquifer {aqi}",
                     ha="center",
@@ -101,7 +110,7 @@ class PlotTtim:
                         f"$S_s$ = {self._ml.aq.Saq[aqi]:.2e}"
                     )
                 ax.text(
-                    0.75 * r if labels else 0.5 * r,
+                    r0 + 0.75 * r if labels else r0 + 0.5 * r,
                     np.mean(self._ml.aq.z[i : i + 2]),
                     paramtxt,
                     ha="center",
