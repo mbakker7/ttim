@@ -3,7 +3,7 @@ import numpy as np
 from ttim.aquifer import AquiferData
 from ttim.aquifer_parameters import param_3d, param_maq
 from ttim.linesink1d import FluxDiffLineSink1D, HeadDiffLineSink1D
-from ttim.stripareasink import StripAreaSinkInhom
+from ttim.stripareasink import StripAreaSinkInhom, StripHstarInhom
 
 
 class StripInhom(AquiferData):
