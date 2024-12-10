@@ -1,9 +1,12 @@
-import re
+import warnings
+from typing import Iterable
 
-# import lmfit
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.optimize import least_squares
+
+# import lmfit
 
 
 class Calibrate:
@@ -17,12 +20,24 @@ class Calibrate:
         """
         self.model = model
         self.parameters = pd.DataFrame(
-            columns=["optimal", "std", "perc_std", "pmin", "pmax", "initial", "parray"]
+            columns=[
+                "layers",
+                "optimal",
+                "std",
+                "perc_std",
+                "pmin",
+                "pmax",
+                "initial",
+                "inhoms",
+                "parray",
+            ]
         )
         self.seriesdict = {}
         self.seriesinwelldict = {}
 
-    def set_parameter(self, name=None, initial=0, pmin=-np.inf, pmax=np.inf):
+    def set_parameter(
+        self, name=None, layers=None, initial=0, pmin=-np.inf, pmax=np.inf, inhoms=None
+    ):
         """Set parameter to be optimized.
 
         Parameters
@@ -44,43 +59,77 @@ class Calibrate:
         """
         assert isinstance(name, str), "Error: name must be string"
         # find numbers in name str for support layer ranges
-        layers_from_name = re.findall(r"\d+", name)
-        p = None
-        if "_" in name:
-            fromlay, tolay = [int(i) for i in layers_from_name]
-            if name[:3] == "kaq":
-                p = self.model.aq.kaq[fromlay : tolay + 1]
-            elif name[:3] == "Saq":
-                p = self.model.aq.Saq[fromlay : tolay + 1]
-            elif name[0] == "c":
-                p = self.model.aq.c[fromlay : tolay + 1]
-            elif name[:3] == "Sll":
-                p = self.model.aq.Sll[fromlay : tolay + 1]
-            elif name[0:8] == "kzoverkh":
-                p = self.model.aq.kzoverkh[fromlay : tolay + 1]
+        # layers_from_name = re.findall(r"\d+", name)
+
+        if isinstance(layers, Iterable):
+            from_lay = min(layers)
+            to_lay = max(layers)
+            if from_lay == to_lay:
+                to_lay += 1
+            if (np.diff(layers) > 1).any():
+                warnings.warn(
+                    "Non-consecutive layers are not supported. "
+                    f"Setting parameter '{name}' for layers {from_lay} - {to_lay}."
+                )
+        elif isinstance(layers, int):
+            from_lay = layers
+            to_lay = layers + 1
         else:
-            layer = int(layers_from_name[0])
-            # Set, kaq, Saq, c
-            if name[:3] == "kaq":
-                p = self.model.aq.kaq[layer : layer + 1]
-            elif name[:3] == "Saq":
-                p = self.model.aq.Saq[layer : layer + 1]
-            elif name[0] == "c":
-                p = self.model.aq.c[layer : layer + 1]
-            elif name[:3] == "Sll":
-                p = self.model.aq.Sll[layer : layer + 1]
-            elif name[0:8] == "kzoverkh":
-                p = self.model.aq.kzoverkh[layer : layer + 1]
+            raise DeprecationWarning(
+                "Setting layers in the parameter name is no longer supported. "
+                f"Set layers keyword argument for parameter '{name}'."
+            )
+
+        # get aquifer information and create list if necessary
+        if inhoms is None:
+            aq = [self.model.aq]
+        elif not isinstance(inhoms, (list, tuple)):
+            aq = [inhoms]
+        else:
+            aq = inhoms
+
+        # convert aquifer names to aquifer objects
+        for i, iaq in enumerate(aq):
+            if isinstance(iaq, str):
+                aq[i] = self.model.aq.inhomdict[iaq]
+
+        p = None
+        # from_lay, to_lay = [int(i) for i in layers_from_name]
+        if name[:3] == "kaq":
+            p = aq[0].kaq[from_lay : to_lay + 1]
+            param = name[:3]
+        elif name[:3] == "Saq":
+            p = aq[0].Saq[from_lay : to_lay + 1]
+            param = name[:3]
+        elif name[0] == "c":
+            p = aq[0].c[from_lay : to_lay + 1]
+            param = name[0]
+        elif name[:3] == "Sll":
+            p = aq[0].Sll[from_lay : to_lay + 1]
+            param = name[:3]
+        elif name[0:8] == "kzoverkh":
+            p = aq[0].kzoverkh[from_lay : to_lay + 1]
+            param = name[:8]
+
         if p is None:  # no parameter set
             print("parameter name not recognized or no parameter ref supplied")
             return
-        self.parameters.loc[name] = {
+
+        # set all other aquifer parameter references to same array
+        if len(aq) > 1:
+            for iaq in aq:
+                setattr(iaq, param, p)
+
+        pname = f"{name}_{'_'.join([iaq.name for iaq in aq])}"
+        self.parameters.loc[pname] = {
+            "layers": layers,
             "optimal": initial,
             "std": None,
             "perc_std": None,
             "pmin": pmin,
             "pmax": pmax,
             "initial": initial,
+            "inhoms": aq if inhoms is not None else None,
             "parray": p[:],
         }
 
@@ -291,6 +340,45 @@ class Calibrate:
             self.parameters["optimal"].values, weighted=weighted, layers=layers
         )
         return np.sqrt(np.mean(r**2))
+
+    def topview(self, ax=None, layers=None, labels=True):
+        """Plot topview of model with calibration points.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            axes to plot on (the default is None, which creates a new figure)
+        """
+        if ax is None:
+            _, ax = plt.subplots()
+            # self.model.plots.topview(ax=ax)
+        for key, s in self.seriesdict.items():
+            if layers is None or s.layer in layers:
+                ax.plot(s.x, s.y, "ko")
+                if labels:
+                    ax.text(s.x, s.y, key, ha="left", va="bottom")
+        return ax
+
+    def xsection(self, ax=None, labels=True):
+        """Plot cross-section of model with calibration points.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            axes to plot on (the default is None, which creates a new figure)
+        """
+        if ax is None:
+            _, ax = plt.subplots()
+        for key, s in self.seriesdict.items():
+            aq = self.model.aq.find_aquifer_data(s.x, s.y)
+            ztop = aq.z[0]
+            zpb_top = aq.zaqtop[s.layer]
+            zpb_bot = aq.zaqbot[s.layer]
+            ax.plot([s.x, s.x], [zpb_top, zpb_bot], c="k", ls="dotted")
+            ax.plot([s.x, s.x], [ztop + 1, zpb_top], c="k", ls="solid", lw=1.0)
+            if labels:
+                ax.text(s.x, ztop + 1, key, ha="left", va="bottom", rotation=45)
+        return ax
 
 
 class Series:
