@@ -843,3 +843,49 @@ class Model3D(TimModel):
             timmlmodel=timmlmodel,
         )
         self.name = "Model3D"
+class ModelXsection(TimModel):
+    def __init__(
+        self,
+        naq=1,
+        tmin=1,
+        tmax=10,
+        tstart=0,
+        M=10,
+        timmlmodel=None,
+    ):
+        self.elementlist = []
+        self.elementdict = {}
+        self.vbclist = []  # variable boundary condition 'v' elements
+        self.zbclist = []  # zero and constant boundary condition 'z' elements
+        self.gbclist = []  # given boundary condition 'g' elements
+        # note: given bc elements don't have any unknowns
+        self.tmin = tmin
+        self.tmax = tmax
+        self.tstart = tstart
+        self.M = M
+        self.aq = SimpleAquifer(naq)
+        self.compute_laplace_parameters()
+        self.name = "TimModel"
+        self.modelname = "ml"  # Used for writing out input
+        self.timmlmodel = timmlmodel
+        if self.timmlmodel is not None:
+            self.timmlmodel.solve()
+
+        self.plots = PlotTtim(self)
+        self.plot = self.plots.topview
+        self.name = "ModelXsection"
+
+    def check_inhoms(self):
+        """Check if number of aquifers in inhoms matches number of aquifers in model."""
+        naqs = {}
+        for inhom in self.aq.inhomdict.values():
+            naqs[inhom.name] = inhom.naq
+        check = np.array(list(naqs.values())) == self.aq.naq
+        if not check.all():
+            raise ValueError(
+                f"Number of aquifers does not match {self.aq.naq}:\n{naqs}"
+            )
+
+    def initialize(self):
+        self.check_inhoms()
+        super().initialize()
