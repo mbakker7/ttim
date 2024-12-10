@@ -280,5 +280,15 @@ class Aquifer(AquiferData):
         return rv
 
     def add_inhom(self, inhom):
-        self.inhomlist.append(inhom)
-        return len(self.inhomlist) - 1
+class SimpleAquifer(Aquifer):
+    def __init__(self, naq):
+        self.naq = naq
+        self.inhomdict = {}
+        self.area = 1e300  # Needed to find smallest inhomogeneity
+
+    def __repr__(self):
+        return f"Simple Aquifer: {self.naq} aquifer(s)"
+
+    def initialize(self):
+        for inhom in self.inhomdict.values():
+            inhom.initialize()
