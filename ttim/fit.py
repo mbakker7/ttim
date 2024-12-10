@@ -69,7 +69,8 @@ class Calibrate:
             if (np.diff(layers) > 1).any():
                 warnings.warn(
                     "Non-consecutive layers are not supported. "
-                    f"Setting parameter '{name}' for layers {from_lay} - {to_lay}."
+                    f"Setting parameter '{name}' for layers {from_lay} - {to_lay}.",
+                    stacklevel=1,
                 )
         elif isinstance(layers, int):
             from_lay = layers
