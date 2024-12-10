@@ -19,6 +19,7 @@ class AquiferData:
         phreatictop,
         kzoverkh=None,
         model3d=False,
+        name=None,
     ):
         """Kzoverkh and model3d only need to be specified when model is model3d."""
         self.model = model
@@ -58,6 +59,7 @@ class AquiferData:
             assert self.kzoverkh is not None, "model3d specified without kzoverkh"
         # self.D = self.T / self.Saq
         self.area = 1e200  # Smaller than default of ml.aq so that inhom is found
+        self.name = name
 
     def __repr__(self):
         return "Inhom T: " + str(self.T)
