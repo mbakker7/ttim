@@ -62,7 +62,15 @@ class AquiferData:
         self.name = name
 
     def __repr__(self):
-        return "Inhom T: " + str(self.T)
+        if self.topboundary.startswith("con"):
+            topbound = "confined"
+        elif self.topboundary.startswith("lea"):
+            topbound = "leaky"
+        elif self.topboundary.startswith("sem"):
+            topbound = "semi-confined"
+        else:
+            topbound = "unknown"  # should not happen
+        return f"Inhom Aquifer: {self.naq} aquifer(s) with {topbound} top boundary"
 
     def initialize(self):
         """Initialize the aquifer data.
