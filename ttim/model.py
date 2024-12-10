@@ -469,6 +469,40 @@ class TimModel:
             h[:, :, i] = self.head(xg[i], yg[i], t, layers)
         return h
 
+    def disvecalongline(self, x, y, t, layers=None):
+        """Discharge vector along line or curve.
+
+        Parameters
+        ----------
+        x : 1D array or list
+            x values of line
+        y : 1D array or list
+            y values of line
+        t : float or 1D array or list
+            times for which grid is returned
+        layers : integer, list or array, optional
+            layers for which grid is returned
+
+        Returns
+        -------
+        q : array size `nlayers, ntimes, nx`
+        """
+        xg = np.atleast_1d(x)
+        yg = np.atleast_1d(y)
+        if layers is None:
+            nlay = self.aq.find_aquifer_data(xg[0], yg[0]).naq
+        else:
+            nlay = len(np.atleast_1d(layers))
+        nx = len(xg)
+        if len(yg) == 1:
+            yg = yg * np.ones(nx)
+        t = np.atleast_1d(t)
+        qx = np.zeros((nlay, len(t), nx))
+        qy = np.zeros((nlay, len(t), nx))
+        for i in range(nx):
+            qx[:, :, i], qy[:, :, i] = self.disvec(xg[i], yg[i], t, layers)
+        return qx, qy
+
     def headgrid(self, xg, yg, t, layers=None, printrow=False):
         """Grid of heads.
 
