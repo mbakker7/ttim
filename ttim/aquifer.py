@@ -231,8 +231,7 @@ class Aquifer(AquiferData):
         kzoverkh=None,
         model3d=False,
     ):
-        AquiferData.__init__(
-            self,
+        super().__init__(
             model,
             kaq,
             z,
@@ -249,7 +248,7 @@ class Aquifer(AquiferData):
             kzoverkh,
             model3d,
         )
-        self.inhomlist = []
+        self.inhomdict = {}
         self.area = 1e300  # Needed to find smallest inhomogeneity
 
     def __repr__(self):
@@ -264,8 +263,8 @@ class Aquifer(AquiferData):
         return f"Background Aquifer: {self.naq} aquifer(s) with {topbound} top boundary"
 
     def initialize(self):
-        AquiferData.initialize(self)
-        for inhom in self.inhomlist:
+        super().initialize()
+        for inhom in self.inhomdict.values():
             inhom.initialize()
 
     def is_inside(self, x, y):
@@ -273,13 +272,22 @@ class Aquifer(AquiferData):
 
     def find_aquifer_data(self, x, y):
         rv = self
-        for aq in self.inhomlist:
+        for aq in self.inhomdict.values():
             if aq.is_inside(x, y):
                 if aq.area < rv.area:
                     rv = aq
         return rv
 
     def add_inhom(self, inhom):
+        inhom_number = len(self.inhomdict)
+        if inhom.name is None:
+            inhom.name = f"inhom{inhom_number}"
+        if inhom.name in self.inhomdict:
+            raise ValueError(f"Inhomogeneity name '{inhom.name}' already exists.")
+        self.inhomdict[inhom.name] = inhom
+        return inhom_number
+
+
 class SimpleAquifer(Aquifer):
     def __init__(self, naq):
         self.naq = naq
