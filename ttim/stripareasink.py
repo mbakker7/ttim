@@ -118,7 +118,12 @@ class HstarXsection(Element):
         return f"{self.__class__.__name__}: " + str([self.x1, self.x2])
 
     def initialize(self):
-        self.xc = (self.x1 + self.x2) / 2.0
+        if not np.isfinite(self.x1):
+            self.xc = self.x2 - 1e-5
+        elif not np.isfinite(self.x2):
+            self.xc = self.x1 + 1e-5
+        else:
+            self.xc = (self.x1 + self.x2) / 2.0
         self.L = np.abs(self.x2 - self.x1)
         self.aq = self.model.aq.find_aquifer_data(self.xc, 0.0)
         self.setbc()
@@ -187,23 +192,23 @@ class HstarXsection(Element):
         else:
             x2 = ax.get_xlim()[1]
 
-        Lx = x2 - x1
-        dx = max(Lx / 200.0, 1)
-        xc = (x1 + x2) / 2.0
-
         # water level
         c = kwargs.pop("color", "k")
         lw = kwargs.pop("lw", 1.0)
         ax.plot([x1, x2], [ztop + dy, ztop + dy], lw=lw, color=c, **kwargs)
-        ax.plot(
-            [xc - 1.75 * dx, xc + 1.75 * dx],
-            [ztop + dy - 0.5] * 2,
-            lw=0.75 * lw,
-            color=c,
-        )
-        ax.plot(
-            [xc - dx, xc + dx],
-            [ztop + dy - 1.0] * 2,
-            lw=0.75 * lw,
-            color=c,
-        )
+        # plot water level symbol: difficult to get consistent, comment out for now
+        # Lx = x2 - x1
+        # dx = max(Lx / 200.0, 1)
+        # xc = (x1 + x2) / 2.0
+        # ax.plot(
+        #     [xc - 1.75 * dx, xc + 1.75 * dx],
+        #     [ztop + dy - 0.5] * 2,
+        #     lw=0.75 * lw,
+        #     color=c,
+        # )
+        # ax.plot(
+        #     [xc - dx, xc + dx],
+        #     [ztop + dy - 1.0] * 2,
+        #     lw=0.75 * lw,
+        #     color=c,
+        # )
