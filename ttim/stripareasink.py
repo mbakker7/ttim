@@ -193,7 +193,7 @@ class HstarXsection(Element):
             x2 = ax.get_xlim()[1]
 
         # water level
-        c = kwargs.pop("color", "k")
+        c = kwargs.pop("color", "b")
         lw = kwargs.pop("lw", 1.0)
         ax.plot([x1, x2], [ztop + dy, ztop + dy], lw=lw, color=c, **kwargs)
         # plot water level symbol: difficult to get consistent, comment out for now
