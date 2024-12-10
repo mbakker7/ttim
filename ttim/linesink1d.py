@@ -2,7 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from ttim.element import Element
-from ttim.equation import FluxDiffEquation, HeadDiffEquation, HeadEquation
+from ttim.equation import (
+    FluxDiffEquation,
+    HeadDiffEquation,
+    HeadEquation,
+    MscreenEquation,
+)
 
 
 class LineSink1DBase(Element):
@@ -25,6 +30,7 @@ class LineSink1DBase(Element):
         name="LineSink1DBase",
         label=None,
         aq=None,
+        inhomelement=False,
     ):
         super().__init__(
             model,
@@ -35,6 +41,7 @@ class LineSink1DBase(Element):
             type=type,
             name=name,
             label=label,
+            inhomelement=inhomelement,
         )
         # Defined here and not in Element as other elements can have multiple
         # parameters per layers
@@ -123,10 +130,11 @@ class LineSink1DBase(Element):
     def plot(self, ax=None):
         if ax is None:
             _, ax = plt.subplots()
+        aq = self.model.aq.find_aquifer_data(self.xls, 0.0)
         for ilay in self.layers:
             ax.plot(
                 [self.xls, self.xls],
-                [self.model.aq.zaqtop[ilay], self.model.aq.zaqbot[ilay]],
+                [aq.zaqtop[ilay], aq.zaqbot[ilay]],
                 "k-",
             )
 
@@ -174,8 +182,7 @@ class DischargeLineSink1D(LineSink1DBase):
         )
 
 
-# TODO: add equation for dividing discharge over layers:
-class LineSink1D(LineSink1DBase):
+class LineSink1D(LineSink1DBase, MscreenEquation):
     r"""Linesink1D with a specified discharge.
 
     Parameters
@@ -199,11 +206,20 @@ class LineSink1D(LineSink1DBase):
     100 between times 10 and 50, with a specific discharge of 20 between
     times 50 and 200, and zero speficic discharge after time 200.
 
-    >>> DischargeLineSink1D(ml, tsandq=[(10, 100), (50, 20), (200, 0)])
+    >>> LineSink1D(ml, tsandq=[(10, 100), (50, 20), (200, 0)])
     """
 
     def __init__(
-        self, model, xls=0, tsandq=[(0, 1)], res=0, wh="H", layers=0, label=None
+        self,
+        model,
+        xls=0,
+        tsandq=[(0, 1)],
+        res=0,
+        wh="H",
+        vres=0.0,
+        wv=1.0,
+        layers=0,
+        label=None,
     ):
         super().__init__(
             model,
@@ -212,10 +228,24 @@ class LineSink1D(LineSink1DBase):
             res=res,
             wh=wh,
             layers=layers,
-            type="g",
-            name="DischargeLineSink1D",
+            type="v",
+            name="LineSink1D",
             label=label,
         )
+        self.nunknowns = self.nparam
+        # Vertical resistance inside line-sink
+        self.vres = np.atleast_1d(vres)
+        self.wv = wv
+        if len(self.vres) == 1:
+            self.vres = self.vres[0] * np.ones(self.nlayers - 1)
+
+    def initialize(self):
+        super().initialize()
+        self.parameters = np.zeros(
+            (self.model.ngvbc, self.nparam, self.model.npval), dtype=complex
+        )
+        # qv = (hn - hn-1) / vresfac[n - 1]
+        self.vresfac = self.vres / self.wv
 
 
 class HeadLineSink1D(LineSink1DBase, HeadEquation):
@@ -271,6 +301,7 @@ class HeadDiffLineSink1D(LineSink1DBase, HeadDiffEquation):
             name="HeadDiffLineSink1D",
             label=label,
             aq=aq,
+            inhomelement=True,
         )
         self.nunknowns = self.nparam
 
@@ -288,8 +319,6 @@ class HeadDiffLineSink1D(LineSink1DBase, HeadDiffEquation):
         self.parameters = np.zeros(
             (self.model.ngvbc, self.nparam, self.model.npval), dtype=complex
         )
-        # Needed in solving, solve for a unit head
-        # self.pc = self.aq.T[self.layers]
 
 
 class FluxDiffLineSink1D(LineSink1DBase, FluxDiffEquation):
@@ -305,6 +334,7 @@ class FluxDiffLineSink1D(LineSink1DBase, FluxDiffEquation):
             name="FluxDiffLineSink1D",
             label=label,
             aq=aq,
+            inhomelement=True,
         )
         self.nunknowns = self.nparam
 
@@ -321,5 +351,3 @@ class FluxDiffLineSink1D(LineSink1DBase, FluxDiffEquation):
         self.parameters = np.zeros(
             (self.model.ngvbc, self.nparam, self.model.npval), dtype=complex
         )
-        # Needed in solving, solve for a unit head
-        # self.pc = self.aq.T[self.layers]
