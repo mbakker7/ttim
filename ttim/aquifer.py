@@ -253,7 +253,15 @@ class Aquifer(AquiferData):
         self.area = 1e300  # Needed to find smallest inhomogeneity
 
     def __repr__(self):
-        return "Background Aquifer T: " + str(self.T)
+        if self.topboundary.startswith("con"):
+            topbound = "confined"
+        elif self.topboundary.startswith("lea"):
+            topbound = "leaky"
+        elif self.topboundary.startswith("sem"):
+            topbound = "semi-confined"
+        else:
+            topbound = "unknown"  # should not happen
+        return f"Background Aquifer: {self.naq} aquifer(s) with {topbound} top boundary"
 
     def initialize(self):
         AquiferData.initialize(self)
