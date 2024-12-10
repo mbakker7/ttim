@@ -121,7 +121,10 @@ class Calibrate:
             for iaq in aq:
                 setattr(iaq, param, p)
 
-        pname = f"{name}_{'_'.join([iaq.name for iaq in aq])}"
+        if inhoms is None:
+            pname = name
+        else:
+            pname = f"{name}_{'_'.join([iaq.name for iaq in aq])}"
         self.parameters.loc[pname] = {
             "layers": layers,
             "optimal": initial,
