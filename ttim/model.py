@@ -89,7 +89,9 @@ class TimModel:
         self.plots.contour(*args, **kwargs)
 
     def __repr__(self):
-        return "Model"
+        return (
+            f"{self.name}: {self.aq.naq} aquifer(s), tmin={self.tmin}, tmax={self.tmax}"
+        )
 
     def initialize(self):
         self.aq.initialize()
