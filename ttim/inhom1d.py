@@ -1,12 +1,13 @@
+import matplotlib.pyplot as plt
 import numpy as np
 
 from ttim.aquifer import AquiferData
 from ttim.aquifer_parameters import param_3d, param_maq
 from ttim.linesink1d import FluxDiffLineSink1D, HeadDiffLineSink1D
-from ttim.stripareasink import StripAreaSinkInhom, StripHstarInhom
+from ttim.stripareasink import AreaSinkXsection, HstarXsection
 
 
-class StripInhom(AquiferData):
+class Xsection(AquiferData):
     tiny = 1e-12
 
     def __init__(
@@ -30,6 +31,7 @@ class StripInhom(AquiferData):
         tsandN,
         kzoverkh=None,
         model3d=False,
+        name=None,
     ):
         super().__init__(
             model,
@@ -47,6 +49,7 @@ class StripInhom(AquiferData):
             phreatictop,
             kzoverkh=kzoverkh,
             model3d=model3d,
+            name=name,
         )
         self.x1 = x1
         self.x2 = x2
@@ -56,7 +59,21 @@ class StripInhom(AquiferData):
         self.addlinesinks = True  # Set to False not to add line-sinks
 
     def __repr__(self):
-        return f"{self.__class__.__name__}: " + str([self.x1, self.x2])
+        if self.tsandhstar is not None:
+            hstar = " with h*(t)"
+        else:
+            hstar = ""
+        if self.tsandN is not None:
+            inf = " with N(t)"
+        else:
+            inf = ""
+
+        return (
+            f"{self.name}: {self.__class__.__name__} "
+            + str([self.x1, self.x2])
+            + hstar
+            + inf
+        )
 
     def is_inside(self, x, _):
         return (x >= self.x1) and (x < self.x2)
@@ -107,15 +124,104 @@ class StripInhom(AquiferData):
             assert self.topboundary == "con", Exception(
                 "Infiltration can only be applied to a confined aquifer."
             )
-            StripAreaSinkInhom(self.model, self.x1, self.x2, tsandN=self.tsandN)
+            AreaSinkXsection(self.model, self.x1, self.x2, tsandN=self.tsandN)
         if self.tsandhstar is not None:
             assert self.topboundary == "sem", Exception(
                 "hstar can only be implemented on top of a semi-confined aquifer."
             )
-            StripHstarInhom(self.model, self.x1, self.x2, tsandhstar=self.tsandhstar)
+            HstarXsection(self.model, self.x1, self.x2, tsandhstar=self.tsandhstar)
+
+    def plot(self, ax=None, labels=False, params=False, **kwargs):
+        if ax is None:
+            _, ax = plt.subplots(1, 1, figsize=(8, 4))
+
+        if np.isfinite(self.x1):
+            x1 = self.x1
+        else:
+            x1 = self.x2 - 100.0
+        if np.isfinite(self.x2):
+            x2 = self.x2
+        else:
+            x2 = self.x1 + 100.0
+
+        r = x2 - x1
+        r0 = x1
+
+        if labels or params:
+            lli = 1 if self.topboundary == "con" else 0
+            aqi = 0
+        else:
+            lli = None
+            aqi = None
+
+        for i in range(self.nlayers):
+            if self.ltype[i] == "l":
+                ax.fill_between(
+                    x=[r0, r0 + r],
+                    y1=self.z[i + 1],
+                    y2=self.z[i],
+                    color=[0.8, 0.8, 0.8],
+                )
+                if labels:
+                    ax.text(
+                        r0 + 0.5 * r if not params else r0 + 0.25 * r,
+                        np.mean(self.z[i : i + 2]),
+                        f"leaky layer {lli}",
+                        ha="center",
+                        va="center",
+                    )
+                if params:
+                    ax.text(
+                        r0 + 0.75 * r if labels else r0 + 0.5 * r,
+                        np.mean(self.z[i : i + 2]),
+                        f"$c$ = {self.c[lli]:.1f}, $S_s$ = {self.Sll[lli]:.2e}",
+                        ha="center",
+                        va="center",
+                    )
+                if labels or params:
+                    lli += 1
+
+            if labels and self.ltype[i] == "a":
+                ax.text(
+                    r0 + 0.5 * r if not params else r0 + 0.25 * r,
+                    np.mean(self.z[i : i + 2]),
+                    f"aquifer {aqi}",
+                    ha="center",
+                    va="center",
+                )
+            if params and self.ltype[i] == "a":
+                if aqi == 0 and self.phreatictop:
+                    paramtxt = f"$k_h$ = {self.kaq[aqi]:.1f}, $S$ = {self.Saq[aqi]}"
+                else:
+                    paramtxt = (
+                        f"$k_h$ = {self.kaq[aqi]:.1f}, $S_s$ = {self.Saq[aqi]:.2e}"
+                    )
+                ax.text(
+                    r0 + 0.75 * r if labels else r0 + 0.5 * r,
+                    np.mean(self.z[i : i + 2]),
+                    paramtxt,
+                    ha="center",
+                    va="center",
+                )
+            if (labels or params) and self.ltype[i] == "a":
+                aqi += 1
+
+        for i in range(1, self.nlayers):
+            if self.ltype[i] == "a" and self.ltype[i - 1] == "a":
+                ax.fill_between(
+                    x=[r0, r0 + r],
+                    y1=self.z[i],
+                    y2=self.z[i],
+                    color=[0.8, 0.8, 0.8],
+                )
+
+        ax.hlines(self.z[0], xmin=r0, xmax=r0 + r, color="k", lw=0.75)
+        ax.hlines(self.z[-1], xmin=r0, xmax=r0 + r, color="k", lw=3.0)
+        ax.set_ylabel("elevation")
+        return ax
 
 
-class StripInhomMaq(StripInhom):
+class XsectionMaq(Xsection):
     def __init__(
         self,
         model,
@@ -132,6 +238,7 @@ class StripInhomMaq(StripInhom):
         phreatictop=False,
         tsandhstar=None,
         tsandN=None,
+        name=None,
     ):
         kaq, Haq, Hll, c, Saq, Sll, poraq, porll, ltype = param_maq(
             kaq, z, c, Saq, Sll, poraq, porll, topboundary, phreatictop
@@ -154,10 +261,11 @@ class StripInhomMaq(StripInhom):
             phreatictop,
             tsandhstar,
             tsandN,
+            name=name,
         )
 
 
-class StripInhom3D(StripInhom):
+class Xsection3D(Xsection):
     def __init__(
         self,
         model,
@@ -176,6 +284,7 @@ class StripInhom3D(StripInhom):
         toppor=0.3,
         tsandhstar=None,
         tsandN=None,
+        name=None,
     ):
         kaq, Haq, Hll, c, Saq, Sll, poraq, porll, ltype, z = param_3d(
             kaq,
@@ -208,4 +317,5 @@ class StripInhom3D(StripInhom):
             phreatictop,
             tsandhstar,
             tsandN,
+            name=name,
         )
