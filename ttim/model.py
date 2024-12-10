@@ -94,6 +94,10 @@ class TimModel:
         )
 
     def initialize(self):
+        # remove inhom elements (they are added again by inhom initialize)
+        self.gbclist = [e for e in self.gbclist if not e.inhomelement]
+        self.vbclist = [e for e in self.vbclist if not e.inhomelement]
+        self.zbclist = [e for e in self.zbclist if not e.inhomelement]
         self.aq.initialize()
         self.gvbclist = self.gbclist + self.vbclist
         self.vzbclist = self.vbclist + self.zbclist
