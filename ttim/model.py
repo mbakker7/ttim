@@ -136,9 +136,6 @@ class TimModel:
         elif e.type == "z":
             self.zbclist.remove(e)
 
-    def addinhom(self, inhom):
-        self.aq.inhomlist.append(inhom)
-
     def compute_laplace_parameters(self):
         """Compute the parameters for the Laplace transform inversion.
 
