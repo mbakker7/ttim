@@ -4,7 +4,7 @@ import numpy as np
 from ttim.element import Element
 
 
-class StripAreaSinkInhom(Element):
+class AreaSinkXsection(Element):
     def __init__(
         self,
         model,
@@ -24,6 +24,7 @@ class StripAreaSinkInhom(Element):
             type="g",
             name=name,
             label=label,
+            inhomelement=True,
         )
         self.x1 = float(x1)
         self.x2 = float(x2)
@@ -53,8 +54,7 @@ class StripAreaSinkInhom(Element):
             aq = self.model.aq.find_aquifer_data(x, 0.0)
         rv = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         if aq == self.aq:
-            if (x > self.x1) and (x < self.x2): # we really need this?
-                rv[:] = self.term
+            rv[:] = self.term
         return rv
 
     def disvecinf(self, x, _, aq=None):
@@ -88,7 +88,7 @@ class StripAreaSinkInhom(Element):
             )
 
 
-class StripHstarInhom(Element):
+class HstarXsection(Element):
     def __init__(
         self,
         model,
@@ -108,6 +108,7 @@ class StripHstarInhom(Element):
             type="g",
             name=name,
             label=label,
+            inhomelement=True,
         )
         self.x1 = float(x1)
         self.x2 = float(x2)
@@ -139,8 +140,7 @@ class StripHstarInhom(Element):
             aq = self.model.aq.find_aquifer_data(x, 0.0)
         rv = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         if aq == self.aq:
-            if (x > self.x1) and (x < self.x2):
-                rv[:] = self.term
+            rv[:] = self.term
         return rv
 
     def disvecinf(self, x, _, aq=None):
@@ -150,12 +150,19 @@ class StripHstarInhom(Element):
         qy = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         return qx, qy
 
-    def plot(self, ax=None, **kwargs):
+    def plot(self, ax=None, hstar=None, **kwargs):
         if ax is None:
             _, ax = plt.subplots()
-        ztop = self.model.aq.z[0]
-        Ly = self.model.aq.z[0] - self.model.aq.z[-1]
-        dy = Ly / 20.0
+        aq = self.model.aq.find_aquifer_data(self.xc, 0.0)
+        ztop = aq.z[0]
+        Ly = aq.z[0] - aq.z[-1]
+        if hstar is None:
+            dy = Ly / 20.0
+            zdivider = ztop + 1.1 * dy
+        else:
+            dy = hstar - ztop
+            zdivider = hstar + 1
+
         if np.isfinite(self.x1):
             x1 = self.x1
             ax.plot(
@@ -172,7 +179,7 @@ class StripHstarInhom(Element):
             x2 = self.x2
             ax.plot(
                 [x2, x2],
-                [ztop, ztop + 1.5 * dy],
+                [zdivider, aq.z[-1]],
                 color="k",
                 lw=1.0,
                 ls="dotted",
@@ -181,7 +188,7 @@ class StripHstarInhom(Element):
             x2 = ax.get_xlim()[1]
 
         Lx = x2 - x1
-        dx = Lx / 200.0
+        dx = max(Lx / 200.0, 1)
         xc = (x1 + x2) / 2.0
 
         # water level
@@ -190,13 +197,13 @@ class StripHstarInhom(Element):
         ax.plot([x1, x2], [ztop + dy, ztop + dy], lw=lw, color=c, **kwargs)
         ax.plot(
             [xc - 1.75 * dx, xc + 1.75 * dx],
-            [ztop + 0.8 * dy, ztop + 0.8 * dy],
+            [ztop + dy - 0.5] * 2,
             lw=0.75 * lw,
             color=c,
         )
         ax.plot(
             [xc - dx, xc + dx],
-            [ztop + 0.65 * dy, ztop + 0.65 * dy],
+            [ztop + dy - 1.0] * 2,
             lw=0.75 * lw,
             color=c,
         )
