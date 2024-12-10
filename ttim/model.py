@@ -4,7 +4,7 @@ from warnings import warn
 
 import numpy as np
 
-from .aquifer import Aquifer
+from .aquifer import Aquifer, SimpleAquifer
 from .aquifer_parameters import param_3d, param_maq
 
 # from .bessel import *
@@ -745,8 +745,7 @@ class ModelMaq(TimModel):
         kaq, Haq, Hll, c, Saq, Sll, poraq, porll, ltype = param_maq(
             kaq, z, c, Saq, Sll, poraq, porll, topboundary, phreatictop
         )
-        TimModel.__init__(
-            self,
+        super().__init__(
             kaq,
             z,
             Haq,
@@ -857,8 +856,7 @@ class Model3D(TimModel):
             topSll,
             toppor,
         )
-        TimModel.__init__(
-            self,
+        super().__init__(
             kaq,
             z,
             Haq,
@@ -880,6 +878,8 @@ class Model3D(TimModel):
             timmlmodel=timmlmodel,
         )
         self.name = "Model3D"
+
+
 class ModelXsection(TimModel):
     def __init__(
         self,

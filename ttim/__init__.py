@@ -9,19 +9,19 @@ Mark Bakker, Delft University of Technology mark dot bakker at tudelft dot nl.
 # ruff : noqa: F401
 __name__ = "ttim"
 __author__ = "Mark Bakker"
-from .circareasink import CircAreaSink
-from .fit import Calibrate
-from .inhom1d import StripInhom3D, StripInhomMaq
-from .linedoublet import LeakyLineDoublet, LeakyLineDoubletString
-from .linedoublet1d import LeakyLineDoublet1D, LineDoublet1DBase
-from .linesink import (
+from ttim.circareasink import CircAreaSink
+from ttim.fit import Calibrate
+from ttim.inhom1d import Xsection3D, XsectionMaq
+from ttim.linedoublet import LeakyLineDoublet, LeakyLineDoubletString
+from ttim.linedoublet1d import LeakyLineDoublet1D, LineDoublet1DBase
+from ttim.linesink import (
     HeadLineSink,
     HeadLineSinkHo,
     HeadLineSinkString,
     LineSink,
     LineSinkDitchString,
 )
-from .linesink1d import (
+from ttim.linesink1d import (
     DischargeLineSink1D,
     FluxDiffLineSink1D,
     HeadDiffLineSink1D,
@@ -31,7 +31,7 @@ from .linesink1d import (
 )
 
 # Import all classes and functions
-from .model import Model3D, ModelMaq
-from .trace import timtrace, timtraceline
-from .version import __version__
-from .well import DischargeWell, HeadWell, Well, WellTest
+from ttim.model import Model3D, ModelMaq, ModelXsection
+from ttim.trace import timtrace, timtraceline
+from ttim.version import __version__
+from ttim.well import DischargeWell, HeadWell, Well, WellTest
