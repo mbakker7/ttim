@@ -166,7 +166,7 @@ class TimModel:
             self.p[i] = compute_laplace_parameters_numba(self.tintervals[i + 1], self.M)
         # TODO: make self.p a 2D array
         self.p = np.ravel(self.p)
-        self.aq.initialize()
+        # self.aq.initialize()
 
     def potential(self, x, y, t, layers=None, aq=None, derivative=0, returnphi=0):
         """Returns pot[naq, ntimes] if layers=None, otherwise pot[len(layers), ntimes].
