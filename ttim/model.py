@@ -922,6 +922,14 @@ class ModelXsection(TimModel):
             raise ValueError(
                 f"Number of aquifers does not match {self.aq.naq}:\n{naqs}"
             )
+        # # shared boundary check
+        # # NOTE: does not deal with nested inhoms
+        # xcoords = np.concatenate(
+        #     [(inhom.x1, inhom.x2) for inhom in self.aq.inhomdict.values()]
+        # )
+        # xcoords.sort()
+        # if not np.all(np.diff(xcoords[1:-1])[::2] < 1e-10):
+        #     raise ValueError("Not all inhomogeneities have shared boundaries.")
 
     def initialize(self):
         self.check_inhoms()
