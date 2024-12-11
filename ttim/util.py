@@ -56,7 +56,7 @@ class PlotTtim:
                 else:
                     plt.plot(s, h[i, j, :], color, lw=lw)
         if legend:
-            legendlist = ["layer " + str(i) for i in layers]
+            legendlist = ["layer " + str(i) + ", time " + str(j) for i in layers for j in t]
             plt.legend(legendlist)
         # plt.draw()
 
