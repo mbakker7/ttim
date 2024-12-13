@@ -33,5 +33,5 @@ from ttim.linesink1d import (
 # Import all classes and functions
 from ttim.model import Model3D, ModelMaq, ModelXsection
 from ttim.trace import timtrace, timtraceline
-from ttim.version import __version__
+from ttim.version import __version__, show_versions
 from ttim.well import DischargeWell, HeadWell, Well, WellTest
