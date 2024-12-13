@@ -78,7 +78,8 @@ class Calibrate:
         else:
             raise DeprecationWarning(
                 "Setting layers in the parameter name is no longer supported. "
-                f"Set layers keyword argument for parameter '{name}'."
+                f"Set the layers= keyword argument for parameter '{name}'. "
+                "The parameter name can remain the same."
             )
 
         # get aquifer information and create list if necessary
@@ -294,7 +295,7 @@ class Calibrate:
             print(self.covmat)
             print(self.cormat)
 
-    def fit_lmfit(self, report=False, printdot=True):
+    def fit_lmfit(self, report=False, printdot=True, **kwargs):
         import lmfit
 
         self.lmfitparams = lmfit.Parameters()
@@ -308,6 +309,7 @@ class Calibrate:
             method="leastsq",
             kws={"printdot": printdot},
             **fit_kws,
+            **kwargs,
         )
         print("", flush=True)
         print(self.fitresult.message)
@@ -327,10 +329,10 @@ class Calibrate:
         if report:
             print(lmfit.fit_report(self.fitresult))
 
-    def fit(self, report=False, printdot=True):
+    def fit(self, report=False, printdot=True, **kwargs):
         # current default fitting routine is lmfit
         # return self.fit_least_squares(report) # does not support bounds by default
-        return self.fit_lmfit(report, printdot)
+        return self.fit_lmfit(report, printdot, **kwargs)
 
     def rmse(self, weighted=True, layers=None):
         """Calculate root-mean-squared-error.
