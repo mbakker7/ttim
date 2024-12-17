@@ -1,3 +1,4 @@
+import re
 import warnings
 from typing import Iterable
 
@@ -43,23 +44,25 @@ class Calibrate:
         Parameters
         ----------
         name : str
-            parameter name, can include layer information.
-            name can be 'kaq', 'Saq' or 'c'. A number after the parameter
-            name denotes the layer number, i.e. 'kaq0' refers to the hydraulic
-            conductivity of layer 0.
-            name also supports layer ranges, entered by adding a '_' and a
-            layer number, i.e. 'kaq0_3' denotes conductivity for layers 0 up to
-            and including 3.
+            name can be 'kaq', 'Saq', 'c', 'Sll' or 'kzoverkh'.
+        layers : int or list of ints
+            layer number(s) for which the parameter is set. If an integer is passed,
+            parameter is associated with a single layer. If a list of layers is passed,
+            layers must be consecutive and parameter is set for each layer from
+            min(layers) up to and including max(layers).
         initial : float, optional
             initial value for the parameter (the default is 0)
         pmin : float, optional
             lower bound for parameter value (the default is -np.inf)
         pmax : float, optional
             upper bound for paramater value (the default is np.inf)
+        inhoms : str, list of str or list of inhomogeneities, optional
+            inhomogeneity(ies) for which the parameter is set. If a string is passed,
+            parameter is associated with a single inhomogeneity. If a list of strings or
+            inhoms is passed, parameter is set for each inhomogeneity in the list. This
+            allows linking of parameters across inhomogeneities.
         """
         assert isinstance(name, str), "Error: name must be string"
-        # find numbers in name str for support layer ranges
-        # layers_from_name = re.findall(r"\d+", name)
 
         if isinstance(layers, Iterable):
             from_lay = min(layers)
@@ -76,11 +79,26 @@ class Calibrate:
             from_lay = layers
             to_lay = layers + 1
         else:
-            raise DeprecationWarning(
-                "Setting layers in the parameter name is no longer supported. "
-                f"Set the layers= keyword argument for parameter '{name}'. "
-                "The parameter name can remain the same."
+            warnings.warn(
+                "Setting layers in the parameter name is deprecated. "
+                f"Set the layers= keyword argument for parameter '{name}' to silence "
+                "this warning. The parameter name can still include layer info, but "
+                "this will be ignored in a future version of TTim.",
+                DeprecationWarning,
+                stacklevel=1,
             )
+            # find numbers in name str for support layer ranges
+            layers_from_name = re.findall(r"\d+", name)
+            if len(layers_from_name) == 0:
+                raise ValueError(
+                    "No layer information found in parameter name. "
+                    "Please specify layers explicitly."
+                )
+            elif len(layers_from_name) == 1:
+                from_lay = int(layers_from_name[0])
+                to_lay = from_lay + 1
+            elif len(layers_from_name) == 2:
+                from_lay, to_lay = layers_from_name
 
         # get aquifer information and create list if necessary
         if inhoms is None:
@@ -302,13 +320,13 @@ class Calibrate:
         for name in self.parameters.index:
             p = self.parameters.loc[name]
             self.lmfitparams.add(name, value=p["initial"], min=p["pmin"], max=p["pmax"])
-        fit_kws = {"epsfcn": 1e-4}
+        # fit_kws = {"epsfcn": 1e-4}
         self.fitresult = lmfit.minimize(
             self.residuals_lmfit,
             self.lmfitparams,
             method="leastsq",
             kws={"printdot": printdot},
-            **fit_kws,
+            # **fit_kws,
             **kwargs,
         )
         print("", flush=True)

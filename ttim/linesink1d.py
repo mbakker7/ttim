@@ -14,6 +14,32 @@ class LineSink1DBase(Element):
     """LineSink1D Base Class.
 
     All LineSink1D elements are derived from this class
+
+    Parameters
+    ----------
+    model : Model object
+        Model to which the element is added
+    xls : float
+        x-coordinate of the line sink
+    tsandbc : list of tuples
+        list of tuples of the form (time, bc) for boundary conditions
+    res : float
+        resistance of the line sink
+    wh : string or float
+        wetted perimeter of the linesink, "H" for aquifer height,
+        "2H" for 2x aquifer height (two-sided flow) or specify any float value
+    layers : int, array or list
+        layer (int) or layers (list or array) in which line sink is located
+    type : string
+        type of element, "g" for given, "v" for variable and  "z" for zero.
+    name : string
+        name of the element
+    label : string, optional
+        label of the element
+    aq : Aquifer object
+        aquifer in which the element is located
+    inhomelement : boolean
+        set to True if element is part of an inhomogeneity
     """
 
     tiny = 1e-8
@@ -140,7 +166,7 @@ class LineSink1DBase(Element):
 
 
 class DischargeLineSink1D(LineSink1DBase):
-    r"""Linesink1D with a specified discharge for each layer that the linesink.
+    r"""Linesink1D with a specified discharge for each layer the linesink is in.
 
     Parameters
     ----------
@@ -204,7 +230,7 @@ class LineSink1D(LineSink1DBase, MscreenEquation):
     --------
     Example of an infinitely long linesink that pumps with a specific discharge of
     100 between times 10 and 50, with a specific discharge of 20 between
-    times 50 and 200, and zero speficic discharge after time 200.
+    times 50 and 200, and zero specific discharge after time 200.
 
     >>> LineSink1D(ml, tsandq=[(10, 100), (50, 20), (200, 0)])
     """
@@ -249,6 +275,27 @@ class LineSink1D(LineSink1DBase, MscreenEquation):
 
 
 class HeadLineSink1D(LineSink1DBase, HeadEquation):
+    """1D head-specified linesink element.
+
+    Parameters
+    ----------
+    model : Model object
+        Model to which the element is added
+    xls : float
+        x-coordinate of the linesink
+    tsandh : list of tuples
+        list of tuples of the form (time, head) for head conditions
+    res : float
+        resistance of the linesink
+    wh : string or float
+        wetted perimeter of the linesink, "H" for aquifer height,
+        "2H" for 2x aquifer height (two-sided flow) or specify any float value
+    layers : int, array or list
+        layer (int) or layers (list or array) in which linesink is located
+    label : string, optional
+        label of the element
+    """
+
     def __init__(
         self,
         model,
@@ -282,6 +329,25 @@ class HeadLineSink1D(LineSink1DBase, HeadEquation):
 
 
 class HeadDiffLineSink1D(LineSink1DBase, HeadDiffEquation):
+    """1D head-difference linesink element.
+
+    Used to ensure continuity of head in a cross-section model, e.g. at the boundary
+    of an inhomogeneity.
+
+    Parameters
+    ----------
+    model : Model object
+        Model to which the element is added
+    xls : float
+        x-coordinate of the linesink
+    layers : int, array or list
+        layer (int) or layers (list or array) in which linesink is located
+    label : string, optional
+        label of the element
+    aq : Aquifer object
+        aquifer in which the element is located
+    """
+
     def __init__(
         self,
         model,
@@ -322,6 +388,23 @@ class HeadDiffLineSink1D(LineSink1DBase, HeadDiffEquation):
 
 
 class FluxDiffLineSink1D(LineSink1DBase, FluxDiffEquation):
+    """1D flux-difference linesink element.
+
+    Used to ensure continuity of flux in a cross-section model, e.g. at the boundary
+    of an inhomogeneity.
+
+    Parameters
+    ----------
+    model : Model object
+        Model to which the element is added
+    xls : float
+        x-coordinate of the linesink
+    layers : int, array or list
+        layer (int) or layers (list or array) in which linesink is located
+    label : string, optional
+        label of the element
+    """
+
     def __init__(self, model, xls=0, layers=0, label=None, aq=None):
         super().__init__(
             model,

@@ -3,6 +3,7 @@ import inspect  # Used for storing the input
 from warnings import warn
 
 import numpy as np
+import pandas as pd
 
 from .aquifer import Aquifer, SimpleAquifer
 from .aquifer_parameters import param_3d, param_maq
@@ -671,6 +672,14 @@ class TimModel:
             f.write(e.write())
         f.close()
 
+    def aquifer_summary(self):
+        aqs = {}
+        if not isinstance(self.aq, SimpleAquifer):
+            aqs["background"] = self.aq.summary()
+        for name, iaq in self.aq.inhomdict.items():
+            aqs[name] = iaq.summary()
+        return pd.concat(aqs, axis=0)
+
 
 class ModelMaq(TimModel):
     """Create model specifying a multi-aquifer sequence of aquifer-leakylayer-etc.
@@ -881,6 +890,27 @@ class Model3D(TimModel):
 
 
 class ModelXsection(TimModel):
+    """Model class for cross-section models.
+
+    Parameters
+    ----------
+    naq : integer
+        number of aquifers
+    tmin : float
+        the minimum time for which heads can be computed after any change
+        in boundary condition.
+    tmax : float
+        the maximum time for which heads can be computed.
+    tstart : float, optional
+        time at start of simulation (default 0)
+    M : integer, optional
+        the number of terms to be used in the numerical inversion algorithm.
+        10 is usually sufficient.
+    timmlmodel : timml.Model
+        a timml model may be included to add a steady-state flow result to
+        the computed solution.
+    """
+
     def __init__(
         self,
         naq=1,
