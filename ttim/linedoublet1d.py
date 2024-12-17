@@ -9,6 +9,25 @@ class LineDoublet1DBase(Element):
     """LineDoublet1D Base Class.
 
     All LineDoublet1D elements are derived from this class
+
+    Parameters
+    ----------
+    model : Model object
+        Model to which the element is added
+    xld : float
+        x-coordinate of the line doublet
+    tsandbc : list of tuples
+        list of tuples of the form (time, bc) for boundary conditions
+    res : float
+        resistance of the line doublet
+    layers : int, array or list
+        layer (int) or layers (list or array) in which line doublet is located
+    type : string
+        type of element, "g" for given, "v" for variable and  "z" for zero.
+    name : string
+        name of the element
+    label : string, optional
+        label of the element
     """
 
     tiny = 1e-8
@@ -94,7 +113,7 @@ class LineDoublet1DBase(Element):
         return rv
 
     def disvecinf(self, x, y, aq=None):
-        """Can be called with only one x,y value."""
+        """Can be called with only one x value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         rvx = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
