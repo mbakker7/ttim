@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 
 class AquiferData:
@@ -41,7 +42,7 @@ class AquiferData:
         self.ltype = np.atleast_1d(ltype)
         self.zaqtop = self.z[:-1][self.ltype == "a"]
         self.zaqbot = self.z[1:][self.ltype == "a"]
-        self.layernumber = np.zeros(self.nlayers, dtype="int")
+        self.layernumber = np.zeros(self.nlayers, dtype=int)
         self.layernumber[self.ltype == "a"] = np.arange(self.naq)
         self.layernumber[self.ltype == "l"] = np.arange(self.nlayers - self.naq)
         if self.ltype[0] == "a":
@@ -210,6 +211,28 @@ class AquiferData:
             layernumber = self.layernumber[modellayer]
             ltype = self.ltype[modellayer]
         return layernumber, ltype, modellayer
+
+    def summary(self):
+        summary = pd.DataFrame(
+            index=range(self.nlayers),
+            columns=["layer", "layer_type", "k_h", "c", "S_s"],
+        )
+        summary.index.name = "#"
+        layertype = {"a": "aquifer", "l": "leaky layer"}
+        summary["layer_type"] = [layertype[lt] for lt in self.ltype]
+        if self.topboundary.startswith("con"):
+            summary.iloc[::2, 2] = self.kaq
+            summary.iloc[::2, 4] = self.Saq
+            summary.iloc[1::2, 3] = self.c
+            summary.iloc[1::2, 4] = self.Sll
+
+        else:
+            summary.iloc[1::2, 2] = self.kaq
+            summary.iloc[1::2, 4] = self.Saq
+            summary.iloc[::2, 4] = self.Sll
+            summary.iloc[::2, 3] = self.c
+        summary.loc[:, "layer"] = self.layernumber
+        return summary  # .set_index("layer")
 
 
 class Aquifer(AquiferData):
