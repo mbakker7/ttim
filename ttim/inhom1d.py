@@ -8,6 +8,55 @@ from ttim.stripareasink import AreaSinkXsection, HstarXsection
 
 
 class Xsection(AquiferData):
+    """Base class for a cross-section inhomogeneity.
+
+    Parameters
+    ----------
+    model : Model
+        Model to add the cross-section to, usually an instance of ModelXsection.
+    x1 : float
+        x-coordinate of the left boundary of the cross-section.
+    x2 : float
+        x-coordinate of the right boundary of the cross-section.
+    kaq : array
+        Hydraulic conductivities of the aquifers.
+    z : array
+        Elevations of the tops and bottoms of the layers.
+    Haq : array
+        Thicknesses of the aquifers.
+    Hll : array
+        Thicknesses of the leaky layers.
+    c : array
+        Resistance of the leaky layers.
+    Saq : array
+        Specific storage of the aquifers.
+    Sll : array
+        Specific storage of the leaky layers.
+    poraq : array
+        Porosities of the aquifers.
+    porll : array
+        Porosities of the leaky layers.
+    ltype : array
+        Type of each layer. 'a' for aquifer, 'l' for leaky layer.
+    topboundary : str
+        Type of top boundary. Can be 'conf' for confined, 'semi' for semi-confined
+        or "leaky" for a leaky top boundary.
+    phreatictop : bool
+        If true, interpret the first specific storage coefficient as specific
+        yield., i.e. it is not multiplied by aquifer thickness.
+    tsandhstar : list of tuples
+        list containing time and water level pairs for the hstar boundary condition.
+    tsandN : list of tuples
+        list containing time and infiltration pairs for the infiltration boundary
+        condition.
+    kzoverkh: float, optional,
+        anisotropy factor for vertical resistance, kzoverkh = kz / kh. Default is 1.
+    model3d : bool, optional
+        Boolean indicating whether model is Model3D-type.
+    name : str
+        Name of the cross-section inhomogeneity.
+    """
+
     tiny = 1e-12
 
     def __init__(
@@ -76,6 +125,18 @@ class Xsection(AquiferData):
         )
 
     def is_inside(self, x, _):
+        """Check if a point is inside the cross-section.
+
+        Parameters
+        ----------
+        x : float
+            x-coordinate of the point.
+
+        Returns
+        -------
+        bool
+            True if the point is inside the cross-section, False otherwise.
+        """
         return (x >= self.x1) and (x < self.x2)
 
     def initialize(self):
@@ -83,6 +144,7 @@ class Xsection(AquiferData):
         self.create_elements()
 
     def create_elements(self):
+        """Create linesinks to meet the continuity conditions the at the boundaries."""
         # HeadDiff on right side, FluxDiff on left side
         if self.x1 == -np.inf:
             xin = self.x2 - self.tiny
@@ -132,6 +194,17 @@ class Xsection(AquiferData):
             HstarXsection(self.model, self.x1, self.x2, tsandhstar=self.tsandhstar)
 
     def plot(self, ax=None, labels=False, params=False, **kwargs):
+        """Plot the cross-section.
+
+        Parameters
+        ----------
+        ax : plt.Axes, optional
+            Axis to plot the cross-section on. If None, a new axis will be created.
+        labels : bool, optional
+            If True, add layer-name labels.
+        params : bool, optional
+            If True, add parameter labels.
+        """
         if ax is None:
             _, ax = plt.subplots(1, 1, figsize=(8, 4))
 
@@ -222,18 +295,57 @@ class Xsection(AquiferData):
 
 
 class XsectionMaq(Xsection):
+    """Cross-section inhomogeneity consisting of stacked aquifer layers.
+
+    Parameters
+    ----------
+    model : Model
+        Model to add the cross-section to, usually an instance of ModelXsection.
+    x1 : float
+        x-coordinate of the left boundary of the cross-section.
+    x2 : float
+        x-coordinate of the right boundary of the cross-section.
+    kaq : array
+        Hydraulic conductivities of the aquifers.
+    z : array
+        Elevations of the tops and bottoms of the layers.
+    c : array
+        Resistance of the leaky layers.
+    Saq : array
+        Specific storage of the aquifers.
+    Sll : array
+        Specific storage of the leaky layers.
+    poraq : array
+        Porosities of the aquifers.
+    porll : array
+        Porosities of the leaky layers.
+    topboundary : str
+        Type of top boundary. Can be 'conf' for confined, 'semi' for semi-confined
+        or "leaky" for a leaky top boundary.
+    phreatictop : bool
+        If true, interpret the first specific storage coefficient as specific
+        yield., i.e. it is not multiplied by aquifer thickness.
+    tsandhstar : list of tuples
+        list containing time and water level pairs for the hstar boundary condition.
+    tsandN : list of tuples
+        list containing time and infiltration pairs for the infiltration boundary
+        condition.
+    name : str
+        Name of the cross-section.
+    """
+
     def __init__(
         self,
         model,
         x1,
         x2,
-        kaq=[1],
-        z=[1, 0],
-        c=[],
-        Saq=[0.001],
-        Sll=[0],
-        poraq=[0.3],
-        porll=[0.3],
+        kaq=1,
+        z=(1, 0),
+        c=(),
+        Saq=0.001,
+        Sll=0,
+        poraq=0.3,
+        porll=0.3,
         topboundary="conf",
         phreatictop=False,
         tsandhstar=None,
@@ -266,13 +378,60 @@ class XsectionMaq(Xsection):
 
 
 class Xsection3D(Xsection):
+    """Cross-section inhomogeneity consisting of stacked aquifer layers.
+
+    Vertical resistance is computed from vertical hydraulic conductivity and the
+    anisotropy factor.
+
+    Parameters
+    ----------
+    model : Model
+        Model to add the cross-section to, usually an instance of ModelXsection.
+    x1 : scalar
+        x-coordinate of the left boundary of the cross-section.
+    x2 : scalar
+        x-coordinate of the right boundary of the cross-section.
+    kaq : array
+        Hydraulic conductivities of the aquifers.
+    z : array
+        Elevations of the tops and bottoms of the layers.
+    Saq : array
+        Specific storage of the aquifers.
+    kzoverkh : scalar
+        Ratio of vertical hydraulic conductivity to horizontal hydraulic
+        conductivity.
+    poraq : array
+        Porosities of the aquifers.
+    topboundary : str
+        Type of top boundary. Can be 'conf' for confined, 'semi' for semi-confined
+        or "leaky" for a leaky top boundary.
+    phreatictop : bool
+        If true, interpret the first specific storage coefficient as specific
+        yield., i.e. it is not multiplied by aquifer thickness.
+    topres : scalar
+        Resistance of the top boundary. Only used if topboundary is 'leaky'.
+    topthick : scalar
+        Thickness of the top boundary. Only used if topboundary is 'leaky'.
+    topSll : scalar
+        Specific storage of the top boundary. Only used if topboundary is 'leaky'.
+    toppor : scalar
+        Porosity of the top boundary. Only used if topboundary is 'leaky'.
+    tsandhstar : list of tuples
+        list containing time and water level pairs for the hstar boundary condition.
+    tsandN : list of tuples
+        list containing time and infiltration pairs for the infiltration boundary
+        condition.
+    name : str
+        Name of the cross-section.
+    """
+
     def __init__(
         self,
         model,
         x1,
         x2,
         kaq=1,
-        z=[4, 3, 2, 1],
+        z=(4, 3, 2, 1),
         Saq=0.001,
         kzoverkh=0.1,
         poraq=0.3,
