@@ -4,7 +4,7 @@ from typing import Iterable
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.optimize import least_squares
+from scipy.optimize import least_squares, leastsq
 
 # import lmfit
 
@@ -238,8 +238,8 @@ class Calibrate:
         for i, k in enumerate(self.parameters.index):
             # [:] needed to do set value in array
             self.parameters.loc[k, "parray"][:] = p[i]
-
         self.model.solve(silent=True)
+        # print('solved model ', p)
 
         rv = np.empty(0)
         cal_series = self.seriesdict.keys() if series is None else series
@@ -328,6 +328,38 @@ class Calibrate:
                 self.parameters["perc_std"] = np.nan
         if report:
             print(lmfit.fit_report(self.fitresult))
+
+    def residuals_leastsq(self, logparams, printdot=False):
+        params = 10 ** logparams
+        print('params ', params)
+        return self.residuals(params, printdot)
+
+    def fit_leastsq(self, report=True, diff_step=1e-4, xtol=1e-8):
+        params_initial = np.log10(self.parameters.initial.values)
+        print('params_initial ', params_initial)
+        plog, mes = leastsq(self.residuals_leastsq, params_initial, epsfcn=1e-3)
+        print("", flush=True)
+        params = 10 ** plog
+        # Call residuals to specify optimal values for model
+        res = self.residuals(params)
+        for ipar in self.parameters.index:
+            self.parameters.loc[ipar, "optimal"] = self.parameters.loc[ipar, "parray"][
+                0
+            ]
+        # nparam = len(self.fitresult.x)
+        # H = self.fitresult.jac.T @ self.fitresult.jac
+        # sigsq = np.var(res, ddof=nparam)
+        # self.covmat = np.linalg.inv(H) * sigsq
+        # self.sig = np.sqrt(np.diag(self.covmat))
+        # D = np.diag(1 / self.sig)
+        # self.cormat = D @ self.covmat @ D
+        # self.parameters["std"] = self.sig
+        # self.parameters["perc_std"] = self.sig / self.parameters["optimal"] * 100
+        # if report:
+        #     print(self.parameters)
+        #     print(self.sig)
+        #     print(self.covmat)
+        #     print(self.cormat)
 
     def fit(self, report=False, printdot=True, **kwargs):
         # current default fitting routine is lmfit
