@@ -1,16 +1,13 @@
-# from .invlap import *
 import inspect  # Used for storing the input
 from warnings import warn
 
 import numpy as np
 import pandas as pd
 
-from .aquifer import Aquifer, SimpleAquifer
-from .aquifer_parameters import param_3d, param_maq
-
-# from .bessel import *
-from .invlapnumba import compute_laplace_parameters_numba, invlap, invlapcomp
-from .plots import PlotTtim
+from ttim.aquifer import Aquifer, SimpleAquifer
+from ttim.aquifer_parameters import param_3d, param_maq
+from ttim.invlapnumba import compute_laplace_parameters_numba, invlap, invlapcomp
+from ttim.plots import PlotTtim
 
 
 class TimModel:
@@ -76,7 +73,7 @@ class TimModel:
         # NOTE: reinstate later, after deprecation below is removed?
         # self.xsection = self.plots.xsection
 
-    def xsection(*args, **kwargs):
+    def xsection(self, *args, **kwargs):
         raise DeprecationWarning(
             "This method is deprecated. Use `ml.plots.head_along_line()` instead."
         )
@@ -673,6 +670,13 @@ class TimModel:
         f.close()
 
     def aquifer_summary(self):
+        """Return DataFrame with summary of aquifer(s) parameters in model.
+
+        Returns
+        -------
+        pandas.DataFrame
+            dataframe with summary of aquifer(s) parameters
+        """
         aqs = {}
         if not isinstance(self.aq, SimpleAquifer):
             aqs["background"] = self.aq.summary()
