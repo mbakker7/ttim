@@ -244,10 +244,16 @@ class Xsection(AquiferData):
                         va="center",
                     )
                 if params:
+                    if lli == 0 and i == 0 and self.phreatictop:
+                        paramtxt = f"$c$ = {self.c[lli]:.1f}, $S$ = {self.Sll[lli]:.2f}"
+                    else:
+                        paramtxt = (
+                            f"$c$ = {self.c[lli]:.1f}, $S_s$ = {self.Sll[lli]:.2e}"
+                        )
                     ax.text(
                         r0 + 0.75 * r if labels else r0 + 0.5 * r,
                         np.mean(self.z[i : i + 2]),
-                        f"$c$ = {self.c[lli]:.1f}, $S_s$ = {self.Sll[lli]:.2e}",
+                        paramtxt,
                         ha="center",
                         va="center",
                     )
@@ -263,8 +269,8 @@ class Xsection(AquiferData):
                     va="center",
                 )
             if params and self.ltype[i] == "a":
-                if aqi == 0 and self.phreatictop:
-                    paramtxt = f"$k_h$ = {self.kaq[aqi]:.1f}, $S$ = {self.Saq[aqi]}"
+                if aqi == 0 and i == 0 and self.phreatictop:
+                    paramtxt = f"$k_h$ = {self.kaq[aqi]:.1f}, $S$ = {self.Saq[aqi]:.2f}"
                 else:
                     paramtxt = (
                         f"$k_h$ = {self.kaq[aqi]:.1f}, $S_s$ = {self.Saq[aqi]:.2e}"
