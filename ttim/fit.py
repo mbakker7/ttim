@@ -110,7 +110,6 @@ class Calibrate:
 
         # convert aquifer names to aquifer objects
         for i, iaq in enumerate(aq):
-            print('iaq ', iaq)
             if isinstance(iaq, str):
                 aq[i] = self.model.aq.inhomdict[iaq]
 
