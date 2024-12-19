@@ -127,33 +127,9 @@ class Calibrate:
                 p = iaq.kzoverkh[from_lay : to_lay + 1]
             plist.append(p[:])
 
-        # p = None
-        # # from_lay, to_lay = [int(i) for i in layers_from_name]
-        # if name[:3] == "kaq":
-        #     p = aq[0].kaq[from_lay : to_lay + 1]
-        #     #param = name[:3]
-        # elif name[:3] == "Saq":
-        #     p = aq[0].Saq[from_lay : to_lay + 1]
-        #     #param = name[:3]
-        # elif name[0] == "c":
-        #     p = aq[0].c[from_lay : to_lay + 1]
-        #     #param = name[0]
-        # elif name[:3] == "Sll":
-        #     p = aq[0].Sll[from_lay : to_lay + 1]
-        #     #param = name[:3]
-        # elif name[0:8] == "kzoverkh":
-        #     p = aq[0].kzoverkh[from_lay : to_lay + 1]
-        #     #param = name[:8]
-
         if p is None:  # no parameter set
             print("parameter name not recognized or no parameter ref supplied")
             return
-
-        # lines below don't work as it replaces entire array
-        # set all other aquifer parameter references to same array
-        # if len(aq) > 1:
-        #     for iaq in aq:
-        #         setattr(iaq, param, p)
 
         if inhoms is None:
             pname = name
@@ -268,16 +244,12 @@ class Calibrate:
         if layers is None:
             layers = range(self.model.aq.naq)
 
-        # for i, k in enumerate(self.parameters.index):
-        #     # [:] needed to do set value in array
-        #     self.parameters.loc[k, "parray"][:] = p[i]
         for i, k in enumerate(self.parameters.index):
             parraylist = self.parameters.loc[k, "parray"]
             for parray in parraylist:
                 # [:] needed to do set value in array
                 parray[:] = p[i]
         self.model.solve(silent=True)
-        # print('solved model ', p)
 
         rv = np.empty(0)
         cal_series = self.seriesdict.keys() if series is None else series
@@ -297,7 +269,6 @@ class Calibrate:
     def residuals_lmfit(self, lmfitparams, printdot=False):
         vals = lmfitparams.valuesdict()
         p = np.array([vals[k] for k in self.parameters.index])
-        # p = np.array([vals[k] for k in vals])
         return self.residuals(p, printdot)
 
     def fit_least_squares(self, report=True, diff_step=1e-4, xtol=1e-8, method="lm"):
@@ -368,18 +339,18 @@ class Calibrate:
             print(lmfit.fit_report(self.fitresult))
 
     def residuals_leastsq(self, logparams, printdot=False):
-        params = 10 ** logparams
-        print('params ', params)
+        params = 10**logparams
+        print("params ", params)
         return self.residuals(params, printdot)
 
     def fit_leastsq(self, report=True, diff_step=1e-4, xtol=1e-8):
         params_initial = np.log10(self.parameters.initial.values)
-        print('params_initial ', params_initial)
+        print("params_initial ", params_initial)
         plog, mes = leastsq(self.residuals_leastsq, params_initial, epsfcn=1e-3)
         print("", flush=True)
-        params = 10 ** plog
+        params = 10**plog
         # Call residuals to specify optimal values for model
-        res = self.residuals(params)
+        self.residuals(params)
         for ipar in self.parameters.index:
             self.parameters.loc[ipar, "optimal"] = self.parameters.loc[ipar, "parray"][
                 0
