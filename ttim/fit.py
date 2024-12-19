@@ -67,8 +67,6 @@ class Calibrate:
         if isinstance(layers, Iterable):
             from_lay = min(layers)
             to_lay = max(layers)
-            if from_lay == to_lay:
-                to_lay += 1
             if (np.diff(layers) > 1).any():
                 warnings.warn(
                     "Non-consecutive layers are not supported. "
@@ -77,7 +75,7 @@ class Calibrate:
                 )
         elif isinstance(layers, int):
             from_lay = layers
-            to_lay = layers + 1
+            to_lay = layers
         else:
             warnings.warn(
                 "Setting layers in the parameter name is deprecated. "
