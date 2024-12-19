@@ -145,8 +145,11 @@ class Xsection(AquiferData):
 
     def create_elements(self):
         """Create linesinks to meet the continuity conditions the at the boundaries."""
+        if (self.x1 == -np.inf) and (self.x2 == np.inf):
+            # no reason to add elements
+            pass
         # HeadDiff on right side, FluxDiff on left side
-        if self.x1 == -np.inf:
+        elif self.x1 == -np.inf:
             xin = self.x2 - self.tiny
             # xoutright = self.x2 + self.tiny
             aqin = self.model.aq.find_aquifer_data(xin, 0)
