@@ -83,7 +83,7 @@ class Calibrate:
                 "this warning. The parameter name can still include layer info, but "
                 "this will be ignored in a future version of TTim.",
                 DeprecationWarning,
-                stacklevel=1,
+                stacklevel=2,
             )
             # find numbers in name str for support layer ranges
             layers_from_name = re.findall(r"\d+", name)
