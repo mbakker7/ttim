@@ -101,13 +101,16 @@ class Calibrate:
         # get aquifer information and create list if necessary
         if inhoms is None:
             aq = [self.model.aq]
-        elif not isinstance(inhoms, (list, tuple)):
+        elif isinstance(inhoms, tuple):
+            aq = list(inhoms)
+        elif not isinstance(inhoms, list):
             aq = [inhoms]
         else:
             aq = inhoms
 
         # convert aquifer names to aquifer objects
         for i, iaq in enumerate(aq):
+            print('iaq ', iaq)
             if isinstance(iaq, str):
                 aq[i] = self.model.aq.inhomdict[iaq]
 
