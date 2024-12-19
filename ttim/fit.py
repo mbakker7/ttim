@@ -111,32 +111,47 @@ class Calibrate:
             if isinstance(iaq, str):
                 aq[i] = self.model.aq.inhomdict[iaq]
 
-        p = None
-        # from_lay, to_lay = [int(i) for i in layers_from_name]
-        if name[:3] == "kaq":
-            p = aq[0].kaq[from_lay : to_lay + 1]
-            param = name[:3]
-        elif name[:3] == "Saq":
-            p = aq[0].Saq[from_lay : to_lay + 1]
-            param = name[:3]
-        elif name[0] == "c":
-            p = aq[0].c[from_lay : to_lay + 1]
-            param = name[0]
-        elif name[:3] == "Sll":
-            p = aq[0].Sll[from_lay : to_lay + 1]
-            param = name[:3]
-        elif name[0:8] == "kzoverkh":
-            p = aq[0].kzoverkh[from_lay : to_lay + 1]
-            param = name[:8]
+        plist = []
+        for iaq in aq:
+            if name[:3] == "kaq":
+                p = iaq.kaq[from_lay : to_lay + 1]
+            elif name[:3] == "Saq":
+                p = iaq.Saq[from_lay : to_lay + 1]
+            elif name[0] == "c":
+                p = iaq.c[from_lay : to_lay + 1]
+            elif name[:3] == "Sll":
+                p = iaq.Sll[from_lay : to_lay + 1]
+            elif name[0:8] == "kzoverkh":
+                p = iaq.kzoverkh[from_lay : to_lay + 1]
+            plist.append(p[:])
+
+        # p = None
+        # # from_lay, to_lay = [int(i) for i in layers_from_name]
+        # if name[:3] == "kaq":
+        #     p = aq[0].kaq[from_lay : to_lay + 1]
+        #     #param = name[:3]
+        # elif name[:3] == "Saq":
+        #     p = aq[0].Saq[from_lay : to_lay + 1]
+        #     #param = name[:3]
+        # elif name[0] == "c":
+        #     p = aq[0].c[from_lay : to_lay + 1]
+        #     #param = name[0]
+        # elif name[:3] == "Sll":
+        #     p = aq[0].Sll[from_lay : to_lay + 1]
+        #     #param = name[:3]
+        # elif name[0:8] == "kzoverkh":
+        #     p = aq[0].kzoverkh[from_lay : to_lay + 1]
+        #     #param = name[:8]
 
         if p is None:  # no parameter set
             print("parameter name not recognized or no parameter ref supplied")
             return
 
+        # lines below don't work as it replaces entire array
         # set all other aquifer parameter references to same array
-        if len(aq) > 1:
-            for iaq in aq:
-                setattr(iaq, param, p)
+        # if len(aq) > 1:
+        #     for iaq in aq:
+        #         setattr(iaq, param, p)
 
         if inhoms is None:
             pname = name
@@ -151,7 +166,7 @@ class Calibrate:
             "pmax": pmax,
             "initial": initial,
             "inhoms": aq if inhoms is not None else None,
-            "parray": p[:],
+            "parray": plist,
         }
 
     def set_parameter_by_reference(
@@ -186,7 +201,7 @@ class Calibrate:
             "pmin": pmin,
             "pmax": pmax,
             "initial": initial,
-            "parray": p[:],
+            "parray": [p[:]],
         }
 
     def series(self, name, x, y, layer, t, h, weights=None):
@@ -251,9 +266,14 @@ class Calibrate:
         if layers is None:
             layers = range(self.model.aq.naq)
 
+        # for i, k in enumerate(self.parameters.index):
+        #     # [:] needed to do set value in array
+        #     self.parameters.loc[k, "parray"][:] = p[i]
         for i, k in enumerate(self.parameters.index):
-            # [:] needed to do set value in array
-            self.parameters.loc[k, "parray"][:] = p[i]
+            parraylist = self.parameters.loc[k, "parray"]
+            for parray in parraylist:
+                # [:] needed to do set value in array
+                parray[:] = p[i]
         self.model.solve(silent=True)
         # print('solved model ', p)
 
