@@ -117,10 +117,10 @@ class LineSink1DBase(Element):
         """Separate function so that this can be overloaded for other types."""
         self.flowcoef = 1.0 / self.model.p  # Step function
 
-    def potinf(self, x, _, aq=None):
+    def potinf(self, x, y=0, aq=None):
         """Can be called with only one x value."""
         if aq is None:
-            aq = self.model.aq.find_aquifer_data(x, 0.0)
+            aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         if aq == self.aq:
             if (x - self.xls) < 0.0:
@@ -132,7 +132,7 @@ class LineSink1DBase(Element):
             rv[:] = self.term * pot
         return rv
 
-    def disvecinf(self, x, y, aq=None):
+    def disvecinf(self, x, y=0, aq=None):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)

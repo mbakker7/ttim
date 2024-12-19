@@ -32,7 +32,7 @@ class CircInhomData(AquiferData):
         self.area = np.pi * self.Rsq
         self.model.addInhom(self)
 
-    def isInside(self, x, y):
+    def is_inside(self, x, y):
         rv = False
         if (x - self.x0) ** 2 + (y - self.y0) ** 2 < self.Rsq:
             rv = True
@@ -201,7 +201,7 @@ class CircInhomRadial(Element, InhomEquation):
         assert (
             self.aqin.R == self.R
         ), "Radius of CircInhom and CircInhomData must be equal"
-        self.aqout = self.model.aq.findAquiferData(
+        self.aqout = self.model.aq.find_aquifer_data(
             self.x0 + (1 + 1e-8) * self.R, self.y0
         )
         self.setbc()

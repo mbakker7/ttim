@@ -1,7 +1,7 @@
 How To Guides
 =============
 
-This section contains how to guides on building groundwater models with TTim.
+This section contains how-to guides on building groundwater models with TTim.
 
 
 .. toctree::
@@ -9,4 +9,4 @@ This section contains how to guides on building groundwater models with TTim.
 
     howto_pumpingtest
     howto_xsection_model
-    howto_tidal_boundary
+    howto_fluctuating_head_boundary

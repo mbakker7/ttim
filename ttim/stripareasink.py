@@ -12,7 +12,7 @@ class AreaSinkXsection(Element):
         x2,
         tsandN=[(0.0, 1.0)],
         layers=0,
-        name="StripAreaSinkInhom",
+        name="AreaSinkXsection",
         label=None,
     ):
         super().__init__(
@@ -49,17 +49,17 @@ class AreaSinkXsection(Element):
         """Separate function so that this can be overloaded for other types."""
         self.flowcoef = 1.0 / self.model.p  # Step function
 
-    def potinf(self, x, _, aq=None):
+    def potinf(self, x, y, aq=None):
         if aq is None:
-            aq = self.model.aq.find_aquifer_data(x, 0.0)
+            aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         if aq == self.aq:
             rv[:] = self.term
         return rv
 
-    def disvecinf(self, x, _, aq=None):
+    def disvecinf(self, x, y=0, aq=None):
         if aq is None:
-            aq = self.model.aq.find_aquifer_data(x, 0.0)
+            aq = self.model.aq.find_aquifer_data(x, y)
         qx = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         qy = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         return qx, qy
@@ -96,7 +96,7 @@ class HstarXsection(Element):
         x2,
         tsandhstar=[(0.0, 1.0)],
         layers=0,
-        name="StripHstarInhom",
+        name="HstarXsection",
         label=None,
     ):
         super().__init__(
@@ -140,17 +140,17 @@ class HstarXsection(Element):
     def setflowcoef(self):
         self.flowcoef = 1.0 / self.model.p
 
-    def potinf(self, x, _, aq=None):
+    def potinf(self, x, y=0.0, aq=None):
         if aq is None:
-            aq = self.model.aq.find_aquifer_data(x, 0.0)
+            aq = self.model.aq.find_aquifer_data(x, y)
         rv = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         if aq == self.aq:
             rv[:] = self.term
         return rv
 
-    def disvecinf(self, x, _, aq=None):
+    def disvecinf(self, x, y=0, aq=None):
         if aq is None:
-            aq = self.model.aq.find_aquifer_data(x, 0.0)
+            aq = self.model.aq.find_aquifer_data(x, y)
         qx = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         qy = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         return qx, qy
@@ -196,19 +196,3 @@ class HstarXsection(Element):
         c = kwargs.pop("color", "b")
         lw = kwargs.pop("lw", 1.0)
         ax.plot([x1, x2], [ztop + dy, ztop + dy], lw=lw, color=c, **kwargs)
-        # plot water level symbol: difficult to get consistent, comment out for now
-        # Lx = x2 - x1
-        # dx = max(Lx / 200.0, 1)
-        # xc = (x1 + x2) / 2.0
-        # ax.plot(
-        #     [xc - 1.75 * dx, xc + 1.75 * dx],
-        #     [ztop + dy - 0.5] * 2,
-        #     lw=0.75 * lw,
-        #     color=c,
-        # )
-        # ax.plot(
-        #     [xc - dx, xc + dx],
-        #     [ztop + dy - 1.0] * 2,
-        #     lw=0.75 * lw,
-        #     color=c,
-        # )

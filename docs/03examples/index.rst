@@ -14,6 +14,7 @@ TTim example notebooks.
     wells_in_different_systems
     ttim_exercise1_sol
     meandering_river
+    watex_example
     circareasink_example
     pathline_trace
     aem_ttim_sol
@@ -40,6 +41,7 @@ Modeling rivers
 ---------------
 
 * `meandering_river`_
+* `watex_example`_
 
 Recharge
 --------
@@ -89,3 +91,4 @@ Benchmarks
 .. _well_near_river_or_wall: well_near_river_or_wall.html
 .. _well_near_wall: well_near_wall.html
 .. _wells_in_different_systems: wells_in_different_systems.html
+.. _watex_example: watex_example.html
