@@ -1,15 +1,13 @@
-# from .invlap import *
 import inspect  # Used for storing the input
 from warnings import warn
 
 import numpy as np
+import pandas as pd
 
-from .aquifer import Aquifer
-from .aquifer_parameters import param_3d, param_maq
-
-# from .bessel import *
-from .invlapnumba import compute_laplace_parameters_numba, invlap, invlapcomp
-from .plots import PlotTtim
+from ttim.aquifer import Aquifer, SimpleAquifer
+from ttim.aquifer_parameters import param_3d, param_maq
+from ttim.invlapnumba import compute_laplace_parameters_numba, invlap, invlapcomp
+from ttim.plots import PlotTtim
 
 
 class TimModel:
@@ -75,7 +73,7 @@ class TimModel:
         # NOTE: reinstate later, after deprecation below is removed?
         # self.xsection = self.plots.xsection
 
-    def xsection(*args, **kwargs):
+    def xsection(self, *args, **kwargs):
         raise DeprecationWarning(
             "This method is deprecated. Use `ml.plots.head_along_line()` instead."
         )
@@ -89,9 +87,16 @@ class TimModel:
         self.plots.contour(*args, **kwargs)
 
     def __repr__(self):
-        return "Model"
+        return (
+            f"{self.name}: {self.aq.naq} aquifer(s), tmin={self.tmin}, tmax={self.tmax}"
+        )
 
     def initialize(self):
+        # remove inhom elements (they are added again by inhom initialize)
+        self.gbclist = [e for e in self.gbclist if not e.inhomelement]
+        self.vbclist = [e for e in self.vbclist if not e.inhomelement]
+        self.zbclist = [e for e in self.zbclist if not e.inhomelement]
+        self.aq.initialize()
         self.gvbclist = self.gbclist + self.vbclist
         self.vzbclist = self.vbclist + self.zbclist
         # Given elements are first in list
@@ -100,7 +105,6 @@ class TimModel:
         self.nvbc = len(self.vbclist)
         self.nzbc = len(self.zbclist)
         self.ngvbc = self.ngbc + self.nvbc
-        self.aq.initialize()
         for e in self.elementlist:
             e.initialize()
         # lists used for inverse transform
@@ -136,9 +140,6 @@ class TimModel:
         elif e.type == "z":
             self.zbclist.remove(e)
 
-    def addinhom(self, inhom):
-        self.aq.inhomlist.append(inhom)
-
     def compute_laplace_parameters(self):
         """Compute the parameters for the Laplace transform inversion.
 
@@ -166,7 +167,7 @@ class TimModel:
             self.p[i] = compute_laplace_parameters_numba(self.tintervals[i + 1], self.M)
         # TODO: make self.p a 2D array
         self.p = np.ravel(self.p)
-        self.aq.initialize()
+        # self.aq.initialize()
 
     def potential(self, x, y, t, layers=None, aq=None, derivative=0, returnphi=0):
         """Returns pot[naq, ntimes] if layers=None, otherwise pot[len(layers), ntimes].
@@ -469,6 +470,40 @@ class TimModel:
             h[:, :, i] = self.head(xg[i], yg[i], t, layers)
         return h
 
+    def disvecalongline(self, x, y, t, layers=None):
+        """Discharge vector along line or curve.
+
+        Parameters
+        ----------
+        x : 1D array or list
+            x values of line
+        y : 1D array or list
+            y values of line
+        t : float or 1D array or list
+            times for which grid is returned
+        layers : integer, list or array, optional
+            layers for which grid is returned
+
+        Returns
+        -------
+        q : array size `nlayers, ntimes, nx`
+        """
+        xg = np.atleast_1d(x)
+        yg = np.atleast_1d(y)
+        if layers is None:
+            nlay = self.aq.find_aquifer_data(xg[0], yg[0]).naq
+        else:
+            nlay = len(np.atleast_1d(layers))
+        nx = len(xg)
+        if len(yg) == 1:
+            yg = yg * np.ones(nx)
+        t = np.atleast_1d(t)
+        qx = np.zeros((nlay, len(t), nx))
+        qy = np.zeros((nlay, len(t), nx))
+        for i in range(nx):
+            qx[:, :, i], qy[:, :, i] = self.disvec(xg[i], yg[i], t, layers)
+        return qx, qy
+
     def headgrid(self, xg, yg, t, layers=None, printrow=False):
         """Grid of heads.
 
@@ -634,6 +669,21 @@ class TimModel:
             f.write(e.write())
         f.close()
 
+    def aquifer_summary(self):
+        """Return DataFrame with summary of aquifer(s) parameters in model.
+
+        Returns
+        -------
+        pandas.DataFrame
+            dataframe with summary of aquifer(s) parameters
+        """
+        aqs = {}
+        if not isinstance(self.aq, SimpleAquifer):
+            aqs["background"] = self.aq.summary()
+        for name, iaq in self.aq.inhomdict.items():
+            aqs[name] = iaq.summary()
+        return pd.concat(aqs, axis=0)
+
 
 class ModelMaq(TimModel):
     """Create model specifying a multi-aquifer sequence of aquifer-leakylayer-etc.
@@ -708,8 +758,7 @@ class ModelMaq(TimModel):
         kaq, Haq, Hll, c, Saq, Sll, poraq, porll, ltype = param_maq(
             kaq, z, c, Saq, Sll, poraq, porll, topboundary, phreatictop
         )
-        TimModel.__init__(
-            self,
+        super().__init__(
             kaq,
             z,
             Haq,
@@ -820,8 +869,7 @@ class Model3D(TimModel):
             topSll,
             toppor,
         )
-        TimModel.__init__(
-            self,
+        super().__init__(
             kaq,
             z,
             Haq,
@@ -843,3 +891,80 @@ class Model3D(TimModel):
             timmlmodel=timmlmodel,
         )
         self.name = "Model3D"
+
+
+class ModelXsection(TimModel):
+    """Model class for cross-section models.
+
+    Parameters
+    ----------
+    naq : integer
+        number of aquifers
+    tmin : float
+        the minimum time for which heads can be computed after any change
+        in boundary condition.
+    tmax : float
+        the maximum time for which heads can be computed.
+    tstart : float, optional
+        time at start of simulation (default 0)
+    M : integer, optional
+        the number of terms to be used in the numerical inversion algorithm.
+        10 is usually sufficient.
+    timmlmodel : timml.Model
+        a timml model may be included to add a steady-state flow result to
+        the computed solution.
+    """
+
+    def __init__(
+        self,
+        naq=1,
+        tmin=1,
+        tmax=10,
+        tstart=0,
+        M=10,
+        timmlmodel=None,
+    ):
+        self.elementlist = []
+        self.elementdict = {}
+        self.vbclist = []  # variable boundary condition 'v' elements
+        self.zbclist = []  # zero and constant boundary condition 'z' elements
+        self.gbclist = []  # given boundary condition 'g' elements
+        # note: given bc elements don't have any unknowns
+        self.tmin = tmin
+        self.tmax = tmax
+        self.tstart = tstart
+        self.M = M
+        self.aq = SimpleAquifer(naq)
+        self.compute_laplace_parameters()
+        self.name = "TimModel"
+        self.modelname = "ml"  # Used for writing out input
+        self.timmlmodel = timmlmodel
+        if self.timmlmodel is not None:
+            self.timmlmodel.solve()
+
+        self.plots = PlotTtim(self)
+        self.plot = self.plots.topview
+        self.name = "ModelXsection"
+
+    def check_inhoms(self):
+        """Check if number of aquifers in inhoms matches number of aquifers in model."""
+        naqs = {}
+        for inhom in self.aq.inhomdict.values():
+            naqs[inhom.name] = inhom.naq
+        check = np.array(list(naqs.values())) == self.aq.naq
+        if not check.all():
+            raise ValueError(
+                f"Number of aquifers does not match {self.aq.naq}:\n{naqs}"
+            )
+        # # shared boundary check
+        # # NOTE: does not deal with nested inhoms
+        # xcoords = np.concatenate(
+        #     [(inhom.x1, inhom.x2) for inhom in self.aq.inhomdict.values()]
+        # )
+        # xcoords.sort()
+        # if not np.all(np.diff(xcoords[1:-1])[::2] < 1e-10):
+        #     raise ValueError("Not all inhomogeneities have shared boundaries.")
+
+    def initialize(self):
+        self.check_inhoms()
+        super().initialize()

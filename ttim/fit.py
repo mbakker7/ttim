@@ -1,9 +1,13 @@
 import re
+import warnings
+from typing import Iterable
 
-# import lmfit
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.optimize import least_squares
+from scipy.optimize import least_squares, leastsq
+
+# import lmfit
 
 
 class Calibrate:
@@ -17,71 +21,130 @@ class Calibrate:
         """
         self.model = model
         self.parameters = pd.DataFrame(
-            columns=["optimal", "std", "perc_std", "pmin", "pmax", "initial", "parray"]
+            columns=[
+                "layers",
+                "optimal",
+                "std",
+                "perc_std",
+                "pmin",
+                "pmax",
+                "initial",
+                "inhoms",
+                "parray",
+            ]
         )
         self.seriesdict = {}
         self.seriesinwelldict = {}
 
-    def set_parameter(self, name=None, initial=0, pmin=-np.inf, pmax=np.inf):
+    def set_parameter(
+        self, name=None, layers=None, initial=0, pmin=-np.inf, pmax=np.inf, inhoms=None
+    ):
         """Set parameter to be optimized.
 
         Parameters
         ----------
         name : str
-            parameter name, can include layer information.
-            name can be 'kaq', 'Saq' or 'c'. A number after the parameter
-            name denotes the layer number, i.e. 'kaq0' refers to the hydraulic
-            conductivity of layer 0.
-            name also supports layer ranges, entered by adding a '_' and a
-            layer number, i.e. 'kaq0_3' denotes conductivity for layers 0 up to
-            and including 3.
+            name can be 'kaq', 'Saq', 'c', 'Sll' or 'kzoverkh'.
+        layers : int or list of ints
+            layer number(s) for which the parameter is set. If an integer is passed,
+            parameter is associated with a single layer. If a list of layers is passed,
+            layers must be consecutive and parameter is set for each layer from
+            min(layers) up to and including max(layers).
         initial : float, optional
             initial value for the parameter (the default is 0)
         pmin : float, optional
             lower bound for parameter value (the default is -np.inf)
         pmax : float, optional
             upper bound for paramater value (the default is np.inf)
+        inhoms : str, list of str or list of inhomogeneities, optional
+            inhomogeneity(ies) for which the parameter is set. If a string is passed,
+            parameter is associated with a single inhomogeneity. If a list of strings or
+            inhoms is passed, parameter is set for each inhomogeneity in the list. This
+            allows linking of parameters across inhomogeneities.
         """
         assert isinstance(name, str), "Error: name must be string"
-        # find numbers in name str for support layer ranges
-        layers_from_name = re.findall(r"\d+", name)
-        p = None
-        if "_" in name:
-            fromlay, tolay = [int(i) for i in layers_from_name]
-            if name[:3] == "kaq":
-                p = self.model.aq.kaq[fromlay : tolay + 1]
-            elif name[:3] == "Saq":
-                p = self.model.aq.Saq[fromlay : tolay + 1]
-            elif name[0] == "c":
-                p = self.model.aq.c[fromlay : tolay + 1]
-            elif name[:3] == "Sll":
-                p = self.model.aq.Sll[fromlay : tolay + 1]
-            elif name[0:8] == "kzoverkh":
-                p = self.model.aq.kzoverkh[fromlay : tolay + 1]
+
+        if isinstance(layers, Iterable):
+            from_lay = min(layers)
+            to_lay = max(layers)
+            if (np.diff(layers) > 1).any():
+                warnings.warn(
+                    "Non-consecutive layers are not supported. "
+                    f"Setting parameter '{name}' for layers {from_lay} - {to_lay}.",
+                    stacklevel=1,
+                )
+        elif isinstance(layers, int):
+            from_lay = layers
+            to_lay = layers
         else:
-            layer = int(layers_from_name[0])
-            # Set, kaq, Saq, c
+            warnings.warn(
+                "Setting layers in the parameter name is deprecated. "
+                f"Set the layers= keyword argument for parameter '{name}' to silence "
+                "this warning. The parameter name can still include layer info, but "
+                "this will be ignored in a future version of TTim.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            # find numbers in name str for support layer ranges
+            layers_from_name = re.findall(r"\d+", name)
+            if len(layers_from_name) == 0:
+                raise ValueError(
+                    "No layer information found in parameter name. "
+                    "Please specify layers explicitly."
+                )
+            elif len(layers_from_name) == 1:
+                from_lay = int(layers_from_name[0])
+                to_lay = from_lay + 1
+            elif len(layers_from_name) == 2:
+                from_lay, to_lay = layers_from_name
+
+        # get aquifer information and create list if necessary
+        if inhoms is None:
+            aq = [self.model.aq]
+        elif isinstance(inhoms, tuple):
+            aq = list(inhoms)
+        elif not isinstance(inhoms, list):
+            aq = [inhoms]
+        else:
+            aq = inhoms
+
+        # convert aquifer names to aquifer objects
+        for i, iaq in enumerate(aq):
+            if isinstance(iaq, str):
+                aq[i] = self.model.aq.inhomdict[iaq]
+
+        plist = []
+        for iaq in aq:
             if name[:3] == "kaq":
-                p = self.model.aq.kaq[layer : layer + 1]
+                p = iaq.kaq[from_lay : to_lay + 1]
             elif name[:3] == "Saq":
-                p = self.model.aq.Saq[layer : layer + 1]
+                p = iaq.Saq[from_lay : to_lay + 1]
             elif name[0] == "c":
-                p = self.model.aq.c[layer : layer + 1]
+                p = iaq.c[from_lay : to_lay + 1]
             elif name[:3] == "Sll":
-                p = self.model.aq.Sll[layer : layer + 1]
+                p = iaq.Sll[from_lay : to_lay + 1]
             elif name[0:8] == "kzoverkh":
-                p = self.model.aq.kzoverkh[layer : layer + 1]
+                p = iaq.kzoverkh[from_lay : to_lay + 1]
+            plist.append(p[:])
+
         if p is None:  # no parameter set
             print("parameter name not recognized or no parameter ref supplied")
             return
-        self.parameters.loc[name] = {
+
+        if inhoms is None:
+            pname = name
+        else:
+            pname = f"{name}_{'_'.join([iaq.name for iaq in aq])}"
+        self.parameters.loc[pname] = {
+            "layers": layers,
             "optimal": initial,
             "std": None,
             "perc_std": None,
             "pmin": pmin,
             "pmax": pmax,
             "initial": initial,
-            "parray": p[:],
+            "inhoms": aq if inhoms is not None else None,
+            "parray": plist,
         }
 
     def set_parameter_by_reference(
@@ -116,7 +179,7 @@ class Calibrate:
             "pmin": pmin,
             "pmax": pmax,
             "initial": initial,
-            "parray": p[:],
+            "parray": [p[:]],
         }
 
     def series(self, name, x, y, layer, t, h, weights=None):
@@ -182,9 +245,10 @@ class Calibrate:
             layers = range(self.model.aq.naq)
 
         for i, k in enumerate(self.parameters.index):
-            # [:] needed to do set value in array
-            self.parameters.loc[k, "parray"][:] = p[i]
-
+            parraylist = self.parameters.loc[k, "parray"]
+            for parray in parraylist:
+                # [:] needed to do set value in array
+                parray[:] = p[i]
         self.model.solve(silent=True)
 
         rv = np.empty(0)
@@ -205,7 +269,6 @@ class Calibrate:
     def residuals_lmfit(self, lmfitparams, printdot=False):
         vals = lmfitparams.valuesdict()
         p = np.array([vals[k] for k in self.parameters.index])
-        # p = np.array([vals[k] for k in vals])
         return self.residuals(p, printdot)
 
     def fit_least_squares(self, report=True, diff_step=1e-4, xtol=1e-8, method="lm"):
@@ -241,20 +304,21 @@ class Calibrate:
             print(self.covmat)
             print(self.cormat)
 
-    def fit_lmfit(self, report=False, printdot=True):
+    def fit_lmfit(self, report=False, printdot=True, **kwargs):
         import lmfit
 
         self.lmfitparams = lmfit.Parameters()
         for name in self.parameters.index:
             p = self.parameters.loc[name]
             self.lmfitparams.add(name, value=p["initial"], min=p["pmin"], max=p["pmax"])
-        fit_kws = {"epsfcn": 1e-4}
+        # fit_kws = {"epsfcn": 1e-4}
         self.fitresult = lmfit.minimize(
             self.residuals_lmfit,
             self.lmfitparams,
             method="leastsq",
             kws={"printdot": printdot},
-            **fit_kws,
+            # **fit_kws,
+            **kwargs,
         )
         print("", flush=True)
         print(self.fitresult.message)
@@ -274,10 +338,42 @@ class Calibrate:
         if report:
             print(lmfit.fit_report(self.fitresult))
 
-    def fit(self, report=False, printdot=True):
+    def residuals_leastsq(self, logparams, printdot=False):
+        params = 10**logparams
+        print("params ", params)
+        return self.residuals(params, printdot)
+
+    def fit_leastsq(self, report=True, diff_step=1e-4, xtol=1e-8):
+        params_initial = np.log10(self.parameters.initial.values)
+        print("params_initial ", params_initial)
+        plog, mes = leastsq(self.residuals_leastsq, params_initial, epsfcn=1e-3)
+        print("", flush=True)
+        params = 10**plog
+        # Call residuals to specify optimal values for model
+        self.residuals(params)
+        for ipar in self.parameters.index:
+            self.parameters.loc[ipar, "optimal"] = self.parameters.loc[ipar, "parray"][
+                0
+            ]
+        # nparam = len(self.fitresult.x)
+        # H = self.fitresult.jac.T @ self.fitresult.jac
+        # sigsq = np.var(res, ddof=nparam)
+        # self.covmat = np.linalg.inv(H) * sigsq
+        # self.sig = np.sqrt(np.diag(self.covmat))
+        # D = np.diag(1 / self.sig)
+        # self.cormat = D @ self.covmat @ D
+        # self.parameters["std"] = self.sig
+        # self.parameters["perc_std"] = self.sig / self.parameters["optimal"] * 100
+        # if report:
+        #     print(self.parameters)
+        #     print(self.sig)
+        #     print(self.covmat)
+        #     print(self.cormat)
+
+    def fit(self, report=False, printdot=True, **kwargs):
         # current default fitting routine is lmfit
         # return self.fit_least_squares(report) # does not support bounds by default
-        return self.fit_lmfit(report, printdot)
+        return self.fit_lmfit(report, printdot, **kwargs)
 
     def rmse(self, weighted=True, layers=None):
         """Calculate root-mean-squared-error.
@@ -291,6 +387,45 @@ class Calibrate:
             self.parameters["optimal"].values, weighted=weighted, layers=layers
         )
         return np.sqrt(np.mean(r**2))
+
+    def topview(self, ax=None, layers=None, labels=True):
+        """Plot topview of model with calibration points.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            axes to plot on (the default is None, which creates a new figure)
+        """
+        if ax is None:
+            _, ax = plt.subplots()
+            # self.model.plots.topview(ax=ax)
+        for key, s in self.seriesdict.items():
+            if layers is None or s.layer in layers:
+                ax.plot(s.x, s.y, "ko")
+                if labels:
+                    ax.text(s.x, s.y, key, ha="left", va="bottom")
+        return ax
+
+    def xsection(self, ax=None, labels=True):
+        """Plot cross-section of model with calibration points.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            axes to plot on (the default is None, which creates a new figure)
+        """
+        if ax is None:
+            _, ax = plt.subplots()
+        for key, s in self.seriesdict.items():
+            aq = self.model.aq.find_aquifer_data(s.x, s.y)
+            ztop = aq.z[0]
+            zpb_top = aq.zaqtop[s.layer]
+            zpb_bot = aq.zaqbot[s.layer]
+            ax.plot([s.x, s.x], [zpb_top, zpb_bot], c="k", ls="dotted")
+            ax.plot([s.x, s.x], [ztop + 1, zpb_top], c="k", ls="solid", lw=1.0)
+            if labels:
+                ax.text(s.x, ztop + 1, key, ha="left", va="bottom", rotation=45)
+        return ax
 
 
 class Series:

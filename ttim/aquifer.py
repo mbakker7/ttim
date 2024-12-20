@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 
 class AquiferData:
@@ -19,6 +20,7 @@ class AquiferData:
         phreatictop,
         kzoverkh=None,
         model3d=False,
+        name=None,
     ):
         """Kzoverkh and model3d only need to be specified when model is model3d."""
         self.model = model
@@ -40,7 +42,7 @@ class AquiferData:
         self.ltype = np.atleast_1d(ltype)
         self.zaqtop = self.z[:-1][self.ltype == "a"]
         self.zaqbot = self.z[1:][self.ltype == "a"]
-        self.layernumber = np.zeros(self.nlayers, dtype="int")
+        self.layernumber = np.zeros(self.nlayers, dtype=int)
         self.layernumber[self.ltype == "a"] = np.arange(self.naq)
         self.layernumber[self.ltype == "l"] = np.arange(self.nlayers - self.naq)
         if self.ltype[0] == "a":
@@ -58,9 +60,18 @@ class AquiferData:
             assert self.kzoverkh is not None, "model3d specified without kzoverkh"
         # self.D = self.T / self.Saq
         self.area = 1e200  # Smaller than default of ml.aq so that inhom is found
+        self.name = name
 
     def __repr__(self):
-        return "Inhom T: " + str(self.T)
+        if self.topboundary.startswith("con"):
+            topbound = "confined"
+        elif self.topboundary.startswith("lea"):
+            topbound = "leaky"
+        elif self.topboundary.startswith("sem"):
+            topbound = "semi-confined"
+        else:
+            topbound = "unknown"  # should not happen
+        return f"Inhom Aquifer: {self.naq} aquifer(s) with {topbound} top boundary"
 
     def initialize(self):
         """Initialize the aquifer data.
@@ -161,11 +172,12 @@ class AquiferData:
     def potential_to_head(self, pot, layers):
         return pot / self.Tcol[layers]
 
-    def isInside(self, x, y):
-        print("Must overload AquiferData.isInside method")
-        return True
+    def is_inside(self, x, y):
+        raise NotImplementedError(
+            f"Must overload is_inside in {self.__class__.__name__} class."
+        )
 
-    def inWhichLayer(self, z):
+    def in_which_layer(self, z):
         """Get layer given elevation z.
 
         Returns -9999 if above top of system, +9999 if below bottom of system, negative
@@ -200,6 +212,28 @@ class AquiferData:
             ltype = self.ltype[modellayer]
         return layernumber, ltype, modellayer
 
+    def summary(self):
+        summary = pd.DataFrame(
+            index=range(self.nlayers),
+            columns=["layer", "layer_type", "k_h", "c", "S_s"],
+        )
+        summary.index.name = "#"
+        layertype = {"a": "aquifer", "l": "leaky layer"}
+        summary["layer_type"] = [layertype[lt] for lt in self.ltype]
+        if self.topboundary.startswith("con"):
+            summary.iloc[::2, 2] = self.kaq
+            summary.iloc[::2, 4] = self.Saq
+            summary.iloc[1::2, 3] = self.c
+            summary.iloc[1::2, 4] = self.Sll
+
+        else:
+            summary.iloc[1::2, 2] = self.kaq
+            summary.iloc[1::2, 4] = self.Saq
+            summary.iloc[::2, 4] = self.Sll
+            summary.iloc[::2, 3] = self.c
+        summary.loc[:, "layer"] = self.layernumber
+        return summary  # .set_index("layer")
+
 
 class Aquifer(AquiferData):
     def __init__(
@@ -220,8 +254,7 @@ class Aquifer(AquiferData):
         kzoverkh=None,
         model3d=False,
     ):
-        AquiferData.__init__(
-            self,
+        super().__init__(
             model,
             kaq,
             z,
@@ -238,21 +271,55 @@ class Aquifer(AquiferData):
             kzoverkh,
             model3d,
         )
-        self.inhomlist = []
+        self.inhomdict = {}
         self.area = 1e300  # Needed to find smallest inhomogeneity
 
     def __repr__(self):
-        return "Background Aquifer T: " + str(self.T)
+        if self.topboundary.startswith("con"):
+            topbound = "confined"
+        elif self.topboundary.startswith("lea"):
+            topbound = "leaky"
+        elif self.topboundary.startswith("sem"):
+            topbound = "semi-confined"
+        else:
+            topbound = "unknown"  # should not happen
+        return f"Background Aquifer: {self.naq} aquifer(s) with {topbound} top boundary"
 
     def initialize(self):
-        AquiferData.initialize(self)
-        for inhom in self.inhomlist:
+        super().initialize()
+        for inhom in self.inhomdict.values():
             inhom.initialize()
+
+    def is_inside(self, x, y):
+        return True
 
     def find_aquifer_data(self, x, y):
         rv = self
-        for aq in self.inhomlist:
-            if aq.isInside(x, y):
+        for aq in self.inhomdict.values():
+            if aq.is_inside(x, y):
                 if aq.area < rv.area:
                     rv = aq
         return rv
+
+    def add_inhom(self, inhom):
+        inhom_number = len(self.inhomdict)
+        if inhom.name is None:
+            inhom.name = f"inhom{inhom_number}"
+        if inhom.name in self.inhomdict:
+            raise ValueError(f"Inhomogeneity name '{inhom.name}' already exists.")
+        self.inhomdict[inhom.name] = inhom
+        return inhom_number
+
+
+class SimpleAquifer(Aquifer):
+    def __init__(self, naq):
+        self.naq = naq
+        self.inhomdict = {}
+        self.area = 1e300  # Needed to find smallest inhomogeneity
+
+    def __repr__(self):
+        return f"Simple Aquifer: {self.naq} aquifer(s)"
+
+    def initialize(self):
+        for inhom in self.inhomdict.values():
+            inhom.initialize()

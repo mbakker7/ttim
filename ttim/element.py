@@ -17,6 +17,7 @@ class Element(ABC):
         type="z",
         name="",
         label=None,
+        inhomelement=False,
     ):
         """Element base class.
 
@@ -38,6 +39,7 @@ class Element(ABC):
         self.nunknowns = nunknowns
         self.layers = np.atleast_1d(layers)
         self.nlayers = len(self.layers)
+        self.inhomelement = inhomelement  # tag inhomelements
         #
         tsandbc = np.atleast_2d(tsandbc).astype(float)
         tsandbc_error = (

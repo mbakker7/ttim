@@ -3,6 +3,8 @@ from typing import Optional
 import matplotlib.pyplot as plt
 import numpy as np
 
+from ttim.aquifer import SimpleAquifer
+
 
 class PlotTtim:
     def __init__(self, ml):
@@ -11,10 +13,23 @@ class PlotTtim:
     def topview(self, win=None, ax=None, figsize=None, layers=None):
         """Plot top-view.
 
+        This method plots all elements (in specified layers).
+
         Parameters
         ----------
         win : list or tuple
             [x1, x2, y1, y2]
+        ax : matplotlib.Axes, optional
+            axes to plot on, default is None which creates a new figure
+        figsize : tuple of 2 values
+            size of figure
+        layers : int or list of ints, optional
+            layers to plot, default is None which plots elements in all layers
+
+        Returns
+        -------
+        ax : matplotlib.Axes
+            axes with plot
         """
         if ax is None:
             _, ax = plt.subplots(figsize=figsize)
@@ -35,16 +50,59 @@ class PlotTtim:
         params=False,
         ax=None,
     ):
+        """Plot cross-section of model.
+
+        Note: this method does not plot elements at this time. It does plot
+        cross-section inhoms if the model is a cross-section model (ModelXsection).
+
+        Parameters
+        ----------
+        xy : list of tuples, optional
+            list of tuples with coordinates of the form [(x0, y0), (x1, y1)]. If not
+            provided, a cross section with length 1 is plotted.
+        labels : bool, optional
+            add layer numbering labels to plot
+        params : bool, optional
+            add parameter values to plot
+        ax : matplotlib.Axes, optional
+            axes to plot on, default is None which creates a new figure
+
+        Returns
+        -------
+        ax : matplotlib.Axes
+            axes with plot
+        """
         if ax is None:
             _, ax = plt.subplots(1, 1, figsize=(8, 4))
 
+        # if SimpleAquifer, plot inhoms and return
+        if isinstance(self._ml.aq, SimpleAquifer):
+            for inhom in self._ml.aq.inhomdict.values():
+                inhom.plot(ax=ax, labels=labels, params=params)
+            for e in self._ml.elementlist:
+                e.plot(ax=ax)
+            ax.set_ylabel("elevation")
+            ax.set_xlabel("x")
+            return ax
+
+        # else get cross-section line
         if xy is not None:
             (x0, y0), (x1, y1) = xy
             r = np.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
-            ax.set_xlim(0, r)
+            if y0 == 0 and y1 == 0:
+                r0 = x0
+                ax.set_xlim(x0, x1)
+            elif x0 == 0 and x1 == 0:
+                ax.set_ylim(y0, y1)
+                r0 = y0
+            else:
+                ax.set_xlim(0, r)
+                r0 = 0.0
         else:
+            r0 = 0.0
             r = 1.0
 
+        # get values for layer and aquifer numbering
         if labels:
             lli = 1 if self._ml.aq.topboundary == "con" else 0
             aqi = 0
@@ -52,7 +110,9 @@ class PlotTtim:
             lli = None
             aqi = None
 
+        # plot layers
         for i in range(self._ml.aq.nlayers):
+            # leaky layers
             if self._ml.aq.ltype[i] == "l":
                 ax.axhspan(
                     ymin=self._ml.aq.z[i + 1],
@@ -61,7 +121,7 @@ class PlotTtim:
                 )
                 if labels:
                     ax.text(
-                        0.5 * r if not params else 0.25 * r,
+                        r0 + 0.5 * r if not params else r0 + 0.25 * r,
                         np.mean(self._ml.aq.z[i : i + 2]),
                         f"leaky layer {lli}",
                         ha="center",
@@ -69,11 +129,11 @@ class PlotTtim:
                     )
                 if params:
                     ax.text(
-                        0.75 * r if labels else 0.5 * r,
+                        r0 + 0.75 * r if labels else r0 + 0.5 * r,
                         np.mean(self._ml.aq.z[i : i + 2]),
                         (
                             f"$c$ = {self._ml.aq.c[lli]}, "
-                            f"$S_s$ = {self._ml.aq.Sll[lli]:.2e}",
+                            f"$S_s$ = {self._ml.aq.Sll[lli]:.2e}"
                         ),
                         ha="center",
                         va="center",
@@ -81,9 +141,10 @@ class PlotTtim:
                 if labels or params:
                     lli += 1
 
+            # aquifers
             if labels and self._ml.aq.ltype[i] == "a":
                 ax.text(
-                    0.5 * r if not params else 0.25 * r,
+                    r0 + 0.5 * r if not params else r0 + 0.25 * r,
                     np.mean(self._ml.aq.z[i : i + 2]),
                     f"aquifer {aqi}",
                     ha="center",
@@ -101,7 +162,7 @@ class PlotTtim:
                         f"$S_s$ = {self._ml.aq.Saq[aqi]:.2e}"
                     )
                 ax.text(
-                    0.75 * r if labels else 0.5 * r,
+                    r0 + 0.75 * r if labels else r0 + 0.5 * r,
                     np.mean(self._ml.aq.z[i : i + 2]),
                     paramtxt,
                     ha="center",
@@ -110,14 +171,16 @@ class PlotTtim:
             if (labels or params) and self._ml.aq.ltype[i] == "a":
                 aqi += 1
 
+        # aquifer-aquifer boundaries (for e.g. Model3D)
         for i in range(1, self._ml.aq.nlayers):
             if self._ml.aq.ltype[i] == "a" and self._ml.aq.ltype[i - 1] == "a":
                 ax.axhspan(
                     ymin=self._ml.aq.z[i], ymax=self._ml.aq.z[i], color=[0.8, 0.8, 0.8]
                 )
-
+        # top and bottom
         ax.axhline(self._ml.aq.z[0], color="k", lw=0.75)
         ax.axhline(self._ml.aq.z[-1], color="k", lw=3.0)
+        # add y-label
         ax.set_ylabel("elevation")
         return ax
 
@@ -138,6 +201,38 @@ class PlotTtim:
         legend=True,
         grid=True,
     ):
+        """Plot head along line.
+
+        Parameters
+        ----------
+        x1, x2, y1, y2 : float
+            start and end coordinates of line
+        npoints : int
+            number of points along line
+        t : scalar or array
+            times at which to plot heads
+        layers :
+            layers for which to plot heads
+        sstart : float
+            starting distance for cross-section
+        color : str
+            color of line
+        lw : float
+            line width
+        figsize : tuple of 2 values
+            size of figure
+        ax : matplotlib.Axes
+            axes to plot on, default is None which creates a new figure
+        legend : bool
+            add legend to plot
+        grid : bool
+            add grid to plot
+
+        Returns
+        -------
+        ax : matplotlib.Axes
+            axes with plot
+        """
         layers = np.atleast_1d(layers)
         t = np.atleast_1d(t)
         if ax is None:
@@ -205,6 +300,11 @@ class PlotTtim:
         legend : list or boolean (default True)
             add legend to figure
             if list of strings: use strings as names in legend
+
+        Returns
+        -------
+        ax : matplotlib.Axes
+            axes with plot
         """
         x1, x2, y1, y2 = win
         if np.isscalar(ngr):
