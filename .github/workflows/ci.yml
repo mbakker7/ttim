@@ -41,7 +41,12 @@ jobs:
 
       - name: Run tests
         run: |
-          py.test ./tests
+          pytest ./tests
+
+      - name: Numba coverage
+        run: |
+          NUMBA_DISABLE_JIT=1 pytest --cov-append ./tests/test_bessel.py 
+
 
       - name: Publish to coveralls.io
         uses: coverallsapp/github-action@v2

@@ -29,11 +29,9 @@ classifiers = [
     "Operating System :: MacOS",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3 :: Only",
     "Topic :: Scientific/Engineering :: Hydrology",
 ]
@@ -44,7 +42,15 @@ repository = "https://github.com/mbakker7/ttim"
 documentation = "http://mbakker7.github.io/ttim/docs/builddocs/html/index.html"
 
 [project.optional-dependencies]
-ci = ["pytest>=4.6", "pytest-cov", "jupyter>=1.0.0", "shapely", "flake8", "coveralls"]
+ci = [
+    "pytest",
+    "pytest-cov",
+    "pytest-sugar",
+    "jupyter",
+    "shapely",
+    "coveralls",
+    "timml",
+]
 docs = [
     "ttim[ci]",
     "sphinx",

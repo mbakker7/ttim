@@ -30,8 +30,7 @@ class LineDoubletHoBase(Element):
         label=None,
         addtomodel=True,
     ):
-        Element.__init__(
-            self,
+        super().__init__(
             model,
             nparam=1,
             nunknowns=0,
@@ -73,7 +72,7 @@ class LineDoubletHoBase(Element):
         self.sinout = np.sin(self.thetanormOut) * np.ones(self.ncp)
         #
         thetacp = np.arange(np.pi, 0, -np.pi / self.ncp) - 0.5 * np.pi / self.ncp
-        Zcp = np.zeros(self.ncp, "D")
+        Zcp = np.zeros(self.ncp, dtype=complex)
         Zcp.real = np.cos(thetacp)
         # control point just on positive site (this is handy later on)
         Zcp.imag = 1e-6
@@ -110,9 +109,11 @@ class LineDoubletHoBase(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+        rv = np.zeros(
+            (self.nparam, aq.naq, self.model.nint, self.model.npint), dtype=complex
+        )
         if aq == self.aq:
-            pot = np.zeros((self.order + 1, self.model.npint), "D")
+            pot = np.zeros((self.order + 1, self.model.npint), dtype=complex)
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
                     if besselnumba.isinside(
@@ -141,10 +142,14 @@ class LineDoubletHoBase(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rvx = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
-        rvy = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+        rvx = np.zeros(
+            (self.nparam, aq.naq, self.model.nint, self.model.npint), dtype=complex
+        )
+        rvy = np.zeros(
+            (self.nparam, aq.naq, self.model.nint, self.model.npint), dtype=complex
+        )
         if aq == self.aq:
-            qxqy = np.zeros((2 * (self.order + 1), self.model.npint), "D")
+            qxqy = np.zeros((2 * (self.order + 1), self.model.npint), dtype=complex)
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
                     if besselnumba.isinside(
@@ -174,8 +179,10 @@ class LineDoubletHoBase(Element):
         rvy.shape = (self.nparam, aq.naq, self.model.npval)
         return rvx, rvy
 
-    def plot(self):
-        plt.plot([self.x1, self.x2], [self.y1, self.y2], "k")
+    def plot(self, ax=None):
+        if ax is None:
+            _, ax = plt.subplots()
+        ax.plot([self.x1, self.x2], [self.y1, self.y2], "k")
 
 
 class LeakyLineDoublet(LineDoubletHoBase, LeakyWallEquation):
@@ -228,8 +235,7 @@ class LeakyLineDoublet(LineDoubletHoBase, LeakyWallEquation):
         addtomodel=True,
     ):
         self.storeinput(inspect.currentframe())
-        LineDoubletHoBase.__init__(
-            self,
+        super().__init__(
             model,
             x1=x1,
             y1=y1,
@@ -247,9 +253,9 @@ class LeakyLineDoublet(LineDoubletHoBase, LeakyWallEquation):
         self.nunknowns = self.nparam
 
     def initialize(self):
-        LineDoubletHoBase.initialize(self)
+        super().initialize()
         self.parameters = np.zeros(
-            (self.model.ngvbc, self.nparam, self.model.npval), "D"
+            (self.model.ngvbc, self.nparam, self.model.npval), dtype=complex
         )
 
 
@@ -299,7 +305,7 @@ class LeakyLineDoubletString(Element, LeakyWallEquation):
         self.res = res
         self.order = order
         self.ldlist = []
-        xy = np.atleast_2d(xy).astype("d")
+        xy = np.atleast_2d(xy).astype(float)
         self.x, self.y = xy[:, 0], xy[:, 1]
         self.nld = len(self.x) - 1
         for i in range(self.nld):
@@ -338,7 +344,7 @@ class LeakyLineDoubletString(Element, LeakyWallEquation):
         self.yldlayout = np.hstack((self.yld[:, 0], self.yld[-1, 1]))
         self.aq = self.model.aq.find_aquifer_data(self.ldlist[0].xc, self.ldlist[0].yc)
         self.parameters = np.zeros(
-            (self.model.ngvbc, self.nparam, self.model.npval), "D"
+            (self.model.ngvbc, self.nparam, self.model.npval), dtype=complex
         )
         self.setbc()
         # As parameters are only stored for the element not the list,
@@ -359,7 +365,7 @@ class LeakyLineDoubletString(Element, LeakyWallEquation):
         """Returns array (nunknowns,nperiods)."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
+        rv = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         for i, ld in enumerate(self.ldlist):
             rv[i * ld.nparam : (i + 1) * ld.nparam, :] = ld.potinf(x, y, aq)
         return rv
@@ -368,13 +374,15 @@ class LeakyLineDoubletString(Element, LeakyWallEquation):
         """Returns array (nunknowns,nperiods)."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rvx = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
-        rvy = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
+        rvx = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
+        rvy = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         for i, ld in enumerate(self.ldlist):
             qx, qy = ld.disvecinf(x, y, aq)
             rvx[i * ld.nparam : (i + 1) * ld.nparam, :] = qx
             rvy[i * ld.nparam : (i + 1) * ld.nparam, :] = qy
         return rvx, rvy
 
-    def plot(self):
-        plt.plot(self.xldlayout, self.yldlayout, "k")
+    def plot(self, ax=None):
+        if ax is None:
+            _, ax = plt.subplots()
+        ax.plot(self.xldlayout, self.yldlayout, "k")
