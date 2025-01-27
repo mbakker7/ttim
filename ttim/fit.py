@@ -168,9 +168,9 @@ class Calibrate:
         """
         assert isinstance(name, str), "Error: name must be string"
         if parameter is not None:
-            assert isinstance(
-                parameter, np.ndarray
-            ), "Error: parameter needs to be numpy array"
+            assert isinstance(parameter, np.ndarray), (
+                "Error: parameter needs to be numpy array"
+            )
             p = parameter
         self.parameters.loc[name] = {
             "optimal": initial,

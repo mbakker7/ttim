@@ -198,9 +198,9 @@ class CircInhomRadial(Element, InhomEquation):
         self.aqin = self.model.aq.findAquiferData(
             self.x0 + (1 - 1e-8) * self.R, self.y0
         )
-        assert (
-            self.aqin.R == self.R
-        ), "Radius of CircInhom and CircInhomData must be equal"
+        assert self.aqin.R == self.R, (
+            "Radius of CircInhom and CircInhomData must be equal"
+        )
         self.aqout = self.model.aq.find_aquifer_data(
             self.x0 + (1 + 1e-8) * self.R, self.y0
         )

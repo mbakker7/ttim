@@ -364,7 +364,7 @@ def bessells_gauss(x, y, z1, z2, lab):
 
 @numba.njit(nogil=True, cache=True)
 def bessellsuni(x, y, z1, z2, lab):
-    """bessellsuni.
+    """Bessellsuni.
 
     # Uniform strength
     implicit none
@@ -402,7 +402,7 @@ def bessellsuni(x, y, z1, z2, lab):
 
 @numba.njit(nogil=True, cache=True)
 def bessellsuniv(x, y, z1, z2, lab, rzero):
-    """bessellsuniv.
+    """Bessellsuniv.
 
     # Uniform strength
     implicit none
@@ -513,7 +513,7 @@ def find_d1d2(z1, z2, zc, R):
 
 @numba.njit(nogil=True, cache=True)
 def bessells(x, y, z1, z2, lab, order, d1in, d2in):
-    """bessells.
+    """Bessells.
 
     implicit none
     integer, intent(in) :: order
@@ -783,7 +783,7 @@ def bessellsqxqyv2(x, y, z1, z2, lab, order, R):
 
 @numba.njit(nogil=True, cache=True)
 def bessellsqxqy(x, y, z1, z2, lab, order, d1in, d2in):
-    """bessellsqxqy.
+    """Bessellsqxqy.
 
     implicit none
     integer, intent(in) :: order
@@ -1240,7 +1240,7 @@ def besselldv2(x, y, z1, z2, lab, order, R):
 
 @numba.njit(nogil=True, cache=True)
 def besselld(x, y, z1, z2, lab, order, d1in, d2in):
-    """besselld.
+    """Besselld.
 
     implicit none
     integer, intent(in) :: order
@@ -1495,7 +1495,7 @@ def besselldqxqyv2(x, y, z1, z2, lab, order, R):
 
 @numba.njit(nogil=True, cache=True)
 def besselldqxqy(x, y, z1, z2, lab, order, d1in, d2in):
-    """besselldqxqy.
+    """Besselldqxqy.
 
     implicit none
     integer, intent(in) :: order
@@ -1816,7 +1816,7 @@ def besselld_gauss_ho_qxqy(x, y, z1, z2, lab, order):
 
 @numba.njit(nogil=True, cache=True)
 def besselldpart(x, y, z1, z2, lab, order, d1, d2):
-    """besselldpart.
+    """Besselldpart.
 
     implicit none
     integer, intent(in) :: order
