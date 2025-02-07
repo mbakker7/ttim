@@ -236,7 +236,7 @@ class Xsection(AquiferData):
         if names:
             ax.text(
                 r0 + 0.5 * r,
-                0.9,
+                0.95,
                 self.name,
                 ha="center",
                 va="center",
