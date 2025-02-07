@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import matplotlib.transforms as transforms
 import numpy as np
 
 from ttim.aquifer import AquiferData
