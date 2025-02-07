@@ -241,7 +241,7 @@ class Xsection(AquiferData):
                 ha="center",
                 va="center",
                 fontsize=10,
-                transform=ax.get_xaxis_transform()
+                transform=ax.get_xaxis_transform(),
             )
 
         for i in range(self.nlayers):
