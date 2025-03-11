@@ -96,7 +96,7 @@ class Calibrate:
                 from_lay = int(layers_from_name[0])
                 to_lay = from_lay + 1
             elif len(layers_from_name) == 2:
-                from_lay, to_lay = layers_from_name
+                from_lay, to_lay = map(int, layers_from_name)
 
         # get aquifer information and create list if necessary
         if inhoms is None:
