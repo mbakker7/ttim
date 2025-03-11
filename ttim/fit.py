@@ -309,7 +309,7 @@ class Calibrate:
         for name in self.parameters.index:
             p = self.parameters.loc[name]
             self.lmfitparams.add(name, value=p["initial"], min=p["pmin"], max=p["pmax"])
-        fit_kws = {"epsfcn": 1e-4} # this is essential to specify step for the Jacobian
+        fit_kws = {"epsfcn": 1e-4}  # this is essential to specify step for the Jacobian
         self.fitresult = lmfit.minimize(
             self.residuals_lmfit,
             self.lmfitparams,
