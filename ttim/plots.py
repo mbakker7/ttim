@@ -153,8 +153,7 @@ class PlotTtim:
             if params and self._ml.aq.ltype[i] == "a":
                 if aqi == 0 and self._ml.aq.phreatictop:
                     paramtxt = (
-                        f"$k_h$ = {self._ml.aq.kaq[aqi]}, "
-                        f"$S$ = {self._ml.aq.Saq[aqi]}"
+                        f"$k_h$ = {self._ml.aq.kaq[aqi]}, $S$ = {self._ml.aq.Saq[aqi]}"
                     )
                 else:
                     paramtxt = (

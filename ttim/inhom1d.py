@@ -196,7 +196,7 @@ class Xsection(AquiferData):
             )
             HstarXsection(self.model, self.x1, self.x2, tsandhstar=self.tsandhstar)
 
-    def plot(self, ax=None, labels=False, params=False, **kwargs):
+    def plot(self, ax=None, labels=False, params=False, names=False, **kwargs):
         """Plot the cross-section.
 
         Parameters
@@ -207,6 +207,8 @@ class Xsection(AquiferData):
             If True, add layer-name labels.
         params : bool, optional
             If True, add parameter labels.
+        names : bool, optional
+            If True, add inhomogeneity names.
         """
         if ax is None:
             _, ax = plt.subplots(1, 1, figsize=(8, 4))
@@ -229,6 +231,17 @@ class Xsection(AquiferData):
         else:
             lli = None
             aqi = None
+
+        if names:
+            ax.text(
+                r0 + 0.5 * r,
+                0.95,
+                self.name,
+                ha="center",
+                va="center",
+                fontsize=10,
+                transform=ax.get_xaxis_transform(),
+            )
 
         for i in range(self.nlayers):
             if self.ltype[i] == "l":

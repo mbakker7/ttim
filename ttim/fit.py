@@ -7,8 +7,6 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import least_squares, leastsq
 
-# import lmfit
-
 
 class Calibrate:
     def __init__(self, model):
@@ -96,7 +94,7 @@ class Calibrate:
                 from_lay = int(layers_from_name[0])
                 to_lay = from_lay + 1
             elif len(layers_from_name) == 2:
-                from_lay, to_lay = layers_from_name
+                from_lay, to_lay = map(int, layers_from_name)
 
         # get aquifer information and create list if necessary
         if inhoms is None:
@@ -168,9 +166,9 @@ class Calibrate:
         """
         assert isinstance(name, str), "Error: name must be string"
         if parameter is not None:
-            assert isinstance(
-                parameter, np.ndarray
-            ), "Error: parameter needs to be numpy array"
+            assert isinstance(parameter, np.ndarray), (
+                "Error: parameter needs to be numpy array"
+            )
             p = parameter
         self.parameters.loc[name] = {
             "optimal": initial,
@@ -311,13 +309,13 @@ class Calibrate:
         for name in self.parameters.index:
             p = self.parameters.loc[name]
             self.lmfitparams.add(name, value=p["initial"], min=p["pmin"], max=p["pmax"])
-        # fit_kws = {"epsfcn": 1e-4}
+        fit_kws = {"epsfcn": 1e-4}  # this is essential to specify step for the Jacobian
         self.fitresult = lmfit.minimize(
             self.residuals_lmfit,
             self.lmfitparams,
             method="leastsq",
             kws={"printdot": printdot},
-            # **fit_kws,
+            **fit_kws,
             **kwargs,
         )
         print("", flush=True)
