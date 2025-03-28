@@ -55,6 +55,6 @@ To uninstall TTim type:
 
 Some of the papers that you may want to cite when using TTim are:
 
-* M. Bakker. 2013. Semi-analytic modeling of transient multi-layer flow with TTim. Hydrogeology Journal, 21: 935-943. Available [here](https)
-* M .Bakker. 2013. Analytic modeling of transient multi-layer flow. In: Advances in Hydrogeology, edited by P Mishra and K Kuhlman, Springer, Heidelberg, 95-114.
+* M. Bakker. 2013. Semi-analytic modeling of transient multi-layer flow with TTim. Hydrogeology Journal, 21: 935-943. Available [here](https://github.com/mbakker7/ttim/blob/master/papers/2013_bakker_ttim_hgj.pdf).
+* M .Bakker. 2013. Analytic modeling of transient multi-layer flow. In: Advances in Hydrogeology, edited by P Mishra and K Kuhlman, Springer, Heidelberg, 95-114. Available [here](https://github.com/mbakker7/ttim/blob/master/papers/2013_bakker_ttim_theory.pdf).
 
