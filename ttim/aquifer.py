@@ -141,7 +141,7 @@ class AquiferData:
             * np.exp(-sqrtpSc[~small])
             / (1.0 - np.exp(-2.0 * sqrtpSc[~small]))
         )
-        if (self.topboundary[:3] == "sem") or (self.topboundary[:3] == "lea"):
+        if self.topboundary[:3] == "lea":
             dzero = sqrtpSc[0] * np.tanh(sqrtpSc[0])
 
         d0 = p / self.D
