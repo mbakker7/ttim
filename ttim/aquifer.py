@@ -141,15 +141,13 @@ class AquiferData:
             * np.exp(-sqrtpSc[~small])
             / (1.0 - np.exp(-2.0 * sqrtpSc[~small]))
         )
-        if (self.topboundary[:3] == "sem") or (self.topboundary[:3] == "lea"):
-            dzero = sqrtpSc[0] * np.tanh(sqrtpSc[0])
-
         d0 = p / self.D
         if B is not None:
             d0 = d0 * B  # B is vector of load efficiency paramters
         d0[:-1] += a[1:] / (self.c[1:] * self.T[:-1])
         d0[1:] += a[1:] / (self.c[1:] * self.T[1:])
         if self.topboundary[:3] == "lea":
+            dzero = sqrtpSc[0] * np.tanh(sqrtpSc[0])
             d0[0] += dzero / (self.c[0] * self.T[0])
         elif self.topboundary[:3] == "sem":
             d0[0] += a[0] / (self.c[0] * self.T[0])
