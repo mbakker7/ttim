@@ -60,7 +60,7 @@ class AquiferData:
             assert self.kzoverkh is not None, "model3d specified without kzoverkh"
             assert (
                 self.topboundary != "con"
-            ), "Error: For Model3D, only 'confined' topboundary is currently implemented"
+            ), "Error: For Model3D, only 'confined' topboundary is implemented yet"
         # self.D = self.T / self.Saq
         self.area = 1e200  # Smaller than default of ml.aq so that inhom is found
         self.name = name
@@ -75,7 +75,7 @@ class AquiferData:
         else:
             topbound = "unknown"  # should not happen
             raise ValueError(
-                "You specified an invalid topboundary. Use 'confined', 'semi' or 'leaky'."
+                "Invalid topboundary. Use 'confined', 'semi' or 'leaky'."
             )
         return f"Inhom Aquifer: {self.naq} aquifer(s) with {topbound} top boundary"
 
