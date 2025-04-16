@@ -75,9 +75,7 @@ class AquiferData:
             topbound = "semi-confined"
         else:
             topbound = "unknown"  # should not happen
-            raise ValueError(
-                "Invalid topboundary. Use 'confined', 'semi' or 'leaky'."
-            )
+            raise ValueError("Invalid topboundary. Use 'confined', 'semi' or 'leaky'.")
         return f"Inhom Aquifer: {self.naq} aquifer(s) with {topbound} top boundary"
 
     def initialize(self):
