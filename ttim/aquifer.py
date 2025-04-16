@@ -58,7 +58,7 @@ class AquiferData:
         self.model3d = model3d
         if self.model3d:
             assert self.kzoverkh is not None, "model3d specified without kzoverkh"
-            assert self.topboundary == "con", (
+            assert self.topboundary.startswith("con"), (
                 "Error: For Model3D, only 'confined' topboundary is currently "
                 "implemented."
             )
