@@ -161,7 +161,7 @@ class PlotTtim:
                         f"$S_s$ = {self._ml.aq.Saq[aqi]:.2e}"
                     )
                 if self._ml.aq.model3d:
-                    paramtxt += (f", $k_z/k_h$ = {self._ml.aq.kzoverkh[aqi]:.2f}")    
+                    paramtxt += f", $k_z/k_h$ = {self._ml.aq.kzoverkh[aqi]:.2f}"
                 ax.text(
                     r0 + 0.75 * r if labels else r0 + 0.5 * r,
                     np.mean(self._ml.aq.z[i : i + 2]),
