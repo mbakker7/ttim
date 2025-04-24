@@ -58,6 +58,10 @@ class AquiferData:
         self.model3d = model3d
         if self.model3d:
             assert self.kzoverkh is not None, "model3d specified without kzoverkh"
+            assert self.topboundary.startswith("con"), (
+                "Error: For Model3D, only 'confined' topboundary is currently "
+                "implemented."
+            )
         # self.D = self.T / self.Saq
         self.area = 1e200  # Smaller than default of ml.aq so that inhom is found
         self.name = name
@@ -71,6 +75,7 @@ class AquiferData:
             topbound = "semi-confined"
         else:
             topbound = "unknown"  # should not happen
+            raise ValueError("Invalid topboundary. Use 'confined', 'semi' or 'leaky'.")
         return f"Inhom Aquifer: {self.naq} aquifer(s) with {topbound} top boundary"
 
     def initialize(self):
@@ -141,15 +146,13 @@ class AquiferData:
             * np.exp(-sqrtpSc[~small])
             / (1.0 - np.exp(-2.0 * sqrtpSc[~small]))
         )
-        if (self.topboundary[:3] == "sem") or (self.topboundary[:3] == "lea"):
-            dzero = sqrtpSc[0] * np.tanh(sqrtpSc[0])
-
         d0 = p / self.D
         if B is not None:
             d0 = d0 * B  # B is vector of load efficiency paramters
         d0[:-1] += a[1:] / (self.c[1:] * self.T[:-1])
         d0[1:] += a[1:] / (self.c[1:] * self.T[1:])
         if self.topboundary[:3] == "lea":
+            dzero = sqrtpSc[0] * np.tanh(sqrtpSc[0])
             d0[0] += dzero / (self.c[0] * self.T[0])
         elif self.topboundary[:3] == "sem":
             d0[0] += a[0] / (self.c[0] * self.T[0])
