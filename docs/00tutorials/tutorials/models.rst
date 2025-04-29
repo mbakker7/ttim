@@ -1,5 +1,5 @@
-Starting a model
-================
+Tutorial 0: Starting a model
+============================
 
 There are two ways to start a model:
 
