@@ -136,10 +136,11 @@ class LineDoublet1DBase(Element):
     def plot(self, ax=None):
         if ax is None:
             _, ax = plt.subplots()
+        aq = self.model.aq.find_aquifer_data(self.xld, 0.0)
         for ilay in self.layers:
             ax.plot(
                 [self.xld, self.xld],
-                [self.model.aq.zaqtop[ilay], self.model.aq.zaqbot[ilay]],
+                [aq.zaqtop[ilay], aq.zaqbot[ilay]],
                 "k-",
             )
 
