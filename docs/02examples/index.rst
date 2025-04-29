@@ -63,14 +63,6 @@ Pumping tests
 * `ttim_pumptest_neuman`_
 * `ttim_slugtest`_
 
-Benchmarks
-----------
-
-* `theis_storage`_
-* `ttim_neuman_comparison`_
-* `Comparing linesink with row of wells`_
-* `line-sink-ditch`_
-
 
 .. _Comparing linesink with row of wells: compare_wells_linesink.html
 .. _aem_ttim_sol: aem_ttim_sol.html
