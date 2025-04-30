@@ -72,7 +72,7 @@ def param_maq(
         assert len(z) == 2 * naq + 1, (
             "Error: Length of z needs to be 2 * number of aquifers + 1 "
             "as top for Maq models with leaky top boundary."
-            )
+        )
         if len(kaq) == 1:
             kaq = kaq * np.ones(naq)
         if len(Saq) == 1:
