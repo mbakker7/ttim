@@ -27,7 +27,10 @@ def param_maq(
     if topboundary[:3] == "con":
         naq = int(len(z) / 2)
         assert len(z) == 2 * naq, (
-            "Error: Length of z needs to be 2 * number of aquifers for Maq models with confined top boundary."
+            (
+                "Error: Length of z needs to be 2 * number of aquifers "
+                "for Maq models with confined top boundary."
+            )
         )
         if len(kaq) == 1:
             kaq = kaq * np.ones(naq)
@@ -69,7 +72,10 @@ def param_maq(
     else:  # leaky layers on top
         naq = int(len(z - 1) / 2)
         assert len(z) == 2 * naq + 1, (
-            "Error: Length of z needs to be 2 * number of aquifers + 1 as top for Maq models with leaky top boundary."
+            (
+                "Error: Length of z needs to be 2 * number of aquifers + 1 "
+                "as top for Maq models with leaky top boundary."
+            )
         )
         if len(kaq) == 1:
             kaq = kaq * np.ones(naq)
