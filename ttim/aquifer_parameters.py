@@ -25,6 +25,10 @@ def param_maq(
         "Error: Not all layer thicknesses are" + " non-negative" + str(H)
     )
     if topboundary[:3] == "con":
+        assert len(z) % 2 == 0, (
+            "Error: Length of z must be 2 * number of aquifers "
+            "when topboundary is confined in MaqModel"
+        )
         naq = int(len(z) / 2)
         if len(kaq) == 1:
             kaq = kaq * np.ones(naq)
@@ -64,7 +68,11 @@ def param_maq(
         ltype = np.array(nlayers * ["a"])
         ltype[1::2] = "l"
     else:  # leaky layers on top
-        naq = int(len(z - 1) / 2)
+        assert len(z) % 2 == 1, (
+            "Error: Length of z must be 2 * number of aquifers + 1 "
+            "when topboundary is leaky in MaqModel"
+        )
+        naq = int((len(z) - 1) / 2)
         if len(kaq) == 1:
             kaq = kaq * np.ones(naq)
         if len(Saq) == 1:
