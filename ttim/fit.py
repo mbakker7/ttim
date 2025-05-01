@@ -135,12 +135,12 @@ class Calibrate:
             pname = f"{name}_{'_'.join([iaq.name for iaq in aq])}"
         self.parameters.loc[pname] = {
             "layers": layers,
-            "optimal": initial,
+            "optimal": float(initial),
             "std": None,
             "perc_std": None,
-            "pmin": pmin,
-            "pmax": pmax,
-            "initial": initial,
+            "pmin": float(pmin),
+            "pmax": float(pmax),
+            "initial": float(initial),
             "inhoms": aq if inhoms is not None else None,
             "parray": plist,
         }
@@ -171,12 +171,12 @@ class Calibrate:
             )
             p = parameter
         self.parameters.loc[name] = {
-            "optimal": initial,
+            "optimal": float(initial),
             "std": None,
             "perc_std": None,
-            "pmin": pmin,
-            "pmax": pmax,
-            "initial": initial,
+            "pmin": float(pmin),
+            "pmax": float(pmax),
+            "initial": float(initial),
             "parray": [p[:]],
         }
 
