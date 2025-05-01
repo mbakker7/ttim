@@ -10,12 +10,12 @@ Synthetic
 ---------
 
 1. `Synthetic pumping test`_ - a synthetic pumping test
-2. `AEM_TTIM_SOL`_ - a synthetic pumping test
-3. `Pumping test hypothetical`_ - a synthetic pumping test
+2. `Syntetic pumping test 2 aquifers`_ - a synthetic pumping test in 2-aquifer model
+3. `Synthetic pumping test calibration`_ - a synthetic pumping test to test calibration
 
-.. _Synthetic pumping test: 0_synthetic_data.html
-.. _AEM_TTIM_SOL: aem_ttim_sol.html
-.. _Pumping test hypothetical: pumpingtest_hypothetical.html
+.. _Synthetic pumping test: synthetic0_data.html
+.. _Syntetic pumping test 2 aquifers: synthetic1_2aquifers.html
+.. _Synthetic pumping test calibration: synthetic2_test_calibrate.html
 
 Confined Pumping Tests
 ----------------------
@@ -54,7 +54,7 @@ Unconfined Pumping Tests
 
 .. _Vennebulten: unconfined1_vennebulten.html
 .. _Moench: unconfined2_moench.html
-.. _Neuman: ttim_pumptest_neuman.html
+.. _Neuman: unconfined3_neuman.html
 
 Slug Tests
 ----------
@@ -63,22 +63,20 @@ Slug Tests
 2. `Falling Head`_ - One layer partially penetrated slug test with data from the test well.
 3. `Multi-Well`_ - One layer confined slug test with data from the test well and from an observation well.
 4. `Dawsonville`_ - One layer fully-penetrated confined slug test with data from the test well.
-5. `Butler`_ - Partially penetrating well that is screened in unconsolidated alluvial deposits.
 
 .. _Pratt County: slug1_pratt_county.html
 .. _Falling Head: slug2_falling_head.html
 .. _Multi-Well: slug3_multiwell.html
 .. _Dawsonville: slug4_dawsonville.html
-.. _Butler: ttim_slugtest.html
 
 
 .. toctree::
     :maxdepth: 1
     :hidden:
 
-    0_synthetic_data
-    aem_ttim_sol
-    pumpingtest_hypothetical
+    synthetic0_data
+    synthetic1_2aquifers
+    synthetic2_test_calibrate
     confined1_oude_korendijk
     confined2_grindley
     confined3_sioux
@@ -89,9 +87,8 @@ Slug Tests
     leaky3_texashill
     unconfined1_vennebulten
     unconfined2_moenc
-    ttim_pumptest_neuman
+    unconfined3_neuman
     slug1_pratt_county
     slug2_falling_head
     slug3_multiwell
     slug4_dawsonville
-    ttim_slugtest
