@@ -10,8 +10,12 @@ Synthetic
 ---------
 
 1. `Synthetic pumping test`_ - a synthetic pumping test
+2. `AEM_TTIM_SOL`_ - a synthetic pumping test
+3. `Pumping test hypothetical`_ - a synthetic pumping test
 
 .. _Synthetic pumping test: 0_synthetic_data.html
+.. _AEM_TTIM_SOL: aem_ttim_sol.html
+.. _Pumping test hypothetical: pumpingtest_hypothetical.html
 
 Confined Pumping Tests
 ----------------------
@@ -46,9 +50,11 @@ Unconfined Pumping Tests
 
 1. `Vennebulten`_ - Two layers, unconfined aquifer test with data two observation wells screened at different depths.
 2. `Moench`_ - Solving the Analytical model from Moench in TTim. Pumping test in unconfined aquifer with four piezometers screened at two different depths and two different distances
+3. `Neuman`_ - Constant-rate pumping test performed in an unconfined aquifer with delayed gravity response.
 
 .. _Vennebulten: unconfined1_vennebulten.html
 .. _Moench: unconfined2_moench.html
+.. _Neuman: ttim_pumptest_neuman.html
 
 Slug Tests
 ----------
@@ -57,11 +63,13 @@ Slug Tests
 2. `Falling Head`_ - One layer partially penetrated slug test with data from the test well.
 3. `Multi-Well`_ - One layer confined slug test with data from the test well and from an observation well.
 4. `Dawsonville`_ - One layer fully-penetrated confined slug test with data from the test well.
+5. `Butler`_ - Partially penetrating well that is screened in unconsolidated alluvial deposits.
 
 .. _Pratt County: slug1_pratt_county.html
 .. _Falling Head: slug2_falling_head.html
 .. _Multi-Well: slug3_multiwell.html
 .. _Dawsonville: slug4_dawsonville.html
+.. _Butler: ttim_slugtest.html
 
 
 .. toctree::
@@ -69,6 +77,8 @@ Slug Tests
     :hidden:
 
     0_synthetic_data
+    aem_ttim_sol
+    pumpingtest_hypothetical
     confined1_oude_korendijk
     confined2_grindley
     confined3_sioux
@@ -79,7 +89,9 @@ Slug Tests
     leaky3_texashill
     unconfined1_vennebulten
     unconfined2_moenc
+    ttim_pumptest_neuman
     slug1_pratt_county
     slug2_falling_head
     slug3_multiwell
     slug4_dawsonville
+    ttim_slugtest
