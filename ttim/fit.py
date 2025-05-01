@@ -54,11 +54,14 @@ class Calibrate:
             lower bound for parameter value (the default is -np.inf)
         pmax : float, optional
             upper bound for paramater value (the default is np.inf)
-        inhoms : str, list of str or list of inhomogeneities, optional
+        inhoms : str, list
+            string with name of inhomogeneity, list with string names of inhomogeneities
+            or list of inhomogeneities
             inhomogeneity(ies) for which the parameter is set. If a string is passed,
-            parameter is associated with a single inhomogeneity. If a list of strings or
-            inhoms is passed, parameter is set for each inhomogeneity in the list. This
-            allows linking of parameters across inhomogeneities.
+            parameter is associated with a single inhomogeneity. If a list of strings
+            of inhomogeneities (or list of inhomogeneities) is passed, parameter is set
+            for each inhomogeneity in the list. This allows linking of parameters across
+            inhomogeneities.
         """
         assert isinstance(name, str), "Error: name must be string"
 
