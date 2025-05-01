@@ -86,7 +86,7 @@ Slug Tests
     leaky2_hardixveld
     leaky3_texashill
     unconfined1_vennebulten
-    unconfined2_moenc
+    unconfined2_moench
     unconfined3_neuman
     slug1_pratt_county
     slug2_falling_head
