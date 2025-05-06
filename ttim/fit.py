@@ -126,6 +126,11 @@ class Calibrate:
                 p = iaq.Sll[from_lay : to_lay + 1]
             elif name[0:8] == "kzoverkh":
                 p = iaq.kzoverkh[from_lay : to_lay + 1]
+            else:
+                raise ValueError(
+                    f"Parameter name '{name}' not recognized. "
+                    "Supported parameters are 'kaq', 'Saq', 'c', 'Sll' or 'kzoverkh'."
+                )
             plist.append(p[:])
 
         if p is None:  # no parameter set
