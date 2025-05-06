@@ -213,11 +213,15 @@ class Xsection(AquiferData):
         if ax is None:
             _, ax = plt.subplots(1, 1, figsize=(8, 4))
 
-        if np.isfinite(self.x1):
+        if "x1" in kwargs:
+            x1 = kwargs.pop("x1")
+        elif np.isfinite(self.x1):
             x1 = self.x1
         else:
             x1 = self.x2 - 100.0
-        if np.isfinite(self.x2):
+        if "x2" in kwargs:
+            x2 = kwargs.pop("x2")
+        elif np.isfinite(self.x2):
             x2 = self.x2
         else:
             x2 = self.x1 + 100.0
