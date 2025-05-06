@@ -95,7 +95,7 @@ class Calibrate:
                 )
             elif len(layers_from_name) == 1:
                 from_lay = int(layers_from_name[0])
-                to_lay = from_lay + 1
+                to_lay = from_lay
             elif len(layers_from_name) == 2:
                 from_lay, to_lay = map(int, layers_from_name)
 
