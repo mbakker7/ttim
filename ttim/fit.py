@@ -140,7 +140,7 @@ class Calibrate:
         if inhoms is None:
             pname = f"{name}_{from_lay}_{to_lay}"
         else:
-            pname = f"{name}_{from_lay}_{to_lay}{'_'.join([iaq.name for iaq in aq])}"
+            pname = f"{name}_{from_lay}_{to_lay}_{'_'.join([iaq.name for iaq in aq])}"
         self.parameters.loc[pname] = {
             "layers": layers,
             "optimal": float(initial),
