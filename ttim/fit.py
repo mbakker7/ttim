@@ -368,7 +368,40 @@ class Calibrate:
         if report:
             print(lmfit.fit_report(self.fitresult))
 
-    def fit(self, report=False, printdot=True):
+    def residuals_leastsq(self, logparams, printdot=False):
+        params = 10**logparams
+        print("params ", params)
+        return self.residuals(params, printdot)
+
+    def fit_leastsq(self, printdot=True):
+        params_initial = np.log10(self.parameters.initial.values)
+        print("params_initial ", params_initial)
+        plog, mes = leastsq(
+            self.residuals_leastsq, params_initial, args=(printdot,), epsfcn=1e-3
+        )
+        params = 10**plog
+        # Call residuals to specify optimal values for model
+        self.residuals(params, printdot=printdot)
+        for ipar in self.parameters.index:
+            self.parameters.loc[ipar, "optimal"] = self.parameters.loc[ipar, "parray"][
+                0
+            ]
+        # nparam = len(self.fitresult.x)
+        # H = self.fitresult.jac.T @ self.fitresult.jac
+        # sigsq = np.var(res, ddof=nparam)
+        # self.covmat = np.linalg.inv(H) * sigsq
+        # self.sig = np.sqrt(np.diag(self.covmat))
+        # D = np.diag(1 / self.sig)
+        # self.cormat = D @ self.covmat @ D
+        # self.parameters["std"] = self.sig
+        # self.parameters["perc_std"] = self.sig / self.parameters["optimal"] * 100
+        # if report:
+        #     print(self.parameters)
+        #     print(self.sig)
+        #     print(self.covmat)
+        #     print(self.cormat)
+
+    def fit(self, report=False, printdot=True, **kwargs):
         # current default fitting routine is lmfit
         # return self.fit_least_squares(report) # does not support bounds by default
         return self.fit_lmfit(report, printdot, **kwargs)
