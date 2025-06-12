@@ -54,11 +54,14 @@ class Calibrate:
             lower bound for parameter value (the default is -np.inf)
         pmax : float, optional
             upper bound for paramater value (the default is np.inf)
-        inhoms : str, list of str or list of inhomogeneities, optional
+        inhoms : str, list
+            string with name of inhomogeneity, list with string names of inhomogeneities
+            or list of inhomogeneities
             inhomogeneity(ies) for which the parameter is set. If a string is passed,
-            parameter is associated with a single inhomogeneity. If a list of strings or
-            inhoms is passed, parameter is set for each inhomogeneity in the list. This
-            allows linking of parameters across inhomogeneities.
+            parameter is associated with a single inhomogeneity. If a list of strings
+            of inhomogeneities (or list of inhomogeneities) is passed, parameter is set
+            for each inhomogeneity in the list. This allows linking of parameters across
+            inhomogeneities.
         """
         assert isinstance(name, str), "Error: name must be string"
 
@@ -92,7 +95,7 @@ class Calibrate:
                 )
             elif len(layers_from_name) == 1:
                 from_lay = int(layers_from_name[0])
-                to_lay = from_lay + 1
+                to_lay = from_lay
             elif len(layers_from_name) == 2:
                 from_lay, to_lay = map(int, layers_from_name)
 
@@ -123,6 +126,11 @@ class Calibrate:
                 p = iaq.Sll[from_lay : to_lay + 1]
             elif name[0:8] == "kzoverkh":
                 p = iaq.kzoverkh[from_lay : to_lay + 1]
+            else:
+                raise ValueError(
+                    f"Parameter name '{name}' not recognized. "
+                    "Supported parameters are 'kaq', 'Saq', 'c', 'Sll' or 'kzoverkh'."
+                )
             plist.append(p[:])
 
         if p is None:  # no parameter set
@@ -130,17 +138,17 @@ class Calibrate:
             return
 
         if inhoms is None:
-            pname = name
+            pname = f"{name}_{from_lay}_{to_lay}"
         else:
-            pname = f"{name}_{'_'.join([iaq.name for iaq in aq])}"
+            pname = f"{name}_{from_lay}_{to_lay}_{'_'.join([iaq.name for iaq in aq])}"
         self.parameters.loc[pname] = {
             "layers": layers,
-            "optimal": initial,
+            "optimal": float(initial),
             "std": None,
             "perc_std": None,
-            "pmin": pmin,
-            "pmax": pmax,
-            "initial": initial,
+            "pmin": float(pmin),
+            "pmax": float(pmax),
+            "initial": float(initial),
             "inhoms": aq if inhoms is not None else None,
             "parray": plist,
         }
@@ -171,12 +179,12 @@ class Calibrate:
             )
             p = parameter
         self.parameters.loc[name] = {
-            "optimal": initial,
+            "optimal": float(initial),
             "std": None,
             "perc_std": None,
-            "pmin": pmin,
-            "pmax": pmax,
-            "initial": initial,
+            "pmin": float(pmin),
+            "pmax": float(pmax),
+            "initial": float(initial),
             "parray": [p[:]],
         }
 

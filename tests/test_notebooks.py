@@ -11,7 +11,7 @@ from nbconvert.preprocessors import ExecutePreprocessor
 # %%
 nbdirs = [
     # os.path.join("docs/00tutorials"),
-    os.path.join("docs/03examples"),
+    os.path.join("docs/02examples"),
     # os.path.join("notebooks"),
 ]
 
@@ -96,7 +96,7 @@ def test_notebook_py(pth):
         ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
         try:
             assert (
-                ep.preprocess(nb, {"metadata": {"path": "docs/03examples"}}) is not None
+                ep.preprocess(nb, {"metadata": {"path": "docs/02examples"}}) is not None
             ), f"Got empty notebook for {os.path.basename(pth)}"
         except Exception as e:
             pytest.fail(reason=f"Failed executing {os.path.basename(pth)}: {e}")
