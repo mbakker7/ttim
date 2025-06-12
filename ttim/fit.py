@@ -149,6 +149,7 @@ class Calibrate:
             "pmin": float(pmin),
             "pmax": float(pmax),
             "initial": float(initial),
+            "params": name,
             "inhoms": aq if inhoms is not None else None,
             "parray": plist,
         }
