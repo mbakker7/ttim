@@ -1,11 +1,12 @@
 import inspect  # Used for storing the input
+from abc import ABC, abstractmethod
 
 import numpy as np
 
 from .invlapnumba import invlapcomp
 
 
-class Element:
+class Element(ABC):
     def __init__(
         self,
         model,
@@ -16,17 +17,21 @@ class Element:
         type="z",
         name="",
         label=None,
+        inhomelement=False,
     ):
-        """Types of elements
-        'g': strength is given through time
-        'v': boundary condition is variable through time
-        'z': boundary condition is zero through time
+        """Element base class.
+
+        Types of elements:
+        * 'g': strength is given through time
+        * 'v': boundary condition is variable through time
+        * 'z': boundary condition is zero through time
+
         Definition of nlayers, Ncp, Npar, nunknowns:
-        nlayers: Number of layers that the element is screened in,
-        as set in Element
-        Ncp: Number of control points along the element
-        nparam: Number of parameters, commonly nlayers * Ncp
-        nunknowns: Number of unknown parameters, commonly zero or Npar
+        * nlayers: Number of layers that the element is screened in,
+          as set in Element
+        * Ncp: Number of control points along the element
+        * nparam: Number of parameters, commonly nlayers * Ncp
+        * nunknowns: Number of unknown parameters, commonly zero or Npar
         """
         self.model = model
         self.aq = None  # Set in the initialization function
@@ -34,8 +39,9 @@ class Element:
         self.nunknowns = nunknowns
         self.layers = np.atleast_1d(layers)
         self.nlayers = len(self.layers)
+        self.inhomelement = inhomelement  # tag inhomelements
         #
-        tsandbc = np.atleast_2d(tsandbc).astype("d")
+        tsandbc = np.atleast_2d(tsandbc).astype(float)
         tsandbc_error = (
             "tsandQ or tsandh need to be 2D lists"
             + " or arrays, like [(0, 1), (2, 5), (8, 0)] "
@@ -65,46 +71,54 @@ class Element:
             self.bc = self.bcin.copy()
         self.ntstart = len(self.tstart)
 
+    @abstractmethod
     def initialize(self):
-        """Initialization of terms that cannot be initialized before other elements or
+        """Initialize the element.
+
+        Initialization of terms that cannot be initialized before other elements or
         the aquifer is defined.
 
         As we don't want to require a certain order of entering elements, these terms
         are initialized when Model.solve is called The initialization class needs to be
         overloaded by all derived classes
         """
-        pass
 
+    @abstractmethod
     def potinf(self, x, y, aq=None):
-        """Returns complex array of size (nparam, naq, npval)"""
-        raise "Must overload Element.potinf()"
+        """Returns complex array of size (nparam, naq, npval)."""
 
     def potential(self, x, y, aq=None):
-        """Returns complex array of size (ngvbc, naq, npval)"""
+        """Returns complex array of size (ngvbc, naq, npval)."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        return np.sum(self.parameters[:, :, np.newaxis, :] * self.potinf(x, y, aq), 1)
+        return np.sum(
+            self.parameters[:, :, np.newaxis, :] * self.potinf(x, y, aq), axis=1
+        )
 
     def unitpotential(self, x, y, aq=None):
-        """Returns complex array of size (naq, npval) Can be more efficient for given
-        elements."""
+        """Returns complex array of size (naq, npval).
+
+        Can be more efficient for given elements.
+        """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum(self.potinf(x, y, aq), 0)
 
     def unitpotentialone(self, x, y, jtime, aq=None):
-        """Returns complex array of size (naq, npval) Can be more efficient for given
-        elements."""
+        """Returns complex array of size (naq, npval).
+
+        Can be more efficient for given elements.
+        """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         return np.sum(self.potinfone(x, y, jtime, aq), 0)
 
+    @abstractmethod
     def disvecinf(self, x, y, aq=None):
-        """Returns 2 complex arrays of size (nparam, naq, npval)"""
-        raise "Must overload Element.disvecinf()"
+        """Returns 2 complex arrays of size (nparam, naq, npval)."""
 
     def disvec(self, x, y, aq=None):
-        """Returns 2 complex arrays of size (ngvbc, naq, npval)"""
+        """Returns 2 complex arrays of size (ngvbc, naq, npval)."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.disvecinf(x, y, aq)
@@ -113,8 +127,10 @@ class Element:
         )
 
     def unitdisvec(self, x, y, aq=None):
-        """Returns 2 complex arrays of size (naq, npval) Can be more efficient for given
-        elements."""
+        """Returns 2 complex arrays of size (naq, npval).
+
+        Can be more efficient for given elements.
+        """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.disvecinf(x, y, aq)
@@ -135,8 +151,10 @@ class Element:
         return rv[layers, :]
 
     def potentiallayers(self, x, y, layers=0, aq=None):
-        """Returns complex array of size (ngvbc, len(layers),npval) only used in
-        building equations."""
+        """Returns complex array of size (ngvbc, len(layers),npval).
+
+        Only used in building equations.
+        """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         pot = self.potential(x, y, aq)
@@ -144,8 +162,10 @@ class Element:
         return phi[:, layers, :]
 
     def unitpotentiallayers(self, x, y, layers=0, aq=None):
-        """Returns complex array of size (len(layers), npval) only used in building
-        equations."""
+        """Returns complex array of size (len(layers), npval).
+
+        Only used in building equations.
+        """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         pot = self.unitpotential(x, y, aq)
@@ -169,8 +189,10 @@ class Element:
         return rvx[layers, :], rvy[layers, :]
 
     def disveclayers(self, x, y, layers=0, aq=None):
-        """Returns 2 complex array of size (ngvbc, len(layers), npval) only used in
-        building equations."""
+        """Returns 2 complex array of size (ngvbc, len(layers), npval).
+
+        Only used in building equations.
+        """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.disvec(x, y, aq)
@@ -179,8 +201,10 @@ class Element:
         return rvx[:, layers, :], rvy[:, layers, :]
 
     def unitdisveclayers(self, x, y, layers=0, aq=None):
-        """Returns complex array of size (len(layers), npval) only used in building
-        equations."""
+        """Returns complex array of size (len(layers), npval).
+
+        Only used in building equations.
+        """
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
         qx, qy = self.unitdisvec(x, y, aq)
@@ -205,7 +229,7 @@ class Element:
         """
         # Could potentially be more efficient if s is pre-computed for
         # all elements, but may not be worthwhile to store as it is quick now
-        time = np.atleast_1d(t).astype("d")
+        time = np.atleast_1d(t).astype(float)
         rv = np.zeros((self.nlayers, len(time)))
         if self.type == "g":
             s = self.dischargeinflayers * self.model.p**derivative
@@ -255,7 +279,7 @@ class Element:
         """
         # Could potentially be more efficient if s is pre-computed for
         # all elements, but may not be worthwhile to store as it is quick now
-        time = np.atleast_1d(t).astype("d")
+        time = np.atleast_1d(t).astype(float)
         if (time[0] < self.model.tmin) or (time[-1] > self.model.tmax):
             print(
                 "Warning, some of the times are smaller than tmin or"
@@ -305,13 +329,13 @@ class Element:
         rv += ")\n"
         return rv
 
-    def run_after_solve(self):
+    def run_after_solve(self):  # noqa: B027
         """Function to run after a solution is completed.
 
-        for most elements nothing needs to be done, but for strings of elements some
-        arrays may need to be filled
+        For most elements nothing needs to be done, but for strings of elements some
+        arrays may need to be filled.
         """
-        pass
 
-    def plot(self):
-        pass
+    @abstractmethod
+    def plot(self, ax=None):
+        """Plot the element."""

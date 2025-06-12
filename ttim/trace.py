@@ -140,7 +140,7 @@ def timtraceline(
         vx, vy, vz = v0
         substep = 1  # take max 2 substeps
 
-        for steps in range(2):
+        for _ in range(2):
             if substep <= 2:
                 # check if max time reached
                 if t0 + delt > tmax:
@@ -277,7 +277,7 @@ def timtraceline2(
         vx, vy, vz = v0
         substep = 1  # take max 2 substeps
 
-        for steps in range(2):
+        for _ in range(2):
             if substep <= 2:
                 # check if max time reached
                 if t0 + delt > tmax:

@@ -29,8 +29,7 @@ class WellBase(Element):
         name="WellBase",
         label=None,
     ):
-        Element.__init__(
-            self,
+        super().__init__(
             model,
             nparam=1,
             nunknowns=0,
@@ -85,10 +84,12 @@ class WellBase(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+        rv = np.zeros(
+            (self.nparam, aq.naq, self.model.nint, self.model.npint), dtype=complex
+        )
         if aq == self.aq:
             r = np.sqrt((x - self.xw) ** 2 + (y - self.yw) ** 2)
-            pot = np.zeros(self.model.npint, "D")
+            pot = np.zeros(self.model.npint, dtype=complex)
             if r < self.rw:
                 r = self.rw  # If at well, set to at radius
             for i in range(self.aq.naq):
@@ -105,10 +106,10 @@ class WellBase(Element):
         """Can be called with only one x,y value for time interval jtime."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.npint), "D")
+        rv = np.zeros((self.nparam, aq.naq, self.model.npint), dtype=complex)
         if aq == self.aq:
             r = np.sqrt((x - self.xw) ** 2 + (y - self.yw) ** 2)
-            pot = np.zeros(self.model.npint, "D")
+            pot = np.zeros(self.model.npint, dtype=complex)
             if r < self.rw:
                 r = self.rw  # If at well, set to at radius
             for i in range(self.aq.naq):
@@ -122,12 +123,14 @@ class WellBase(Element):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.find_aquifer_data(x, y)
-        qx = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
-        qy = np.zeros((self.nparam, aq.naq, self.model.npval), "D")
+        qx = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
+        qy = np.zeros((self.nparam, aq.naq, self.model.npval), dtype=complex)
         if aq == self.aq:
-            qr = np.zeros((self.nparam, aq.naq, self.model.nint, self.model.npint), "D")
+            qr = np.zeros(
+                (self.nparam, aq.naq, self.model.nint, self.model.npint), dtype=complex
+            )
             r = np.sqrt((x - self.xw) ** 2 + (y - self.yw) ** 2)
-            # pot = np.zeros(self.model.npint, "D")
+            # pot = np.zeros(self.model.npint, dtype=complex)
             if r < self.rw:
                 r = self.rw  # If at well, set to at radius
             for i in range(self.aq.naq):
@@ -150,18 +153,20 @@ class WellBase(Element):
         ----------
         t : float, list or array
             time for which head is computed
+
         Returns
         -------
         Q : array of size `nscreens, ntimes`
             nsreens is the number of layers with a well screen
         """
-
         return self.model.head(self.xc[0], self.yc[0], t, derivative=derivative)[
             self.layers
         ] - self.resfach[:, np.newaxis] * self.discharge(t, derivative=derivative)
 
-    def plot(self):
-        plt.plot(self.xw, self.yw, "k.")
+    def plot(self, ax=None):
+        if ax is None:
+            _, ax = plt.subplots()
+        ax.plot(self.xw, self.yw, "k.")
 
     def changetrace(
         self, xyzt1, xyzt2, aq, layer, ltype, modellayer, direction, hstepmax
@@ -197,8 +202,7 @@ class WellBase(Element):
 
 
 class DischargeWell(WellBase):
-    """Create a well with a specified discharge for each layer that the well is screened
-    in.
+    r"""Well with a specified discharge for each layer that the well is screened in.
 
     This is not very common and is likely only used for testing and comparison with
     other codes. The discharge must be specified for each screened layer. The resistance
@@ -243,8 +247,7 @@ class DischargeWell(WellBase):
         self, model, xw=0, yw=0, tsandQ=[(0, 1)], rw=0.1, res=0, layers=0, label=None
     ):
         self.storeinput(inspect.currentframe())
-        WellBase.__init__(
-            self,
+        super().__init__(
             model,
             xw,
             yw,
@@ -259,7 +262,7 @@ class DischargeWell(WellBase):
 
 
 class Well(WellBase, WellBoreStorageEquation):
-    """Create a well with a specified discharge.
+    r"""Create a well with a specified discharge.
 
     The well may be screened in multiple layers. The discharge is distributed across
     the layers such that the head inside the well is the same in all screened layers.
@@ -312,8 +315,7 @@ class Well(WellBase, WellBoreStorageEquation):
         label=None,
     ):
         self.storeinput(inspect.currentframe())
-        WellBase.__init__(
-            self,
+        super().__init__(
             model,
             xw,
             yw,
@@ -341,9 +343,9 @@ class Well(WellBase, WellBoreStorageEquation):
         self.wbstype = wbstype
 
     def initialize(self):
-        WellBase.initialize(self)
+        super().initialize()
         self.parameters = np.zeros(
-            (self.model.ngvbc, self.nparam, self.model.npval), "D"
+            (self.model.ngvbc, self.nparam, self.model.npval), dtype=complex
         )
 
     def setflowcoef(self):
@@ -355,7 +357,7 @@ class Well(WellBase, WellBoreStorageEquation):
 
 
 class HeadWell(WellBase, HeadEquation):
-    """Create a well with a specified head inside the well.
+    r"""Create a well with a specified head inside the well.
 
     The well may be screened in multiple layers. The resistance of the screen may be
     specified. The head is computed such that the discharge :math:`Q_i` in layer
@@ -391,8 +393,7 @@ class HeadWell(WellBase, HeadEquation):
         self, model, xw=0, yw=0, rw=0.1, tsandh=[(0, 1)], res=0, layers=0, label=None
     ):
         self.storeinput(inspect.currentframe())
-        WellBase.__init__(
-            self,
+        super().__init__(
             model,
             xw,
             yw,
@@ -407,9 +408,9 @@ class HeadWell(WellBase, HeadEquation):
         self.nunknowns = self.nparam
 
     def initialize(self):
-        WellBase.initialize(self)
+        super().initialize()
         self.parameters = np.zeros(
-            (self.model.ngvbc, self.nparam, self.model.npval), "D"
+            (self.model.ngvbc, self.nparam, self.model.npval), dtype=complex
         )
         # Needed in solving for a unit head
         self.pc = self.aq.T[self.layers]
@@ -429,8 +430,7 @@ class WellTest(WellBase):
         fp=None,
     ):
         self.storeinput(inspect.currentframe())
-        WellBase.__init__(
-            self,
+        super().__init__(
             model,
             xw,
             yw,

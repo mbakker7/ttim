@@ -1,5 +1,5 @@
 def test_import():
-    import ttim
+    import ttim  # noqa
 
 
 if __name__ == "__main__":

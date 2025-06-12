@@ -32,7 +32,7 @@ class CircInhomData(AquiferData):
         self.area = np.pi * self.Rsq
         self.model.addInhom(self)
 
-    def isInside(self, x, y):
+    def is_inside(self, x, y):
         rv = False
         if (x - self.x0) ** 2 + (y - self.y0) ** 2 < self.Rsq:
             rv = True
@@ -92,9 +92,9 @@ class BesselRatioApprox:
         self.Nterms = Nterms + 1
         self.krange = np.arange(self.Nterms)
         self.minonek = (-np.ones(self.Nterms)) ** self.krange
-        self.hankeltot = np.ones((self.Norder, 2 * self.Nterms), "d")
-        self.muk = np.ones((self.Norder, self.Nterms), "d")
-        self.nuk = np.ones((self.Norder, self.Nterms), "d")
+        self.hankeltot = np.ones((self.Norder, 2 * self.Nterms), dtype=float)
+        self.muk = np.ones((self.Norder, self.Nterms), dtype=float)
+        self.nuk = np.ones((self.Norder, self.Nterms), dtype=float)
         for n in range(self.Norder):
             mu = 4.0 * n**2
             for k in range(1, self.Nterms):
@@ -114,7 +114,7 @@ class BesselRatioApprox:
 
     def ivratio(self, rho, R, lab):
         lab = np.atleast_1d(lab)
-        rv = np.empty((self.Norder, len(lab)), "D")
+        rv = np.empty((self.Norder, len(lab)), dtype=complex)
         for k in range(len(lab)):
             top = np.sum(
                 self.minonek * self.hankelnk / (2.0 * rho / lab[k]) ** self.krange, 1
@@ -127,7 +127,7 @@ class BesselRatioApprox:
 
     def kvratio(self, rho, R, lab):
         lab = np.atleast_1d(lab)
-        rv = np.empty((self.Norder, len(lab)), "D")
+        rv = np.empty((self.Norder, len(lab)), dtype=complex)
         for k in range(len(lab)):
             top = np.sum(self.hankelnk / (2.0 * rho / lab[k]) ** self.krange, 1)
             bot = np.sum(self.hankelnk / (2.0 * R / lab[k]) ** self.krange, 1)
@@ -136,7 +136,7 @@ class BesselRatioApprox:
 
     def ivratiop(self, rho, R, lab):
         lab = np.atleast_1d(lab)
-        rv = np.empty((self.Norder, len(lab)), "D")
+        rv = np.empty((self.Norder, len(lab)), dtype=complex)
         for k in range(len(lab)):
             top = np.sum(
                 self.muk * self.hankeln2k / (2.0 * rho / lab[k]) ** (2 * self.krange), 1
@@ -154,7 +154,7 @@ class BesselRatioApprox:
 
     def kvratiop(self, rho, R, lab):
         lab = np.atleast_1d(lab)
-        rv = np.empty((self.Norder, len(lab)), "D")
+        rv = np.empty((self.Norder, len(lab)), dtype=complex)
         for k in range(len(lab)):
             top = np.sum(
                 self.muk * self.hankeln2k / (2.0 * rho / lab[k]) ** (2 * self.krange), 1
@@ -198,10 +198,10 @@ class CircInhomRadial(Element, InhomEquation):
         self.aqin = self.model.aq.findAquiferData(
             self.x0 + (1 - 1e-8) * self.R, self.y0
         )
-        assert (
-            self.aqin.R == self.R
-        ), "Radius of CircInhom and CircInhomData must be equal"
-        self.aqout = self.model.aq.findAquiferData(
+        assert self.aqin.R == self.R, (
+            "Radius of CircInhom and CircInhomData must be equal"
+        )
+        self.aqout = self.model.aq.find_aquifer_data(
             self.x0 + (1 + 1e-8) * self.R, self.y0
         )
         self.setbc()
@@ -227,13 +227,17 @@ class CircInhomRadial(Element, InhomEquation):
         #        assert self.R / abs(self.aqout.lab2[i,j,0]) < 900, 'radius too large compared to aqin lab2[i,j,0] '+str((i,j))
         # self.facin = 1.0 / iv(0, self.R / self.aqin.lab2)
         # self.facout = 1.0 / kv(0, self.R / self.aqout.lab2)
-        self.parameters = np.zeros((self.model.Ngvbc, self.Nparam, self.model.Np), "D")
+        self.parameters = np.zeros(
+            (self.model.Ngvbc, self.Nparam, self.model.Np), dtype=complex
+        )
 
     def potinf(self, x, y, aq=None):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.findAquiferData(x, y)
-        rv = np.zeros((self.nparam, aq.naq, self.model.nin, self.model.npin), "D")
+        rv = np.zeros(
+            (self.nparam, aq.naq, self.model.nin, self.model.npin), dtype=complex
+        )
         if aq == self.aqin:
             r = np.sqrt((x - self.x0) ** 2 + (y - self.y0) ** 2)
             for i in range(self.aqin.Naq):
@@ -269,10 +273,12 @@ class CircInhomRadial(Element, InhomEquation):
         """Can be called with only one x,y value."""
         if aq is None:
             aq = self.model.aq.findAquiferData(x, y)
-        qx = np.zeros((self.nparam, aq.naq, self.model.np), "D")
-        qy = np.zeros((self.nparam, aq.naq, self.model.np), "D")
+        qx = np.zeros((self.nparam, aq.naq, self.model.np), dtype=complex)
+        qy = np.zeros((self.nparam, aq.naq, self.model.np), dtype=complex)
         if aq == self.aqin:
-            qr = np.zeros((self.nparam, aq.naq, self.model.nin, self.model.npin), "D")
+            qr = np.zeros(
+                (self.nparam, aq.naq, self.model.nin, self.model.npin), dtype=complex
+            )
             r = np.sqrt((x - self.x0) ** 2 + (y - self.y0) ** 2)
             if r < 1e-20:
                 r = 1e-20  # As we divide by that on the return
@@ -296,7 +302,9 @@ class CircInhomRadial(Element, InhomEquation):
             qx[:] = qr * (x - self.x0) / r
             qy[:] = qr * (y - self.y0) / r
         if aq == self.aqout:
-            qr = np.zeros((self.Nparam, aq.Naq, self.model.Nin, self.model.Npin), "D")
+            qr = np.zeros(
+                (self.Nparam, aq.Naq, self.model.Nin, self.model.Npin), dtype=complex
+            )
             r = np.sqrt((x - self.x0) ** 2 + (y - self.y0) ** 2)
             for i in range(self.aqout.Naq):
                 for j in range(self.model.Nin):

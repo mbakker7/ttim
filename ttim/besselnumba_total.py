@@ -22,11 +22,11 @@ c = np.log(0.5) + 0.577215664901532860
 
 fac = 1.0
 
-nrange = np.arange(21, dtype=np.float_)
+nrange = np.arange(21, dtype=np.float64)
 
-a = np.zeros(21, dtype=np.float_)
+a = np.zeros(21, dtype=np.float64)
 a[0] = 1.0
-b = np.zeros(21, dtype=np.float_)
+b = np.zeros(21, dtype=np.float64)
 
 for n in range(1, 21):
     fac = n * fac
@@ -36,39 +36,39 @@ for n in range(1, 21):
 b = (b - c) * a
 a = -a / 2.0
 
-gam = np.zeros((21, 21), dtype=np.float_)
+gam = np.zeros((21, 21), dtype=np.float64)
 for n in range(21):
     for m in range(n + 1):
         gam[n, m] = np.prod(nrange[m + 1 : n + 1]) / np.prod(nrange[1 : n - m + 1])
 
-afar = np.zeros(21, dtype=np.float_)
+afar = np.zeros(21, dtype=np.float64)
 afar[0] = np.sqrt(np.pi / 2.0)
 
 for n in range(1, 21):
     afar[n] = -((2.0 * n - 1.0) ** 2) / (n * 8) * afar[n - 1]
 
 fac = 1.0
-bot = np.zeros(21, dtype=np.float_)
+bot = np.zeros(21, dtype=np.float64)
 bot[0] = 4.0
 for n in range(1, 21):
     fac = n * fac
     bot[n] = fac * (n + 1) * fac * 4.0 ** (n + 1)
 
-psi = np.zeros(21, dtype=np.float_)
+psi = np.zeros(21, dtype=np.float64)
 for n in range(2, 22):
     psi[n - 1] = psi[n - 2] + 1 / (n - 1)
 psi = psi - 0.577215664901532860
 
-a1 = np.empty(21, dtype=np.float_)
-b1 = np.empty(21, dtype=np.float_)
+a1 = np.empty(21, dtype=np.float64)
+b1 = np.empty(21, dtype=np.float64)
 twologhalf = 2 * np.log(0.5)
 for n in range(21):
     a1[n] = 1 / bot[n]
     b1[n] = (twologhalf - (2.0 * psi[n] + 1 / (n + 1))) / bot[n]
 
 
-wg = np.zeros(8, dtype=np.float_)
-xg = np.zeros(8, dtype=np.float_)
+wg = np.zeros(8, dtype=np.float64)
+xg = np.zeros(8, dtype=np.float64)
 
 wg[0] = 0.101228536290378
 wg[1] = 0.22238103445338
@@ -91,7 +91,8 @@ xg[7] = 0.960289856497536
 
 @numba.njit(nogil=True, cache=True)
 def besselk0far(z, Nt):
-    """
+    """besselk0far.
+
     implicit none
     complex(kind=8), intent(in) :: z
     integer, intent(in) :: Nt
@@ -99,7 +100,6 @@ def besselk0far(z, Nt):
     integer :: n
 
     """
-
     term = 1.0
     omega = afar[0]
 
@@ -114,7 +114,8 @@ def besselk0far(z, Nt):
 
 @numba.njit(nogil=True, cache=True)
 def besselk0near(z, Nt):
-    """
+    """besselk0near.
+
     implicit none
     complex(kind=8), intent(in) :: z
     integer, intent(in) :: Nt
@@ -136,7 +137,8 @@ def besselk0near(z, Nt):
 
 @numba.njit(nogil=True, cache=True)
 def besselk1near(z, Nt):
-    """
+    """besselk1near.
+
     implicit none
     complex(kind=8), intent(in) :: z
     integer, intent(in) :: Nt
@@ -158,7 +160,8 @@ def besselk1near(z, Nt):
 
 @numba.njit(nogil=True, cache=True)
 def besselk0cheb(z, Nt):
-    """
+    """besselk0cheb.
+
     implicit none
     complex(kind=8), intent(in) :: z
     integer, intent(in) :: Nt
@@ -206,7 +209,8 @@ def besselk0cheb(z, Nt):
 
 @numba.njit(nogil=True, cache=True)
 def besselk1cheb(z, Nt):
-    """
+    """besselk1cheb.
+
     implicit none
     complex(kind=8), intent(in) :: z
     integer, intent(in) :: Nt
@@ -255,7 +259,8 @@ def besselk1cheb(z, Nt):
 
 @numba.njit(nogil=True, cache=True)
 def besselk0(x, y, lab):
-    """
+    """besselk0.
+
     implicit none
     real(kind=8), intent(in) :: x,y
     complex(kind=8), intent(in) :: lab
@@ -275,7 +280,8 @@ def besselk0(x, y, lab):
 
 @numba.njit(nogil=True, cache=True)
 def besselk1(x, y, lab):
-    """
+    """besselk1.
+
     implicit none
     real(kind=8), intent(in) :: x,y
     complex(kind=8), intent(in) :: lab
@@ -295,7 +301,8 @@ def besselk1(x, y, lab):
 
 @numba.njit(nogil=True, cache=True)
 def k0bessel(z):
-    """
+    """k0bessel.
+
     implicit none
     complex(kind=8), intent(in) :: z
     complex(kind=8) :: omega
@@ -313,7 +320,8 @@ def k0bessel(z):
 
 @numba.njit(nogil=True, cache=True)
 def besselk0v(x, y, lab, nlab, omega):
-    """
+    """besselk0v.
+
     implicit none
     real(kind=8), intent(in) :: x,y
     integer, intent(in) :: nlab
@@ -329,7 +337,8 @@ def besselk0v(x, y, lab, nlab, omega):
 
 @numba.njit(nogil=True, cache=True)
 def k0besselv(z, nlab, omega):
-    """
+    """k0besselv.
+
     implicit none
     integer, intent(in) :: nlab
     complex(kind=8), dimension(nlab), intent(in) :: z
@@ -343,7 +352,8 @@ def k0besselv(z, nlab, omega):
 
 @numba.njit(nogil=True, cache=True)
 def besselk0OLD(x, y, lab):
-    """
+    """besselk0OLD.
+
     implicit none
     real(kind=8), intent(in) :: x,y
     complex(kind=8), intent(in) :: lab
@@ -472,7 +482,8 @@ def besselk0OLD(x, y, lab):
 
 @numba.njit(nogil=True, cache=True)
 def lapls_int_ho(x, y, z1, z2, order):
-    """
+    """lapls_int_ho.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y
@@ -483,8 +494,8 @@ def lapls_int_ho(x, y, z1, z2, order):
     real(kind=8) :: L
     complex(kind=8) :: z, zplus1, zmin1, log1, log2, log3, zpower
     """
-    omega = np.empty((order + 1,), dtype=np.complex_)
-    qm = np.empty((order + 2,), dtype=np.complex_)
+    omega = np.empty((order + 1,), dtype=np.complex128)
+    qm = np.empty((order + 2,), dtype=np.complex128)
 
     L = np.abs(z2 - z1)
     z = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1)
@@ -522,17 +533,19 @@ def lapls_int_ho(x, y, z1, z2, order):
 
 @numba.njit(nogil=True, cache=True)
 def bessellsreal(x, y, x1, y1, x2, y2, lab):
-    """
+    """Bessellsreal.
+
     implicit none
     real(kind=8), intent(in) :: x,y,x1,y1,x2,y2,lab
     real(kind=8) :: phi, biglab, biga, L
-    complex(kind=8) :: z1, z2, zeta, zetabar, omega, log1, log2, term1, term2, d1minzeta, d2minzeta
+    complex(kind=8) :: z1, z2, zeta, zetabar, omega, log1, log2, term1, term2,
+        d1minzeta, d2minzeta
     complex(kind=8), dimension(0:20) :: zminzbar
     complex(kind=8), dimension(0:20,0:20) :: gamnew
     complex(kind=8), dimension(0:40) :: alpha, beta
 
     """
-    zminzbar = np.zeros(21, dtype=np.complex_)
+    zminzbar = np.zeros(21, dtype=np.complex128)
 
     z1 = complex(x1, y1)
     z2 = complex(x2, y2)
@@ -545,12 +558,12 @@ def bessellsreal(x, y, x1, y1, x2, y2, lab):
     for n in range(21):
         # Ordered from high power to low power
         zminzbar[n] = (zeta - zetabar) ** (20 - n)
-    gamnew = np.zeros((21, 21), dtype=np.complex_)
+    gamnew = np.zeros((21, 21), dtype=np.complex128)
     for n in range(21):
         gamnew[n, 0 : n + 1] = gam[n, 0 : n + 1] * zminzbar[20 - n : 20 + 1]
 
-    alpha = np.zeros(41, dtype=np.complex_)
-    beta = np.zeros(41, dtype=np.complex_)
+    alpha = np.zeros(41, dtype=np.complex128)
+    beta = np.zeros(41, dtype=np.complex128)
     alpha[0] = a[0]
     beta[0] = b[0]
     for n in range(1, 21):
@@ -583,22 +596,25 @@ def bessellsreal(x, y, x1, y1, x2, y2, lab):
 
 @numba.njit(nogil=True, cache=True)
 def bessellsrealho(x, y, x1, y1, x2, y2, lab, order):
-    """
+    """Bessellsrealho.
+
     implicit none
     real(kind=8), intent(in) :: x,y,x1,y1,x2,y2,lab
     integer, intent(in) :: order
     real(kind=8), dimension(0:order) :: phi
     real(kind=8) :: biglab, biga, L
-    complex(kind=8) :: z1, z2, zeta, zetabar, omega, log1, log2, term1, term2, d1minzeta, d2minzeta
+    complex(kind=8) :: z1, z2, zeta, zetabar, omega, log1, log2, term1, term2,
+        d1minzeta, d2minzeta
     complex(kind=8), dimension(0:20) :: zminzbar
     complex(kind=8), dimension(0:20,0:20) :: gamnew
     complex(kind=8), dimension(0:40) :: alpha, beta
     complex(kind=8) :: cm
-    complex(kind=8), dimension(0:50) :: alphanew, betanew ! Maximum programmed order is 10
+    complex(kind=8), dimension(0:50) :: alphanew, betanew !
+        Maximum programmed order is 10
     integer :: n, m, p
     """
-    phi = np.zeros(order + 1, dtype=np.float_)
-    zminzbar = np.zeros(21, dtype=np.complex_)
+    phi = np.zeros(order + 1, dtype=np.float64)
+    zminzbar = np.zeros(21, dtype=np.complex128)
 
     z1 = complex(x1, y1)
     z2 = complex(x2, y2)
@@ -612,12 +628,12 @@ def bessellsrealho(x, y, x1, y1, x2, y2, lab, order):
         # Ordered from high power to low power
         zminzbar[n] = (zeta - zetabar) ** (20 - n)
 
-    gamnew = np.zeros((21, 21), dtype=np.complex_)
+    gamnew = np.zeros((21, 21), dtype=np.complex128)
     for n in range(21):
         gamnew[n, 0 : n + 1] = gam[n, 0 : n + 1] * zminzbar[20 - n : 20 + 1]
 
-    alpha = np.zeros(41, dtype=np.complex_)
-    beta = np.zeros(41, dtype=np.complex_)
+    alpha = np.zeros(41, dtype=np.complex128)
+    beta = np.zeros(41, dtype=np.complex128)
     alpha[0] = a[0]
     beta[0] = b[0]
     for n in range(1, 21):
@@ -629,8 +645,8 @@ def bessellsrealho(x, y, x1, y1, x2, y2, lab, order):
     log1 = np.log(d1minzeta)
     log2 = np.log(d2minzeta)
 
-    alphanew = np.zeros(51, dtype=np.complex_)
-    betanew = np.zeros(51, dtype=np.complex_)
+    alphanew = np.zeros(51, dtype=np.complex128)
+    betanew = np.zeros(51, dtype=np.complex128)
 
     for p in range(order + 1):
         alphanew[0 : 40 + p] = 0
@@ -661,18 +677,20 @@ def bessellsrealho(x, y, x1, y1, x2, y2, lab, order):
 
 @numba.njit(nogil=True, cache=True)
 def bessells_int(x, y, z1, z2, lab):
-    """
+    """bessells_int.
+
     implicit none
     real(kind=8), intent(in) :: x,y
     complex(kind=8), intent(in) :: z1,z2,lab
     real(kind=8) :: biglab, biga, L, ang, tol
-    complex(kind=8) :: zeta, zetabar, omega, log1, log2, term1, term2, d1minzeta, d2minzeta
+    complex(kind=8) :: zeta, zetabar, omega, log1, log2, term1, term2,
+        d1minzeta, d2minzeta
     complex(kind=8), dimension(0:20) :: zminzbar, anew, bnew, exprange
     complex(kind=8), dimension(0:20,0:20) :: gamnew, gam2
     complex(kind=8), dimension(0:40) :: alpha, beta, alpha2
     integer :: n
     """
-    zminzbar = np.zeros(21, dtype=np.complex_)
+    zminzbar = np.zeros(21, dtype=np.complex128)
 
     L = np.abs(z2 - z1)
     biga = np.abs(lab)
@@ -695,15 +713,15 @@ def bessells_int(x, y, z1, z2, lab):
         # Ordered from high power to low power
         zminzbar[20 - n] = zminzbar[21 - n] * (zeta - zetabar)
 
-    gamnew = np.zeros((21, 21), dtype=np.complex_)
-    gam2 = np.zeros((21, 21), dtype=np.complex_)
+    gamnew = np.zeros((21, 21), dtype=np.complex128)
+    gam2 = np.zeros((21, 21), dtype=np.complex128)
     for n in range(21):
         gamnew[n, 0 : n + 1] = gam[n, 0 : n + 1] * zminzbar[20 - n : 20 + 1]
         gam2[n, 0 : n + 1] = np.conj(gamnew[n, 0 : n + 1])
 
-    alpha = np.zeros(41, dtype=np.complex_)
-    beta = np.zeros(41, dtype=np.complex_)
-    alpha2 = np.zeros(41, dtype=np.complex_)
+    alpha = np.zeros(41, dtype=np.complex128)
+    beta = np.zeros(41, dtype=np.complex128)
+    alpha2 = np.zeros(41, dtype=np.complex128)
 
     alpha[0] = anew[0]
     beta[0] = bnew[0]
@@ -752,7 +770,8 @@ def bessells_int(x, y, z1, z2, lab):
 
 @numba.njit(nogil=True, cache=True)
 def bessells_int_ho(x, y, z1, z2, lab, order, d1, d2):
-    """
+    """bessells_int_ho.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,d1,d2
@@ -783,22 +802,22 @@ def bessells_int_ho(x, y, z1, z2, lab, order, d1, d2):
     # #for n in range(21):
     # #    zminzbar[n] = (zeta-zetabar)**(20-n)  # Ordered from high power to low power
     #
-    zminzbar = np.zeros(21, dtype=np.complex_)
+    zminzbar = np.zeros(21, dtype=np.complex128)
     zminzbar[20] = 1
 
     for n in range(1, 21):
         # Ordered from high power to low power
         zminzbar[20 - n] = zminzbar[21 - n] * (zeta - zetabar)
 
-    gamnew = np.zeros((21, 21), dtype=np.complex_)
-    gam2 = np.zeros((21, 21), dtype=np.complex_)
+    gamnew = np.zeros((21, 21), dtype=np.complex128)
+    gam2 = np.zeros((21, 21), dtype=np.complex128)
     for n in range(21):
         gamnew[n, 0 : n + 1] = gam[n, 0 : n + 1] * zminzbar[20 - n : 20 + 1]
         gam2[n, 0 : n + 1] = np.conj(gamnew[n, 0 : n + 1])
 
-    alpha = np.zeros(41, dtype=np.complex_)
-    beta = np.zeros(41, dtype=np.complex_)
-    alpha2 = np.zeros(41, dtype=np.complex_)
+    alpha = np.zeros(41, dtype=np.complex128)
+    beta = np.zeros(41, dtype=np.complex128)
+    alpha2 = np.zeros(41, dtype=np.complex128)
     alpha[0] = anew[0]
     beta[0] = bnew[0]
     alpha2[0] = anew[0]
@@ -818,11 +837,11 @@ def bessells_int_ho(x, y, z1, z2, lab, order, d1, d2):
     log1 = np.log(d1minzeta)
     log2 = np.log(d2minzeta)
 
-    alphanew = np.zeros(51, dtype=np.complex_)
-    alphanew2 = np.zeros(51, dtype=np.complex_)
-    betanew = np.zeros(51, dtype=np.complex_)
+    alphanew = np.zeros(51, dtype=np.complex128)
+    alphanew2 = np.zeros(51, dtype=np.complex128)
+    betanew = np.zeros(51, dtype=np.complex128)
 
-    omega = np.zeros(order + 1, dtype=np.complex_)
+    omega = np.zeros(order + 1, dtype=np.complex128)
 
     for p in range(order + 1):
         alphanew[0 : 40 + p + 1] = 0
@@ -864,7 +883,8 @@ def bessells_int_ho(x, y, z1, z2, lab, order, d1, d2):
 
 @numba.njit(nogil=True, cache=True)
 def bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
-    """
+    """bessells_int_ho_qxqy.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,d1,d2
@@ -872,7 +892,8 @@ def bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     complex(kind=8), dimension(0:2*order+1) :: qxqy
     complex(kind=8), dimension(0:order) :: qx, qy
     real(kind=8) :: biglab, biga, L, ang, angz, tol, bigx, bigy
-    complex(kind=8) :: zeta, zetabar, log1, log2, term1, term2, d1minzeta, d2minzeta, bigz
+    complex(kind=8) :: zeta, zetabar, log1, log2, term1, term2, d1minzeta,
+        d2minzeta, bigz
     complex(kind=8) :: cm, biglabcomplex
     complex(kind=8), dimension(0:20) :: zminzbar, anew, bnew, exprange
     complex(kind=8), dimension(0:20,0:20) :: gamnew, gam2
@@ -883,7 +904,7 @@ def bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
 
     integer :: m, n, p
     """
-    zminzbar = np.zeros(21, dtype=np.complex_)
+    zminzbar = np.zeros(21, dtype=np.complex128)
 
     L = np.abs(z2 - z1)
     bigz = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1)
@@ -908,15 +929,15 @@ def bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     for n in range(1, 21):
         # Ordered from high power to low po
         zminzbar[20 - n] = zminzbar[21 - n] * (zeta - zetabar)
-    gamnew = np.zeros((21, 21), dtype=np.complex_)
-    gam2 = np.zeros((21, 21), dtype=np.complex_)
+    gamnew = np.zeros((21, 21), dtype=np.complex128)
+    gam2 = np.zeros((21, 21), dtype=np.complex128)
     for n in range(21):
         gamnew[n, 0 : n + 1] = gam[n, 0 : n + 1] * zminzbar[20 - n : 20 + 1]
         gam2[n, 0 : n + 1] = np.conj(gamnew[n, 0 : n + 1])
 
-    alpha = np.zeros(41, dtype=np.complex_)
-    beta = np.zeros(41, dtype=np.complex_)
-    alpha2 = np.zeros(41, dtype=np.complex_)
+    alpha = np.zeros(41, dtype=np.complex128)
+    beta = np.zeros(41, dtype=np.complex128)
+    alpha2 = np.zeros(41, dtype=np.complex128)
 
     alpha[0] = anew[0]
     beta[0] = bnew[0]
@@ -936,12 +957,12 @@ def bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     log1 = np.log(d1minzeta)
     log2 = np.log(d2minzeta)
 
-    alphanew = np.zeros(52, dtype=np.complex_)
-    alphanew2 = np.zeros(52, dtype=np.complex_)
-    betanew = np.zeros(52, dtype=np.complex_)
+    alphanew = np.zeros(52, dtype=np.complex128)
+    alphanew2 = np.zeros(52, dtype=np.complex128)
+    betanew = np.zeros(52, dtype=np.complex128)
 
-    omega = np.zeros(order + 2, dtype=np.complex_)
-    qxqy = np.zeros(2 * order + 2, dtype=np.complex_)
+    omega = np.zeros(order + 2, dtype=np.complex128)
+    qxqy = np.zeros(2 * order + 2, dtype=np.complex128)
 
     for p in range(0, order + 2):
         alphanew[0 : 40 + p + 1] = 0
@@ -990,7 +1011,8 @@ def bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
 
 @numba.njit(nogil=True, cache=True)
 def bessells_gauss(x, y, z1, z2, lab):
-    """
+    """bessells_gauss.
+
     implicit none
     real(kind=8), intent(in) :: x,y
     complex(kind=8), intent(in) :: z1,z2
@@ -1014,7 +1036,8 @@ def bessells_gauss(x, y, z1, z2, lab):
 
 @numba.njit(nogil=True, cache=True)
 def bessells_gauss_ho(x, y, z1, z2, lab, order):
-    """
+    """bessells_gauss_ho.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y
@@ -1030,12 +1053,12 @@ def bessells_gauss_ho(x, y, z1, z2, lab, order):
     biglab = 2 * lab / L
     bigz = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1)
 
-    k0 = np.zeros(8, dtype=np.complex_)
+    k0 = np.zeros(8, dtype=np.complex128)
     for n in range(8):
         x0 = bigz.real - xg[n]
         k0[n] = besselk0(x0, bigz.imag, biglab)
 
-    omega = np.zeros(order + 1, dtype=np.complex_)
+    omega = np.zeros(order + 1, dtype=np.complex128)
     for p in range(order + 1):
         omega[p] = complex(0, 0)
         for n in range(8):
@@ -1047,8 +1070,9 @@ def bessells_gauss_ho(x, y, z1, z2, lab, order):
 
 @numba.njit(nogil=True, cache=True)
 def bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
-    """Returns integral from d1 to d2 along real axis while strength is still
-    Delta^order from -1 to +1.
+    """Returns integral from d1 to d2 along real axis.
+
+    While strength is still Delta^order from -1 to +1.
 
     implicit none
     integer, intent(in) :: order
@@ -1059,7 +1083,7 @@ def bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
     real(kind=8) :: xp, yp, dc, fac
     complex(kind=8) :: z1p,z2p,bigz1,bigz2
     """
-    omega = np.zeros(order + 1, dtype=np.complex_)
+    omega = np.zeros(order + 1, dtype=np.complex128)
 
     bigz1 = complex(d1, 0)
     bigz2 = complex(d2, 0)
@@ -1076,7 +1100,8 @@ def bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
 
 @numba.njit(nogil=True, cache=True)
 def bessells_gauss_ho_qxqy(x, y, z1, z2, lab, order):
-    """
+    """bessells_gauss_ho_qxqy.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y
@@ -1090,10 +1115,10 @@ def bessells_gauss_ho_qxqy(x, y, z1, z2, lab, order):
     complex(kind=8), dimension(8) :: k1
     complex(kind=8), dimension(0:order) :: qx,qy
     """
-    qxqy = np.zeros(2 * order + 2, dtype=np.complex_)
-    xmind = np.zeros(8, dtype=np.complex_)
-    k1 = np.zeros(8, dtype=np.complex_)
-    r = np.zeros(8, dtype=np.complex_)
+    qxqy = np.zeros(2 * order + 2, dtype=np.complex128)
+    xmind = np.zeros(8, dtype=np.complex128)
+    k1 = np.zeros(8, dtype=np.complex128)
+    r = np.zeros(8, dtype=np.complex128)
 
     L = np.abs(z2 - z1)
     biglab = 2 * lab / L
@@ -1104,8 +1129,8 @@ def bessells_gauss_ho_qxqy(x, y, z1, z2, lab, order):
         r[n] = np.sqrt(xmind[n] ** 2 + bigz.imag**2)
         k1[n] = besselk1(xmind[n], bigz.imag, biglab)
 
-    qx = np.zeros(order + 1, dtype=np.complex_)
-    qy = np.zeros(order + 1, dtype=np.complex_)
+    qx = np.zeros(order + 1, dtype=np.complex128)
+    qy = np.zeros(order + 1, dtype=np.complex128)
     for p in range(order + 1):
         for n in range(8):
             qx[p] = qx[p] + wg[n] * xg[n] ** p * xmind[n] * k1[n] / r[n]
@@ -1123,8 +1148,9 @@ def bessells_gauss_ho_qxqy(x, y, z1, z2, lab, order):
 
 @numba.njit(nogil=True, cache=True)
 def bessells_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
-    """Returns integral from d1 to d2 along real axis while strength is still
-    Delta^order from -1 to +1.
+    """Returns integral from d1 to d2 along real axis.
+
+    While strength is still Delta^order from -1 to +1.
 
     implicit none
     integer, intent(in) :: order
@@ -1135,7 +1161,7 @@ def bessells_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
     real(kind=8) :: xp, yp, dc, fac
     complex(kind=8) :: z1p,z2p,bigz1,bigz2
     """
-    qxqy = np.zeros(2 * order + 2, dtype=np.complex_)
+    qxqy = np.zeros(2 * order + 2, dtype=np.complex128)
 
     bigz1 = complex(d1, 0.0)
     bigz2 = complex(d2, 0.0)
@@ -1157,7 +1183,8 @@ def bessells_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
 
 @numba.njit(nogil=True, cache=True)
 def bessells(x, y, z1, z2, lab, order, d1in, d2in):
-    """
+    """Bessells.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,d1in,d2in
@@ -1169,7 +1196,7 @@ def bessells(x, y, z1, z2, lab, order, d1in, d2in):
     real(kind=8) :: Lnear, L, d1, d2, delta
     complex(kind=8) :: z, delz, za, zb
     """
-    omega = np.zeros(order + 1, dtype=np.complex_)
+    omega = np.zeros(order + 1, dtype=np.complex128)
 
     Lnear = 3
     z = complex(x, y)
@@ -1202,7 +1229,8 @@ def bessells(x, y, z1, z2, lab, order, d1in, d2in):
 
 @numba.njit(nogil=True, cache=True)
 def bessellsv(x, y, z1, z2, lab, order, R, nlab):
-    """
+    """Bessellsv.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,R
@@ -1214,7 +1242,7 @@ def bessellsv(x, y, z1, z2, lab, order, R, nlab):
     integer :: n, nterms
     """
     nterms = order + 1
-    omega = np.zeros(nlab * (order + 1), dtype=np.complex_)
+    omega = np.zeros(nlab * (order + 1), dtype=np.complex128)
     # Check if endpoints need to be adjusted using
     # the largest lambda (the first one)
     d1, d2 = find_d1d2(z1, z2, complex(x, y), R * np.abs(lab[0]))
@@ -1227,7 +1255,8 @@ def bessellsv(x, y, z1, z2, lab, order, R, nlab):
 
 @numba.njit(nogil=True, cache=True)
 def bessellsv2(x, y, z1, z2, lab, order, R, nlab):
-    """
+    """bessellsv2.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,R
@@ -1239,7 +1268,7 @@ def bessellsv2(x, y, z1, z2, lab, order, R, nlab):
     integer :: n, nterms
     """
     nterms = order + 1
-    omega = np.zeros((order + 1, nlab), dtype=np.complex_)
+    omega = np.zeros((order + 1, nlab), dtype=np.complex128)
     # Check if endpoints need to be adjusted using the largest lambda (the first one)
     d1, d2 = find_d1d2(z1, z2, complex(x, y), R * np.abs(lab[0]))
     for n in range(nlab):
@@ -1249,7 +1278,8 @@ def bessellsv2(x, y, z1, z2, lab, order, R, nlab):
 
 @numba.njit(nogil=True, cache=True)
 def bessellsqxqy(x, y, z1, z2, lab, order, d1in, d2in):
-    """
+    """Bessellsqxqy.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,d1in,d2in
@@ -1263,7 +1293,7 @@ def bessellsqxqy(x, y, z1, z2, lab, order, d1in, d2in):
     """
     Lnear = 3.0
     z = complex(x, y)
-    qxqy = np.zeros(2 * order + 2, dtype=np.complex_)
+    qxqy = np.zeros(2 * order + 2, dtype=np.complex128)
     L = np.abs(z2 - z1)
     # print *,'Lnear*np.abs(lab) ',Lnear*np.abs(lab)
     if L < Lnear * np.abs(lab):  # No need to break integral up
@@ -1298,7 +1328,8 @@ def bessellsqxqy(x, y, z1, z2, lab, order, d1in, d2in):
 
 @numba.njit(nogil=True, cache=True)
 def bessellsqxqyv(x, y, z1, z2, lab, order, R, nlab):
-    """
+    """Bessellsqxqyv.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,R
@@ -1310,7 +1341,7 @@ def bessellsqxqyv(x, y, z1, z2, lab, order, R, nlab):
     complex(kind=8), dimension(0:2*order+1) :: qxqylab
     integer :: n, nterms, nhalf
     """
-    qxqy = np.zeros(2 * nlab * (order + 1), dtype=np.complex_)
+    qxqy = np.zeros(2 * nlab * (order + 1), dtype=np.complex128)
     nterms = order + 1
     nhalf = nlab * (order + 1)
     d1, d2 = find_d1d2(z1, z2, complex(x, y), R * np.abs(lab[0]))
@@ -1325,7 +1356,8 @@ def bessellsqxqyv(x, y, z1, z2, lab, order, R, nlab):
 
 @numba.njit(nogil=True, cache=True)
 def bessellsqxqyv2(x, y, z1, z2, lab, order, R, nlab):
-    """
+    """bessellsqxqyv2.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,R
@@ -1337,9 +1369,9 @@ def bessellsqxqyv2(x, y, z1, z2, lab, order, R, nlab):
     complex(kind=8), dimension(0:2*order+1) :: qxqylab
     integer :: n, nterms, nhalf
     """
-    qxqy = np.zeros((2 * (order + 1), nlab), dtype=np.complex_)
+    qxqy = np.zeros((2 * (order + 1), nlab), dtype=np.complex128)
     nterms = order + 1
-    nhalf = nlab * (order + 1)
+    # nhalf = nlab * (order + 1)
     d1, d2 = find_d1d2(z1, z2, complex(x, y), R * np.abs(lab[0]))
     for n in range(nlab):
         qxqylab = bessellsqxqy(x, y, z1, z2, lab[n - 1], order, d1, d2)
@@ -1350,7 +1382,8 @@ def bessellsqxqyv2(x, y, z1, z2, lab, order, R, nlab):
 
 @numba.njit(nogil=True, cache=True)
 def bessellsuni(x, y, z1, z2, lab):
-    """
+    """Bessellsuni.
+
     # Uniform strength
     implicit none
     real(kind=8), intent(in) :: x,y
@@ -1362,7 +1395,6 @@ def bessellsuni(x, y, z1, z2, lab):
     real(kind=8) :: Lnear, L
     complex(kind=8) :: z, delz, za, zb
     """
-
     Lnear = 3.0
     z = complex(x, y)
     omega = complex(0.0, 0.0)
@@ -1388,7 +1420,8 @@ def bessellsuni(x, y, z1, z2, lab):
 
 @numba.njit(nogil=True, cache=True)
 def bessellsuniv(x, y, z1, z2, lab, nlab):
-    """
+    """Bessellsuniv.
+
     # Uniform strength
     implicit none
     real(kind=8), intent(in) :: x,y
@@ -1398,7 +1431,7 @@ def bessellsuniv(x, y, z1, z2, lab, nlab):
     complex(kind=8), dimension(nlab), intent(inout) :: omega
     integer :: n
     """
-    omega = np.zeros(nlab, dtype=np.complex_)
+    omega = np.zeros(nlab, dtype=np.complex128)
     for n in range(nlab):
         omega[n] = bessellsuni(x, y, z1, z2, lab[n])
     return omega
@@ -1407,7 +1440,8 @@ def bessellsuniv(x, y, z1, z2, lab, nlab):
 # %% Line Doublet Functions
 @numba.njit(nogil=True, cache=True)
 def lapld_int_ho(x, y, z1, z2, order):
-    """
+    """lapld_int_ho.
+
     ! Near field only
     implicit none
     integer, intent(in) :: order
@@ -1418,15 +1452,15 @@ def lapld_int_ho(x, y, z1, z2, order):
     real(kind=8) :: L
     complex(kind=8) :: z, zplus1, zmin1
     """
+    omega = np.zeros(order + 1, dtype=np.complex128)
+    qm = np.zeros(order + 1, dtype=np.complex128)
 
-    omega = np.zeros(order + 1, dtype=np.complex_)
-    qm = np.zeros(order + 1, dtype=np.complex_)
-
-    L = np.abs(z2 - z1)
+    # L = np.abs(z2 - z1)
     z = (2.0 * complex(x, y) - (z1 + z2)) / (z2 - z1)
     zplus1 = z + 1.0
     zmin1 = z - 1.0
-    # Not sure if this gives correct answer at corner point (z also appears in qm); should really be caught in code that calls this function
+    # Not sure if this gives correct answer at corner point (z also appears in qm);
+    # should really be caught in code that calls this function
     if np.abs(zplus1) < tiny:
         zplus1 = tiny
     if np.abs(zmin1) < tiny:
@@ -1450,9 +1484,12 @@ def lapld_int_ho(x, y, z1, z2, order):
 
 @numba.njit(nogil=True, cache=True)
 def lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2):
-    """
+    """lapld_int_ho_d1d2.
+
     Near field only
-    Returns integral from d1 to d2 along real axis while strength is still Delta^order from -1 to +1
+    Returns integral from d1 to d2 along real axis while strength is still
+    Delta^order from -1 to +1
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,d1,d2
@@ -1462,7 +1499,7 @@ def lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2):
     real(kind=8) :: xp, yp, dc, fac
     complex(kind=8) :: z1p,z2p,bigz1,bigz2
     """
-    omega = np.zeros(order + 1, dtype=np.complex_)
+    omega = np.zeros(order + 1, dtype=np.complex128)
 
     bigz1 = complex(d1, 0.0)
     bigz2 = complex(d2, 0.0)
@@ -1480,7 +1517,8 @@ def lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2):
 
 @numba.njit(nogil=True, cache=True)
 def lapld_int_ho_wdis(x, y, z1, z2, order):
-    """
+    """lapld_int_ho_wdis.
+
     # Near field only
     implicit none
     integer, intent(in) :: order
@@ -1491,14 +1529,14 @@ def lapld_int_ho_wdis(x, y, z1, z2, order):
     integer :: m, n
     complex(kind=8) :: z, zplus1, zmin1, term1, term2, zterm
     """
-
-    qm = np.zeros(11, dtype=np.complex_)
-    wdis = np.zeros(order + 1, dtype=np.complex_)
+    qm = np.zeros(11, dtype=np.complex128)
+    wdis = np.zeros(order + 1, dtype=np.complex128)
 
     z = (2.0 * complex(x, y) - (z1 + z2)) / (z2 - z1)
     zplus1 = z + 1.0
     zmin1 = z - 1.0
-    # Not sure if this gives correct answer at corner point (z also appears in qm); should really be caught in code that calls this function
+    # Not sure if this gives correct answer at corner point (z also appears in qm);
+    # should really be caught in code that calls this function
     if np.abs(zplus1) < tiny:
         zplus1 = tiny
     if np.abs(zmin1) < tiny:
@@ -1524,9 +1562,11 @@ def lapld_int_ho_wdis(x, y, z1, z2, order):
 
 @numba.njit(nogil=True, cache=True)
 def lapld_int_ho_wdis_d1d2(x, y, z1, z2, order, d1, d2):
-    """
+    """lapld_int_ho_wdis_d1d2.
+
     # Near field only
-    # Returns integral from d1 to d2 along real axis while strength is still Delta^order from -1 to +1
+    # Returns integral from d1 to d2 along real axis while strength is still
+    # Delta^order from -1 to +1
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,d1,d2
@@ -1536,8 +1576,7 @@ def lapld_int_ho_wdis_d1d2(x, y, z1, z2, order, d1, d2):
     real(kind=8) :: xp, yp, dc, fac
     complex(kind=8) :: z1p,z2p,bigz1,bigz2
     """
-
-    wdis = np.zeros(order + 1, dtype=np.complex_)
+    wdis = np.zeros(order + 1, dtype=np.complex128)
 
     bigz1 = complex(d1, 0.0)
     bigz2 = complex(d2, 0.0)
@@ -1555,14 +1594,16 @@ def lapld_int_ho_wdis_d1d2(x, y, z1, z2, order, d1, d2):
 
 @numba.njit(nogil=True, cache=True)
 def besselld_int_ho(x, y, z1, z2, lab, order, d1, d2):
-    """
+    """besselld_int_ho.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,d1,d2
     complex(kind=8), intent(in) :: z1,z2,lab
     complex(kind=8), dimension[0:order+1] :: omega
     real(kind=8) :: biglab, biga, L, ang, tol, bigy
-    complex(kind=8) :: zeta, zetabar, log1, log2, term1, term2, d1minzeta, d2minzeta, bigz
+    complex(kind=8) :: zeta, zetabar, log1, log2, term1, term2, d1minzeta,
+        d2minzeta, bigz
     complex(kind=8) :: cm, biglabcomplex
     complex(kind=8), dimension(0:20) :: zminzbar, anew, bnew, exprange
     complex(kind=8), dimension(0:20,0:20) :: gamnew, gam2
@@ -1571,9 +1612,8 @@ def besselld_int_ho(x, y, z1, z2, lab, order, d1, d2):
 
     integer :: m, n, p
     """
-
-    zminzbar = np.zeros(21, dtype=np.complex_)
-    omega = np.zeros(order + 1, dtype=np.complex_)
+    zminzbar = np.zeros(21, dtype=np.complex128)
+    omega = np.zeros(order + 1, dtype=np.complex128)
 
     L = np.abs(z2 - z1)
     bigz = (2.0 * complex(x, y) - (z1 + z2)) / (z2 - z1)
@@ -1596,16 +1636,16 @@ def besselld_int_ho(x, y, z1, z2, lab, order, d1, d2):
         # Ordered from high power to low power
         zminzbar[20 - n] = zminzbar[21 - n] * (zeta - zetabar)
 
-    gamnew = np.zeros((21, 21), dtype=np.complex_)
-    gam2 = np.zeros((21, 21), dtype=np.complex_)
+    gamnew = np.zeros((21, 21), dtype=np.complex128)
+    gam2 = np.zeros((21, 21), dtype=np.complex128)
 
     for n in range(21):
         gamnew[n, 0 : n + 1] = gam[n, 0 : n + 1] * zminzbar[20 - n : 20 + 1]
         gam2[n, 0 : n + 1] = np.conj(gamnew[n, 0 : n + 1])
 
-    alpha = np.zeros(41, dtype=np.complex_)
-    beta = np.zeros(41, dtype=np.complex_)
-    alpha2 = np.zeros(41, dtype=np.complex_)
+    alpha = np.zeros(41, dtype=np.complex128)
+    beta = np.zeros(41, dtype=np.complex128)
+    alpha2 = np.zeros(41, dtype=np.complex128)
     alpha[0] = anew[0]
     beta[0] = bnew[0]
     alpha2[0] = anew[0]
@@ -1625,9 +1665,9 @@ def besselld_int_ho(x, y, z1, z2, lab, order, d1, d2):
     log1 = np.log(d1minzeta)
     log2 = np.log(d2minzeta)
 
-    alphanew = np.zeros(51, dtype=np.complex_)
-    alphanew2 = np.zeros(51, dtype=np.complex_)
-    betanew = np.zeros(51, dtype=np.complex_)
+    alphanew = np.zeros(51, dtype=np.complex128)
+    alphanew2 = np.zeros(51, dtype=np.complex128)
+    betanew = np.zeros(51, dtype=np.complex128)
 
     for p in range(order + 1):
         alphanew[0 : 40 + p + 1] = 0.0
@@ -1661,7 +1701,8 @@ def besselld_int_ho(x, y, z1, z2, lab, order, d1, d2):
                 alphanew2[n] * np.conj(log1) - alphanew2[n] / (n + 1)
             ) * np.conj(term1) / (n + 1)
 
-    # omega = bigy * biglab / (2.*pi*biglabcomplex**2) * omega + real( lapld_int_ho_d1d2(x,y,z1,z2,order,d1,d2) )
+    # omega = bigy * biglab / (2.*pi*biglabcomplex**2) * omega +
+    #   real( lapld_int_ho_d1d2(x,y,z1,z2,order,d1,d2) )
     omega = (
         bigy * biglab / (2.0 * np.pi * biglabcomplex**2) * omega
         + lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2).real
@@ -1671,7 +1712,8 @@ def besselld_int_ho(x, y, z1, z2, lab, order, d1, d2):
 
 @numba.njit(nogil=True, cache=True)
 def besselld_gauss_ho(x, y, z1, z2, lab, order):
-    """
+    """besselld_gauss_ho.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y
@@ -1683,9 +1725,8 @@ def besselld_gauss_ho(x, y, z1, z2, lab, order):
     complex(kind=8) :: bigz, biglab
     complex(kind=8), dimension(8) :: k1overr
     """
-
-    k1overr = np.zeros(8, dtype=np.complex_)
-    omega = np.zeros(order + 1, dtype=np.complex_)
+    k1overr = np.zeros(8, dtype=np.complex128)
+    omega = np.zeros(order + 1, dtype=np.complex128)
 
     L = np.abs(z2 - z1)
     biglab = 2.0 * lab / L
@@ -1705,8 +1746,10 @@ def besselld_gauss_ho(x, y, z1, z2, lab, order):
 
 @numba.njit(nogil=True, cache=True)
 def besselld_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
-    """
-    # Returns integral from d1 to d2 along real axis while strength is still Delta^order from -1 to +1
+    """besselld_gauss_ho_d1d2.
+
+    # Returns integral from d1 to d2 along real axis while strength is still
+    # Delta^order from -1 to +1
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,d1,d2
@@ -1716,8 +1759,7 @@ def besselld_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
     real(kind=8) :: xp, yp, dc, fac
     complex(kind=8) :: z1p,z2p,bigz1,bigz2
     """
-
-    omega = np.zeros(order + 1, dtype=np.complex_)
+    omega = np.zeros(order + 1, dtype=np.complex128)
 
     bigz1 = complex(d1, 0.0)
     bigz2 = complex(d2, 0.0)
@@ -1735,7 +1777,8 @@ def besselld_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
 
 @numba.njit(nogil=True, cache=True)
 def besselld(x, y, z1, z2, lab, order, d1in, d2in):
-    """
+    """Besselld.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,d1in,d2in
@@ -1747,8 +1790,7 @@ def besselld(x, y, z1, z2, lab, order, d1in, d2in):
     real(kind=8) :: Lnear, L, d1, d2, delta
     complex(kind=8) :: z, delz, za, zb
     """
-
-    omega = np.zeros(order + 1, dtype=np.complex_)
+    omega = np.zeros(order + 1, dtype=np.complex128)
 
     Lnear = 3.0
     z = complex(x, y)
@@ -1782,7 +1824,8 @@ def besselld(x, y, z1, z2, lab, order, d1in, d2in):
 
 @numba.njit(nogil=True, cache=True)
 def besselldv(x, y, z1, z2, lab, order, R, nlab):
-    """
+    """Besselldv.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,R
@@ -1793,8 +1836,7 @@ def besselldv(x, y, z1, z2, lab, order, R, nlab):
     complex(kind=8), dimension(nlab*(order+1)) :: omega
     integer :: n, nterms
     """
-
-    omega = np.zeros(nlab * (order + 1), dtype=np.complex_)
+    omega = np.zeros(nlab * (order + 1), dtype=np.complex128)
 
     nterms = order + 1
     # Check if endpoints need to be adjusted using the largest lambda (the first one)
@@ -1808,7 +1850,8 @@ def besselldv(x, y, z1, z2, lab, order, R, nlab):
 
 @numba.njit(nogil=True, cache=True)
 def besselldv2(x, y, z1, z2, lab, order, R, nlab):
-    """
+    """besselldv2.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,R
@@ -1819,8 +1862,7 @@ def besselldv2(x, y, z1, z2, lab, order, R, nlab):
     complex(kind=8), dimension(order+1,nlab) :: omega
     integer :: n, nterms
     """
-
-    omega = np.zeros((order + 1, nlab), dtype=np.complex_)
+    omega = np.zeros((order + 1, nlab), dtype=np.complex128)
 
     nterms = order + 1
     # Check if endpoints need to be adjusted using the largest lambda (the first one)
@@ -1833,14 +1875,16 @@ def besselldv2(x, y, z1, z2, lab, order, R, nlab):
 
 # @numba.njit(nogil=True, cache=True)
 def besselldpart(x, y, z1, z2, lab, order, d1, d2):
-    """
+    """Besselldpart.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,d1,d2
     complex(kind=8), intent(in) :: z1,z2,lab
     complex(kind=8), dimension(0:order) :: omega
     real(kind=8) :: biglab, biga, L, ang, tol, bigy
-    complex(kind=8) :: zeta, zetabar, log1, log2, term1, term2, d1minzeta, d2minzeta, bigz
+    complex(kind=8) :: zeta, zetabar, log1, log2, term1, term2, d1minzeta,
+        d2minzeta, bigz
     complex(kind=8) :: cm, biglabcomplex
     complex(kind=8), dimension(0:20) :: zminzbar, anew, bnew, exprange
     complex(kind=8), dimension(0:20,0:20) :: gamnew, gam2
@@ -1848,11 +1892,11 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
     complex(kind=8), dimension(0:50) :: alphanew, betanew, alphanew2 ! Order fixed to 10
     integer :: m, n, p
     """
-    zminzbar = np.zeros(21, dtype=np.complex_)
+    zminzbar = np.zeros(21, dtype=np.complex128)
 
     L = np.abs(z2 - z1)
-    bigz = (2.0 * complex(x, y) - (z1 + z2)) / (z2 - z1)
-    bigy = bigz.imag
+    # bigz = (2.0 * complex(x, y) - (z1 + z2)) / (z2 - z1)
+    # bigy = bigz.imag
     biga = np.abs(lab)
     ang = np.arctan2(lab.imag, lab.real)
     biglab = 2.0 * biga / L
@@ -1871,15 +1915,15 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
         # Ordered from high power to low power
         zminzbar[20 - n] = zminzbar[21 - n] * (zeta - zetabar)
 
-    gamnew = np.zeros((21, 21), dtype=np.complex_)
-    gam2 = np.zeros((21, 21), dtype=np.complex_)
+    gamnew = np.zeros((21, 21), dtype=np.complex128)
+    gam2 = np.zeros((21, 21), dtype=np.complex128)
     for n in range(21):
         gamnew[n, 0 : n + 1] = gam[n, 0 : n + 1] * zminzbar[20 - n : 20 + 1]
         gam2[n, 0 : n + 1] = np.conj(gamnew[n, 0 : n + 1])
 
-    alpha = np.zeros(41, dtype=np.complex_)
-    beta = np.zeros(41, dtype=np.complex_)
-    alpha2 = np.zeros(41, dtype=np.complex_)
+    alpha = np.zeros(41, dtype=np.complex128)
+    beta = np.zeros(41, dtype=np.complex128)
+    alpha2 = np.zeros(41, dtype=np.complex128)
     alpha[0] = anew[0]
     beta[0] = bnew[0]
     alpha2[0] = anew[0]
@@ -1898,10 +1942,10 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
     log1 = np.log(d1minzeta)
     log2 = np.log(d2minzeta)
 
-    alphanew = np.zeros(51, dtype=np.complex_)
-    alphanew2 = np.zeros(51, dtype=np.complex_)
-    betanew = np.zeros(51, dtype=np.complex_)
-    omega = np.zeros(order + 1, dtype=np.complex_)
+    alphanew = np.zeros(51, dtype=np.complex128)
+    alphanew2 = np.zeros(51, dtype=np.complex128)
+    betanew = np.zeros(51, dtype=np.complex128)
+    omega = np.zeros(order + 1, dtype=np.complex128)
 
     for p in range(order + 1):
         alphanew[0 : 40 + p + 1] = 0.0
@@ -1944,7 +1988,8 @@ def besselldpart(x, y, z1, z2, lab, order, d1, d2):
 
 # @numba.njit(nogil=True, cache=True)
 def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
-    """
+    """besselld_int_ho_qxqy.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,d1,d2
@@ -1952,20 +1997,21 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     complex(kind=8), dimension(0:2*order+1) :: qxqy
     complex(kind=8), dimension(0:order) :: rvz, rvzbar
     real(kind=8) :: biglab, biga, L, ang, angz, tol, bigy
-    complex(kind=8) :: zeta, zetabar, log1, log2, term1, term2, d1minzeta, d2minzeta, bigz
+    complex(kind=8) :: zeta, zetabar, log1, log2, term1, term2, d1minzeta,
+        d2minzeta, bigz
     complex(kind=8) :: cm, biglabcomplex, azero
     complex(kind=8), dimension(0:20) :: zminzbar, anew, bnew, exprange
     complex(kind=8), dimension(0:20,0:20) :: gamnew, gam2
     complex(kind=8), dimension(0:40) :: alpha, beta, alpha2
     complex(kind=8), dimension(0:51) :: alphanew, betanew, alphanew2 ! Order fixed to 10
-    complex(kind=8), dimension(0:order) :: omegalap, omegaom, wdis, qx, qy ! To store intermediate result
+    complex(kind=8), dimension(0:order) :: omegalap, omegaom, wdis, qx, qy !
+        To store intermediate result
     complex(kind=8), dimension(0:order+1) :: omega ! To store intermediate result
     integer :: m, n, p
     """
-
-    zminzbar = np.zeros(21, dtype=np.complex_)
-    omega = np.zeros(order + 2, dtype=np.complex_)
-    qxqy = np.zeros(2 * order + 2, dtype=np.complex_)
+    zminzbar = np.zeros(21, dtype=np.complex128)
+    omega = np.zeros(order + 2, dtype=np.complex128)
+    qxqy = np.zeros(2 * order + 2, dtype=np.complex128)
 
     L = np.abs(z2 - z1)
     bigz = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1)
@@ -1997,16 +2043,16 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
         # Ordered from high power to low power
         zminzbar[20 - n] = zminzbar[21 - n] * (zeta - zetabar)
 
-    gamnew = np.zeros((21, 21), dtype=np.complex_)
-    gam2 = np.zeros((21, 21), dtype=np.complex_)
+    gamnew = np.zeros((21, 21), dtype=np.complex128)
+    gam2 = np.zeros((21, 21), dtype=np.complex128)
 
     for n in range(21):
         gamnew[n, 0 : n + 1] = gam[n, 0 : n + 1] * zminzbar[20 - n : 20 + 1]
         gam2[n, 0 : n + 1] = np.conj(gamnew[n, 0 : n + 1])
 
-    alpha = np.zeros(41, dtype=np.complex_)
-    alpha2 = np.zeros(41, dtype=np.complex_)
-    beta = np.zeros(41, dtype=np.complex_)
+    alpha = np.zeros(41, dtype=np.complex128)
+    alpha2 = np.zeros(41, dtype=np.complex128)
+    beta = np.zeros(41, dtype=np.complex128)
     alpha[0] = anew[0]
     beta[0] = bnew[0]
     alpha2[0] = anew[0]
@@ -2028,9 +2074,9 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     log1 = np.log(d1minzeta)
     log2 = np.log(d2minzeta)
 
-    alphanew = np.zeros(52, dtype=np.complex_)
-    alphanew2 = np.zeros(52, dtype=np.complex_)
-    betanew = np.zeros(52, dtype=np.complex_)
+    alphanew = np.zeros(52, dtype=np.complex128)
+    alphanew2 = np.zeros(52, dtype=np.complex128)
+    betanew = np.zeros(52, dtype=np.complex128)
 
     for p in range(order + 2):
         alphanew[0 : 40 + p + 1] = 0
@@ -2074,15 +2120,26 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     rvzbar = -biglab * bigy / (2 * np.pi * biglabcomplex**2) * (
         omega[1 : order + 1 + 1] / biglab - zeta * omega[0 : order + 1]
     ) - biglab * omegaom / complex(0, 2)
-    # qxqy[0:order+1] = -2.0 / L * ( rvz + rvzbar ) / biglab  # As we need to take derivative w.r.t. z not zeta
-    # qxqy[order+1:2*order+1+1] = -2.0 / L * complex(0,1) * (rvz-rvzbar) / biglab
-    #
-    # qxqy[0:order+1] = qxqy[0:order+1] - 2.0 / L / biglabcomplex**2 * azero * ( omegalap + np.conj(omegalap) )
-    # qxqy[order+1:2*order+1+1] = qxqy[order+1:2*order+1+1] -  \
-    #                          2.0 / L / biglabcomplex**2 * azero * complex(0,1) * (omegalap - np.conj(omegalap))
-    #
-    # qxqy[0:order+1] = qxqy[0:order+1] + real(wdis)
-    # qxqy[order+1:2*order+1+1] = qxqy[order+1:2*order+1+1] - aimag(wdis)
+
+    # As we need to take derivative w.r.t. z not zeta
+    # qxqy[0 : order + 1] = -2.0 / L * (rvz + rvzbar) / biglab
+    # qxqy[order + 1 : 2 * order + 1 + 1] = (
+    #     -2.0 / L * complex(0, 1) * (rvz - rvzbar) / biglab
+    # )
+
+    # qxqy[0 : order + 1] = qxqy[0 : order + 1] - 2.0 / L / biglabcomplex**2 * azero * (
+    #     omegalap + np.conj(omegalap)
+    # )
+    # qxqy[order + 1 : 2 * order + 1 + 1] = qxqy[
+    #     order + 1 : 2 * order + 1 + 1
+    # ] - 2.0 / L / biglabcomplex**2 * azero * complex(0, 1) * (
+    #     omegalap - np.conj(omegalap)
+    # )
+
+    # qxqy[0 : order + 1] = qxqy[0 : order + 1] + real(wdis)
+    # qxqy[order + 1 : 2 * order + 1 + 1] = qxqy[order + 1 : 2 * order + 1 + 1] - aimag(
+    #     wdis
+    # )
 
     # As we need to take derivative w.r.t. z not zeta
     qx = -2.0 / L * (rvz + rvzbar) / biglab
@@ -2108,7 +2165,8 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
 
 # @numba.njit(nogil=True, cache=True)
 def besselld_gauss_ho_qxqy(x, y, z1, z2, lab, order):
-    """
+    """besselld_gauss_ho_qxqy.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y
@@ -2122,12 +2180,11 @@ def besselld_gauss_ho_qxqy(x, y, z1, z2, lab, order):
     complex(kind=8), dimension(8) :: k0,k1
     complex(kind=8), dimension(0:order) :: qx,qy
     """
-
-    xmind = np.zeros(8, dtype=np.float_)
-    r = np.zeros(8, dtype=np.float_)
-    k0 = np.zeros(8, dtype=np.complex_)
-    k1 = np.zeros(8, dtype=np.complex_)
-    qxqy = np.zeros(2 * order + 2, dtype=np.complex_)
+    xmind = np.zeros(8, dtype=np.float64)
+    r = np.zeros(8, dtype=np.float64)
+    k0 = np.zeros(8, dtype=np.complex128)
+    k1 = np.zeros(8, dtype=np.complex128)
+    qxqy = np.zeros(2 * order + 2, dtype=np.complex128)
 
     L = np.abs(z2 - z1)
     biglab = 2.0 * lab / L
@@ -2139,8 +2196,8 @@ def besselld_gauss_ho_qxqy(x, y, z1, z2, lab, order):
         k0[n] = besselk0(xmind[n], bigz.imag, biglab)
         k1[n] = besselk1(xmind[n], bigz.imag, biglab)
 
-    qx = np.zeros(order + 1, dtype=np.complex_)
-    qy = np.zeros(order + 1, dtype=np.complex_)
+    qx = np.zeros(order + 1, dtype=np.complex128)
+    qy = np.zeros(order + 1, dtype=np.complex128)
     for p in range(order + 1):
         for n in range(8):
             qx[p] = qx[p] + wg[n] * xg[n] ** p * (-bigy) * xmind[n] / r[n] ** 3 * (
@@ -2163,8 +2220,9 @@ def besselld_gauss_ho_qxqy(x, y, z1, z2, lab, order):
 
 # @numba.njit(nogil=True, cache=True)
 def besselld_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
-    """Returns integral from d1 to d2 along real axis while strength is still
-    Delta^order from -1 to +1.
+    """Returns integral from d1 to d2 along real axis.
+
+    While strength is still Delta^order from -1 to +1.
 
     implicit none
     integer, intent(in) :: order
@@ -2175,8 +2233,7 @@ def besselld_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
     real(kind=8) :: xp, yp, dc, fac
     complex(kind=8) :: z1p,z2p,bigz1,bigz2
     """
-
-    qxqy = np.zeros(2 * order + 2, dtype=np.complex_)
+    qxqy = np.zeros(2 * order + 2, dtype=np.complex128)
 
     bigz1 = complex(d1, 0)
     bigz2 = complex(d2, 0)
@@ -2199,7 +2256,8 @@ def besselld_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
 
 # @numba.njit(nogil=True, cache=True)
 def besselldqxqy(x, y, z1, z2, lab, order, d1in, d2in):
-    """
+    """Besselldqxqy.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,d1in,d2in
@@ -2250,7 +2308,8 @@ def besselldqxqy(x, y, z1, z2, lab, order, d1in, d2in):
 
 # @numba.njit(nogil=True, cache=True)
 def besselldqxqyv(x, y, z1, z2, lab, order, R, nlab):
-    """
+    """Besselldqxqyv.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,R
@@ -2261,8 +2320,7 @@ def besselldqxqyv(x, y, z1, z2, lab, order, R, nlab):
     complex(kind=8), dimension(2*nlab*(order+1)) :: qxqy
     complex(kind=8), dimension(0:2*order+1) :: qxqylab
     """
-
-    qxqy = np.zeros(2 * nlab * (order + 1), dtype=np.complex_)
+    qxqy = np.zeros(2 * nlab * (order + 1), dtype=np.complex128)
 
     nterms = order + 1
     nhalf = nlab * (order + 1)
@@ -2279,7 +2337,8 @@ def besselldqxqyv(x, y, z1, z2, lab, order, R, nlab):
 
 # @numba.njit(nogil=True, cache=True)
 def besselldqxqyv2(x, y, z1, z2, lab, order, R, nlab):
-    """
+    """besselldqxqyv2.
+
     implicit none
     integer, intent(in) :: order
     real(kind=8), intent(in) :: x,y,R
@@ -2291,10 +2350,10 @@ def besselldqxqyv2(x, y, z1, z2, lab, order, R, nlab):
     complex(kind=8), dimension(0:2*order+1) :: qxqylab
     integer :: n, nterms, nhalf
     """
-    qxqy = np.zeros((2 * (order + 1), nlab), dtype=np.complex_)
+    qxqy = np.zeros((2 * (order + 1), nlab), dtype=np.complex128)
 
     nterms = order + 1
-    nhalf = nlab * (order + 1)
+    # nhalf = nlab * (order + 1)
     d1, d2 = find_d1d2(z1, z2, complex(x, y), R * np.abs(lab[0]))
     for n in range(nlab):
         qxqylab = besselldqxqy(x, y, z1, z2, lab[n], order, d1, d2)
@@ -2305,7 +2364,8 @@ def besselldqxqyv2(x, y, z1, z2, lab, order, R, nlab):
 
 @numba.njit(nogil=True, cache=True)
 def bessells_circcheck(x, y, z1in, z2in, lab):
-    """
+    """bessells_circcheck.
+
     implicit none
     real(kind=8), intent(in) :: x,y
     complex(kind=8), intent(in) :: z1in,z2in
@@ -2350,7 +2410,6 @@ def bessells_circcheck(x, y, z1in, z2in, lab):
 @numba.njit(nogil=True, cache=True)
 def is_too_far(z1, z2, zc, R):
     """Checks whether zc is more than R away from oval surrounding line element."""
-
     Lover2 = np.abs(z2 - z1) / 2
     bigz = (2 * zc - (z1 + z2)) / (z2 - z1)
     Radj = R / Lover2
@@ -2369,7 +2428,8 @@ def is_too_far(z1, z2, zc, R):
 
 @numba.njit(nogil=True, cache=True)
 def circle_line_intersection(z1, z2, zc, R):
-    """
+    """circle_line_intersection.
+
     implicit none
     complex(kind=8), intent(in) :: z1, z2, zc
     real(kind=8), intent(in) :: R
@@ -2410,7 +2470,8 @@ def circle_line_intersection(z1, z2, zc, R):
 
 @numba.njit(nogil=True, cache=True)
 def find_d1d2(z1, z2, zc, R):
-    """
+    """find_d1d2.
+
     implicit none
     complex(kind=8), intent(in) :: z1, z2, zc
     real(kind=8), intent(in) :: R
@@ -2442,7 +2503,8 @@ def find_d1d2(z1, z2, zc, R):
 
 @numba.njit(nogil=True, cache=True)
 def isinside(z1, z2, zc, R):
-    """Checks whether point zc is within oval with 'radius' R from line element
+    """Checks whether point zc is within oval with 'radius' R from line element.
+
     implicit none
     complex(kind=8), intent(in) :: z1, z2, zc
     real(kind=8), intent(in) :: R

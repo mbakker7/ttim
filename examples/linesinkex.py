@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 
 import ttim
@@ -19,7 +18,7 @@ ml1 = ttim.ModelMaq(
     f2py=False,
 )
 ls1 = ttim.HeadLineSinkString(
-    ml1, list(zip(xls, yls)), tsandh=[(0, 2)], layers=0, label="river"
+    ml1, list(zip(xls, yls, strict=False)), tsandh=[(0, 2)], layers=0, label="river"
 )
 ml1.solve()
 
@@ -36,7 +35,7 @@ ml2 = ttim.ModelMaq(
     f2py=True,
 )
 ls2 = ttim.HeadLineSinkString(
-    ml2, list(zip(xls, yls)), tsandh=[(0, 2)], layers=0, label="river"
+    ml2, list(zip(xls, yls, strict=False)), tsandh=[(0, 2)], layers=0, label="river"
 )
 ml2.solve()
 

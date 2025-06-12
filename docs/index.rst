@@ -13,33 +13,34 @@ point in the aquifer system and at any time.
         :link: 00tutorials/index
         :link-type: doc
 
-        Tutorials for getting started with TTim.
+        Tutorials and how-to guides for getting started with TTim.
 
-    .. grid-item-card:: How-to guides
-        :link: 01howto/index
-        :link-type: doc
-
-        How-to guides for more advanced modeling with TTim.
 
     .. grid-item-card:: Concepts
-        :link: 02concepts/index
+        :link: 01concepts/index
         :link-type: doc
 
-        TTim basic concepts explained.
-
-.. grid::
+        TTim basic concepts and elements explained.
 
     .. grid-item-card:: Examples
-        :link: 03examples/index
+        :link: 02examples/index
         :link-type: doc
 
         TTim example notebooks.
 
+.. grid::
+
     .. grid-item-card:: Pumping tests
-        :link: 04pumpingtests/index
+        :link: 03pumpingtests/index
         :link-type: doc
 
         TTim pumping test benchmark notebooks.
+    
+    .. grid-item-card:: Benchmarks
+        :link: 04benchmarks/index
+        :link-type: doc
+
+        Comparing TTim to known solutions.
 
     .. grid-item-card:: Code reference
         :link: 05api/index
@@ -78,7 +79,7 @@ Quick Example
             ml.solve()
 
             # Plot head contours at t=2 days
-            ml.contour(win=[-30, 55, -30, 30], ngr=40, t=2, labels=True, decimals=1)
+            ml.plots.contour(win=[-30, 55, -30, 30], ngr=40, t=2, labels=True, decimals=1)
             
 
     .. tab-item:: Result
@@ -101,9 +102,9 @@ approximated as vertical.
     :hidden:
 
     Tutorials <00tutorials/index>
-    How-to guides <01howto/index>
-    Concepts <02concepts/index>
-    Examples <03examples/index>
-    Pumping tests <04pumpingtests/index>
+    Concepts <01concepts/index>
+    Examples <02examples/index>
+    Pumping tests <03pumpingtests/index>
+    Benchmarks <04benchmarks/index>
     Code reference <05api/index>
     Cite <06about/index>

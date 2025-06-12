@@ -3,9 +3,9 @@ import numpy as np
 
 class HeadEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for head-specified conditions. (really
-        written as constant potential element)
+        """Matrix rows for head-specified conditions.
 
+        Really written as constant potential element.
         Works for nunknowns = 1
         Returns matrix part nunknowns,neq,npval, complex.
 
@@ -14,17 +14,21 @@ class HeadEquation:
         Well: q_s = Q / (2*pi*r_w*H)
         LineSink: q_s = sigma / H = Q / (L*H)
         """
-        mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), "D")
+        mat = np.empty(
+            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
+        )
         # rhs needs be initialized zero
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
+        rhs = np.zeros(
+            (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
+        )
         for icp in range(self.ncp):
             istart = icp * self.nlayers
             ieq = 0
             for e in self.model.elementlist:
                 if e.nunknowns > 0:
-                    mat[
-                        istart : istart + self.nlayers, ieq : ieq + e.nunknowns, :
-                    ] = e.potinflayers(self.xc[icp], self.yc[icp], self.layers)
+                    mat[istart : istart + self.nlayers, ieq : ieq + e.nunknowns, :] = (
+                        e.potinflayers(self.xc[icp], self.yc[icp], self.layers)
+                    )
                     if e == self:
                         for i in range(self.nlayers):
                             mat[istart + i, ieq + istart + i, :] -= (
@@ -47,10 +51,17 @@ class HeadEquation:
 
 class WellBoreStorageEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for multi-aquifer element with total
-        given discharge, uniform but unknown head and InternalStorageEquation."""
-        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), "D")
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
+        """Matrix rows for multi-aquifer well element.
+
+        Element with total given discharge, uniform but unknown head and
+        InternalStorageEquation.
+        """
+        mat = np.zeros(
+            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
+        )
+        rhs = np.zeros(
+            (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
+        )
         ieq = 0
         for e in self.model.elementlist:
             if e.nunknowns > 0:
@@ -63,16 +74,7 @@ class WellBoreStorageEquation:
                     np.pi * self.rc**2 * self.model.p * head[0, :]
                 )
                 if e == self:
-                    disterm = (
-                        self.dischargeinflayers
-                        * self.res
-                        / (
-                            2
-                            * np.pi
-                            * self.rw
-                            * self.aq.Haq[self.layers][:, np.newaxis]
-                        )
-                    )
+                    disterm = self.dischargeinflayers * self.resfach[:, np.newaxis]
                     if self.nunknowns > 1:  # Multiple layers
                         for i in range(self.nunknowns - 1):
                             mat[i, ieq + i, :] -= disterm[i]
@@ -107,16 +109,20 @@ class HeadEquationNores:
         (really written as constant potential element) Returns matrix part nunknowns,
         neq, npval, complex Returns rhs part nunknowns, nvbc, npval, complex
         """
-        mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), "D")
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
+        mat = np.empty(
+            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
+        )
+        rhs = np.zeros(
+            (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
+        )
         for icp in range(self.ncp):
             istart = icp * self.nlayers
             ieq = 0
             for e in self.model.elementlist:
                 if e.nunknowns > 0:
-                    mat[
-                        istart : istart + self.nlayers, ieq : ieq + e.nunknowns, :
-                    ] = e.potinflayers(self.xc[icp], self.yc[icp], self.layers)
+                    mat[istart : istart + self.nlayers, ieq : ieq + e.nunknowns, :] = (
+                        e.potinflayers(self.xc[icp], self.yc[icp], self.layers)
+                    )
                     ieq += e.nunknowns
             for i in range(self.model.ngbc):
                 rhs[istart : istart + self.nlayers, i, :] -= self.model.gbclist[
@@ -133,11 +139,17 @@ class HeadEquationNores:
 
 class LeakyWallEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for leaky-wall condition Returns matrix
-        part nunknowns,neq,npval, complex Returns rhs part nunknowns,nvbc,npval,
-        complex."""
-        mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), "D")
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
+        """Mix-in class that returns matrix rows for leaky-wall condition.
+
+        Returns matrix part (nunknowns,neq,npval), complex
+        Returns rhs part (nunknowns,nvbc,npval), complex.
+        """
+        mat = np.empty(
+            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
+        )
+        rhs = np.zeros(
+            (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
+        )
         for icp in range(self.ncp):
             istart = icp * self.nlayers
             ieq = 0
@@ -179,7 +191,9 @@ class LeakyWallEquation:
 
 class MscreenEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for multi-screen conditions where total
+        """Matrix rows for multi-screen conditions where total discharge is specified.
+
+        Mix-in class that returns matrix rows for multi-screen conditions where total
         discharge is specified. Works for nunknowns = 1 Returns matrix part nunknowns,
         neq, npval, complex.
 
@@ -187,8 +201,12 @@ class MscreenEquation:
         head_out - c * q_s = h_in
         Set h_i - h_(i + 1) = 0 and Sum Q_i = Q
         """
-        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), "D")
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
+        mat = np.zeros(
+            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
+        )
+        rhs = np.zeros(
+            (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
+        )
         ieq = 0
         for icp in range(self.ncp):
             istart = icp * self.nlayers
@@ -242,9 +260,9 @@ class MscreenEquation:
 
 class MscreenDitchEquation:
     def equation(self):
-        """Mix-in class that returns matrix rows for multi-screen conditions where total
-        discharge is specified. Returns matrix part nunknowns,neq,npval, complex.
+        """Matrix rows for multi-screen conditions where total discharge is specified.
 
+        Returns matrix part nunknowns,neq,npval, complex.
         Returns rhs part nunknowns,nvbc,npval, complex
         head_out - c*q_s = h_in
         Set h_i - h_(i+1) = 0 and Sum Q_i = Q
@@ -254,8 +272,12 @@ class MscreenDitchEquation:
         In case of storage:
         Sum Q_i - A * p^2 * headin = Q
         """
-        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), "D")
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
+        mat = np.zeros(
+            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
+        )
+        rhs = np.zeros(
+            (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
+        )
         ieq = 0
         for icp in range(self.ncp):
             istart = icp * self.nlayers
@@ -326,8 +348,8 @@ class MscreenDitchEquation:
         mat[-1, istartself : istartself + self.nparam, :] = 1.0
         if self.Astorage is not None:
             # Used to store last equation in case of ditch storage
-            matlast = np.zeros((self.model.neq, self.model.npval), "D")
-            rhslast = np.zeros((self.model.npval), "D")
+            matlast = np.zeros((self.model.neq, self.model.npval), dtype=complex)
+            rhslast = np.zeros((self.model.npval), dtype=complex)
             ieq = 0
             for e in self.model.elementlist:
                 head = (
@@ -369,12 +391,16 @@ class MscreenDitchEquation:
 class InhomEquation:
     def equation(self):
         """Mix-in class that returns matrix rows for inhomogeneity conditions."""
-        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), "D")
-        rhs = np.zeros((self.nunknowns, self.model.ngvbc, self.model.npval), "D")
+        mat = np.zeros(
+            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
+        )
+        rhs = np.zeros(
+            (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
+        )
         for icp in range(self.ncp):
             istart = icp * 2 * self.nlayers
             ieq = 0
-            for e in self.model.elementList:
+            for e in self.model.elementlist:
                 if e.nunknowns > 0:
                     mat[istart : istart + self.nlayers, ieq : ieq + e.nunknowns, :] = (
                         e.potinflayers(
@@ -422,4 +448,80 @@ class InhomEquation:
                 ) * np.cos(self.thetacp[icp]) + (qyin - qyout) * np.sin(
                     self.thetacp[icp]
                 )
+        return mat, rhs
+
+
+class HeadDiffEquation:
+    def equation(self):
+        """Mix-in class that returns matrix rows for continuity of head."""
+        mat = np.empty(
+            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
+        )
+        rhs = np.zeros(
+            (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
+        )
+        for icp in range(self.ncp):
+            istart = icp * self.nlayers
+            ieq = 0
+            for e in self.model.elementlist:
+                if e.nunknowns > 0:
+                    mat[istart : istart + self.nlayers, ieq : ieq + e.nunknowns, :] = (
+                        e.potinflayers(
+                            self.xcin[icp], self.ycin[icp], self.layers, self.aqin
+                        )
+                        / self.aqin.T[self.layers][:, np.newaxis, np.newaxis]
+                        - e.potinflayers(
+                            self.xcout[icp], self.ycout[icp], self.layers, self.aqout
+                        )
+                        / self.aqout.T[self.layers][:, np.newaxis, np.newaxis]
+                    )
+                    ieq += e.nunknowns
+            for i in range(self.model.ngbc):
+                rhs[istart : istart + self.nlayers, i, :] -= (
+                    self.model.gbclist[i].unitpotentiallayers(
+                        self.xcin[icp], self.ycin[icp], self.layers, self.aqin
+                    )
+                    / self.aqin.T[self.layers][:, np.newaxis]
+                    - self.model.gbclist[i].unitpotentiallayers(
+                        self.xcout[icp], self.ycout[icp], self.layers, self.aqout
+                    )
+                    / self.aqout.T[self.layers][:, np.newaxis]
+                )
+        return mat, rhs
+
+
+class FluxDiffEquation:
+    def equation(self):
+        """Mix-in class that returns matrix rows for continuity of flow."""
+        mat = np.zeros(
+            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
+        )
+        rhs = np.zeros(
+            (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
+        )
+        for icp in range(self.ncp):
+            istart = icp * self.nlayers
+            ieq = 0
+            for e in self.model.elementlist:
+                if e.nunknowns > 0:
+                    qxin, _ = e.disvecinflayers(
+                        self.xcin[icp], self.ycin[icp], self.layers, self.aqin
+                    )
+                    qxout, _ = e.disvecinflayers(
+                        self.xcout[icp], self.ycout[icp], self.layers, self.aqout
+                    )
+                    mat[
+                        istart : istart + self.nlayers,
+                        ieq : ieq + e.nunknowns,
+                        :,
+                    ] = qxin - qxout
+                    ieq += e.nunknowns
+            for i in range(self.model.ngbc):
+                qxin, _ = self.model.gbclist[i].unitdisveclayers(
+                    self.xc[icp], self.yc[icp], self.layers, self.aqin
+                )
+                qxout, _ = self.model.gbclist[i].unitdisveclayers(
+                    self.xc[icp], self.yc[icp], self.layers, self.aqout
+                )
+                rhs[istart : istart + self.nlayers, i, :] -= qxin - qxout
         return mat, rhs

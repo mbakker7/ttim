@@ -13,18 +13,22 @@ def param_maq(
     phreatictop=False,
 ):
     # Computes the parameters for a TimModel from input for a maq model
-    z = np.atleast_1d(z).astype("d")
-    kaq = np.atleast_1d(kaq).astype("d")
-    Saq = np.atleast_1d(Saq).astype("d")
-    poraq = np.atleast_1d(poraq).astype("d")
-    c = np.atleast_1d(c).astype("d")
-    Sll = np.atleast_1d(Sll).astype("d")
-    porll = np.atleast_1d(porll).astype("d")
+    z = np.atleast_1d(z).astype(float)
+    kaq = np.atleast_1d(kaq).astype(float)
+    Saq = np.atleast_1d(Saq).astype(float)
+    poraq = np.atleast_1d(poraq).astype(float)
+    c = np.atleast_1d(c).astype(float)
+    Sll = np.atleast_1d(Sll).astype(float)
+    porll = np.atleast_1d(porll).astype(float)
     H = z[:-1] - z[1:]
     assert np.all(H >= 0), (
         "Error: Not all layer thicknesses are" + " non-negative" + str(H)
     )
     if topboundary[:3] == "con":
+        assert len(z) % 2 == 0, (
+            "Error: Length of z must be 2 * number of aquifers "
+            "when topboundary is confined in MaqModel"
+        )
         naq = int(len(z) / 2)
         if len(kaq) == 1:
             kaq = kaq * np.ones(naq)
@@ -64,7 +68,11 @@ def param_maq(
         ltype = np.array(nlayers * ["a"])
         ltype[1::2] = "l"
     else:  # leaky layers on top
-        naq = int(len(z - 1) / 2)
+        assert len(z) % 2 == 1, (
+            "Error: Length of z must be 2 * number of aquifers + 1 "
+            "when topboundary is leaky in MaqModel"
+        )
+        naq = int((len(z) - 1) / 2)
         if len(kaq) == 1:
             kaq = kaq * np.ones(naq)
         if len(Saq) == 1:
@@ -106,18 +114,18 @@ def param_3d(
     toppor=0.3,
 ):
     # Computes the parameters for a TimModel from input for a 3D model
-    kaq = np.atleast_1d(kaq).astype("d")
-    z = np.atleast_1d(z).astype("d")
+    kaq = np.atleast_1d(kaq).astype(float)
+    z = np.atleast_1d(z).astype(float)
     naq = len(z) - 1
     if len(kaq) == 1:
         kaq = kaq * np.ones(naq)
-    Saq = np.atleast_1d(Saq).astype("d")
+    Saq = np.atleast_1d(Saq).astype(float)
     if len(Saq) == 1:
         Saq = Saq * np.ones(naq)
-    kzoverkh = np.atleast_1d(kzoverkh).astype("d")
+    kzoverkh = np.atleast_1d(kzoverkh).astype(float)
     if len(kzoverkh) == 1:
         kzoverkh = kzoverkh * np.ones(naq)
-    poraq = np.atleast_1d(poraq).astype("d")
+    poraq = np.atleast_1d(poraq).astype(float)
     if len(poraq) == 1:
         poraq = poraq * np.ones(naq)
     Haq = z[:-1] - z[1:]
