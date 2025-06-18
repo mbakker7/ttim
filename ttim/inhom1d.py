@@ -309,7 +309,10 @@ class Xsection(AquiferData):
                         f"$k_h$ = {self.kaq[aqi]:{fmt}}, $S$ = {self.Saq[aqi]:{ssfmt}}"
                     )
                 else:
-                    paramtxt = f"$k_h$ = {self.kaq[aqi]:{fmt}}, $S_s$ = {self.Saq[aqi]:{ssfmt}}"
+                    paramtxt = (
+                        f"$k_h$ = {self.kaq[aqi]:{fmt}}, "
+                        f"$S_s$ = {self.Saq[aqi]:{ssfmt}}"
+                    )
                 ax.text(
                     r0 + 0.75 * r if labels else r0 + 0.5 * r,
                     np.mean(self.z[i : i + 2]),
