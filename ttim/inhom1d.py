@@ -240,9 +240,7 @@ class Xsection(AquiferData):
 
         if fmt is None:
             fmt = ""
-            ssfmt = ".2e"
-        else:
-            ssfmt = fmt
+        ssfmt = ".2e"
 
         r = x2 - x1
         r0 = x1
@@ -306,7 +304,7 @@ class Xsection(AquiferData):
             if params and self.ltype[i] == "a":
                 if aqi == 0 and i == 0 and self.phreatictop:
                     paramtxt = (
-                        f"$k_h$ = {self.kaq[aqi]:{fmt}}, $S$ = {self.Saq[aqi]:{ssfmt}}"
+                        f"$k_h$ = {self.kaq[aqi]:{fmt}}, $S$ = {self.Saq[aqi]:{fmt}}"
                     )
                 else:
                     paramtxt = (

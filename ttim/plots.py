@@ -95,9 +95,7 @@ class PlotTtim:
 
         if fmt is None:
             fmt = ""
-            ssfmt = ".2e"
-        else:
-            ssfmt = fmt
+        ssfmt = ".2e"
 
         # else get cross-section line
         if xy is not None:
