@@ -274,12 +274,9 @@ class Xsection(AquiferData):
                         va="center",
                     )
                 if params:
-                    if lli == 0 and i == 0 and self.phreatictop:
-                        paramtxt = f"$c$ = {self.c[lli]:.1f}, $S$ = {self.Sll[lli]:.2f}"
-                    else:
-                        paramtxt = (
-                            f"$c$ = {self.c[lli]:.1f}, $S_s$ = {self.Sll[lli]:.2e}"
-                        )
+                    paramtxt = (
+                        f"$c$ = {self.c[lli]:{fmt}}, $S_s$ = {self.Sll[lli]:{ssfmt}}"
+                    )
                     ax.text(
                         r0 + 0.75 * r if labels else r0 + 0.5 * r,
                         np.mean(self.z[i : i + 2]),
