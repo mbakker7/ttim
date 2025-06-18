@@ -80,10 +80,15 @@ class PlotTtim:
 
         # if SimpleAquifer, plot inhoms and return
         if isinstance(self._ml.aq, SimpleAquifer):
+            if xy is not None:
+                (x1, _), (x2, _) = xy
+            else:
+                x1, x2 = ax.get_xlim()
             for inhom in self._ml.aq.inhomdict.values():
-                inhom.plot(ax=ax, labels=labels, params=params)
+                inhom.plot(ax=ax, labels=labels, params=params, x1=x1, x2=x2, fmt=fmt)
             for e in self._ml.elementlist:
                 e.plot(ax=ax)
+            ax.set_xlim(x1, x2)
             ax.set_ylabel("elevation")
             ax.set_xlabel("x")
             return ax
