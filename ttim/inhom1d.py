@@ -196,7 +196,9 @@ class Xsection(AquiferData):
             )
             HstarXsection(self.model, self.x1, self.x2, tsandhstar=self.tsandhstar)
 
-    def plot(self, ax=None, labels=False, params=False, names=False, **kwargs):
+    def plot(
+        self, ax=None, labels=False, params=False, names=False, fmt=None, **kwargs
+    ):
         """Plot the cross-section.
 
         Parameters
@@ -209,22 +211,36 @@ class Xsection(AquiferData):
             If True, add parameter labels.
         names : bool, optional
             If True, add inhomogeneity names.
+        fmt : str, optional
+            format string for parameter values, e.g. '.2f' for 2 decimals.
         """
         if ax is None:
             _, ax = plt.subplots(1, 1, figsize=(8, 4))
 
         if "x1" in kwargs:
             x1 = kwargs.pop("x1")
+            if np.isfinite(self.x1):
+                x1 = max(x1, self.x1)
         elif np.isfinite(self.x1):
             x1 = self.x1
         else:
             x1 = self.x2 - 100.0
         if "x2" in kwargs:
             x2 = kwargs.pop("x2")
+            if np.isfinite(self.x2):
+                x2 = min(x2, self.x2)
         elif np.isfinite(self.x2):
             x2 = self.x2
         else:
             x2 = self.x1 + 100.0
+
+        if self.x1 > x2 or self.x2 < x1:
+            # do nothing, inhom is outside the window
+            return ax
+
+        if fmt is None:
+            fmt = ""
+        ssfmt = ".2e"
 
         r = x2 - x1
         r0 = x1
@@ -264,12 +280,9 @@ class Xsection(AquiferData):
                         va="center",
                     )
                 if params:
-                    if lli == 0 and i == 0 and self.phreatictop:
-                        paramtxt = f"$c$ = {self.c[lli]:.1f}, $S$ = {self.Sll[lli]:.2f}"
-                    else:
-                        paramtxt = (
-                            f"$c$ = {self.c[lli]:.1f}, $S_s$ = {self.Sll[lli]:.2e}"
-                        )
+                    paramtxt = (
+                        f"$c$ = {self.c[lli]:{fmt}}, $S_s$ = {self.Sll[lli]:{ssfmt}}"
+                    )
                     ax.text(
                         r0 + 0.75 * r if labels else r0 + 0.5 * r,
                         np.mean(self.z[i : i + 2]),
@@ -290,10 +303,13 @@ class Xsection(AquiferData):
                 )
             if params and self.ltype[i] == "a":
                 if aqi == 0 and i == 0 and self.phreatictop:
-                    paramtxt = f"$k_h$ = {self.kaq[aqi]:.1f}, $S$ = {self.Saq[aqi]:.2f}"
+                    paramtxt = (
+                        f"$k_h$ = {self.kaq[aqi]:{fmt}}, $S$ = {self.Saq[aqi]:{fmt}}"
+                    )
                 else:
                     paramtxt = (
-                        f"$k_h$ = {self.kaq[aqi]:.1f}, $S_s$ = {self.Saq[aqi]:.2e}"
+                        f"$k_h$ = {self.kaq[aqi]:{fmt}}, "
+                        f"$S_s$ = {self.Saq[aqi]:{ssfmt}}"
                     )
                 ax.text(
                     r0 + 0.75 * r if labels else r0 + 0.5 * r,

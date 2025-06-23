@@ -386,6 +386,22 @@ class HeadDiffLineSink1D(LineSink1DBase, HeadDiffEquation):
             (self.model.ngvbc, self.nparam, self.model.npval), dtype=complex
         )
 
+    def plot(self, ax=None):
+        if ax is None:
+            _, ax = plt.subplots()
+        aqout = self.model.aq.find_aquifer_data(self.xcout, 0.0)
+        aqin = self.model.aq.find_aquifer_data(self.xcin, 0.0)
+        ztop_out = aqout.z[0]
+        ztop_in = aqin.z[0]
+
+        ax.plot(
+            [self.xls, self.xls],
+            [np.max([ztop_in, ztop_out]), aqout.z[-1]],
+            "k--",
+            lw=1.0,
+        )
+        return ax
+
 
 class FluxDiffLineSink1D(LineSink1DBase, FluxDiffEquation):
     """1D flux-difference linesink element.
@@ -434,3 +450,19 @@ class FluxDiffLineSink1D(LineSink1DBase, FluxDiffEquation):
         self.parameters = np.zeros(
             (self.model.ngvbc, self.nparam, self.model.npval), dtype=complex
         )
+
+    def plot(self, ax=None):
+        if ax is None:
+            _, ax = plt.subplots()
+        aqout = self.model.aq.find_aquifer_data(self.xcout, 0.0)
+        aqin = self.model.aq.find_aquifer_data(self.xcin, 0.0)
+        ztop_out = aqout.z[0]
+        ztop_in = aqin.z[0]
+
+        ax.plot(
+            [self.xls, self.xls],
+            [np.max([ztop_in, ztop_out]), aqout.z[-1]],
+            "k--",
+            lw=1.0,
+        )
+        return ax
