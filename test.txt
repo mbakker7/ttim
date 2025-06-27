@@ -1,0 +1,17 @@
+from ttim import *
+ml = ModelMaq(
+kaq = [10.],
+z = [5, 0, -10],
+c = [1.e+100],
+Saq = [0.001],
+Sll = [1.e-20],
+poraq = [0.3],
+porll = [1.e-20],
+topboundary = 'confined',
+phreatictop = False,
+tmin = 1,
+tmax = 10,
+tstart = 0,
+M = 10,
+timmlmodel = None,
+)
