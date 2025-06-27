@@ -115,7 +115,7 @@ class PlotTtim:
             r = 1.0
 
         # get values for layer and aquifer numbering
-        if labels:
+        if (labels or params):
             lli = 1 if self._ml.aq.topboundary == "con" else 0
             aqi = 0
         else:
