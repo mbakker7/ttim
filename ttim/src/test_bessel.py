@@ -1,6 +1,6 @@
 import numpy as np
-
 from ttim.bessel import bessel  # fortran compiled funcs
+
 from ttim.besselnumba import besselnumba  # numba funcs
 
 bessel.initialize()
