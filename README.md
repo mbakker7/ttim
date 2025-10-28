@@ -1,5 +1,4 @@
 [![ttim](https://github.com/mbakker7/ttim/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mbakker7/ttim/actions/workflows/ci.yml)
-[![Coverage Status](https://coveralls.io/repos/github/mbakker7/ttim/badge.svg?branch=master)](https://coveralls.io/github/mbakker7/ttim?branch=master)
 ![PyPI](https://img.shields.io/pypi/v/ttim?color=green)
 
 # TTim, A Multi-Layer, Transient, Analytic Element Model
