@@ -14,7 +14,7 @@ maintainers = [
     { name = "Mark Bakker", email = "markbak@gmail.com" },
     { name = "Davíd Brakenhoff", email = "d.brakenhoff@artesia-water.nl" },
 ]
-requires-python = ">= 3.10"
+requires-python = ">= 3.11"
 dependencies = ["numpy", "scipy", "numba", "matplotlib", "lmfit", "pandas"]
 
 keywords = ["hydrology", "groundwater", "model", "analytic element method"]
@@ -29,9 +29,9 @@ classifiers = [
     "Operating System :: MacOS",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3 :: Only",
     "Topic :: Scientific/Engineering :: Hydrology",
 ]
@@ -49,6 +49,7 @@ ci = [
     "jupyter",
     "shapely",
     "coveralls",
+    "ruff",
     "timml",
 ]
 docs = [
