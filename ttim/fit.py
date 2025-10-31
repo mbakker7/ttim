@@ -42,7 +42,9 @@ class Calibrate:
         Parameters
         ----------
         name : str
-            name can be 'kaq', 'Saq', 'c', 'Sll' or 'kzoverkh'.
+            name can be 'kaq', 'Saq', 'c', 'Sll' or 'kzoverkh'. If you want to calibrate
+            other parameters (e.g. well parameters), use the function
+            `set_parameter_by_reference` instead.
         layers : int or list of ints
             layer number(s) for which the parameter is set. If an integer is passed,
             parameter is associated with a single layer. If a list of layers is passed,
@@ -129,7 +131,10 @@ class Calibrate:
             else:
                 raise ValueError(
                     f"Parameter name '{name}' not recognized. "
-                    "Supported parameters are 'kaq', 'Saq', 'c', 'Sll' or 'kzoverkh'."
+                    "Supported parameters are 'kaq', 'Saq', 'c', 'Sll' or 'kzoverkh'. "
+                    "Note that you may calibrate several well parameters by using the function "
+                    "set_parameter_by_reference instead. For an example see the pumping "
+                    "test example Oude Korendijk."
                 )
             plist.append(p[:])
 
