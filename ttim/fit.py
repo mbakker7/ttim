@@ -132,9 +132,9 @@ class Calibrate:
                 raise ValueError(
                     f"Parameter name '{name}' not recognized. "
                     "Supported parameters are 'kaq', 'Saq', 'c', 'Sll' or 'kzoverkh'. "
-                    "Note that you may calibrate several well parameters by using the function "
-                    "set_parameter_by_reference instead. For an example see the pumping "
-                    "test example Oude Korendijk."
+                    "Note that you may calibrate several well parameters by using the "
+                    "function `set_parameter_by_reference` instead. For an example see "
+                    "the pumping test example Oude Korendijk."
                 )
             plist.append(p[:])
 
