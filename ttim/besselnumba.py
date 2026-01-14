@@ -1989,7 +1989,7 @@ def lapld_int_ho_wdis(x, y, z1, z2, order):
     qm[0:1] = 0.0
     for m in range(2, order + 1):
         qm[m] = 0.0
-        for n in range(1, m // 2):
+        for n in range(1, m // 2 + 1):
             qm[m] = qm[m] + (m - 2 * n + 1) * z ** (m - 2 * n) / (2 * n - 1)
 
     term1 = 1.0 / zmin1 - 1.0 / zplus1
