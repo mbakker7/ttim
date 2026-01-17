@@ -55,6 +55,7 @@ for n in range(21):
 
 # Laplace line doublet elements
 
+
 @numba.njit(nogil=True, cache=True)
 def lapld_int_ho(x, y, z1, z2, order):
     """lapld_int_ho.
@@ -98,6 +99,7 @@ def lapld_int_ho(x, y, z1, z2, order):
     omega = 1.0 / (complex(0.0, 2.0) * np.pi) * (omega + qm)
     return omega
 
+
 @numba.njit(nogil=True, cache=True)
 def lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2):
     """lapld_int_ho_d1d2.
@@ -128,6 +130,7 @@ def lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2):
         omega[n] = (0.5 * (d2 - d1)) ** n * omega[n]
 
     return omega
+
 
 @numba.njit(nogil=True, cache=True)
 def lapld_int_ho_wdis(x, y, z1, z2, order):
@@ -173,6 +176,7 @@ def lapld_int_ho_wdis(x, y, z1, z2, order):
     wdis = -wdis / (np.pi * complex(0.0, 1.0) * (z2 - z1))
     return wdis
 
+
 @numba.njit(nogil=True, cache=True)
 def lapld_int_ho_wdis_d1d2(x, y, z1, z2, order, d1, d2):
     """lapld_int_ho_wdis_d1d2.
@@ -204,7 +208,9 @@ def lapld_int_ho_wdis_d1d2(x, y, z1, z2, order, d1, d2):
         wdis[n] = (0.5 * (d2 - d1)) ** n * wdis[n]
     return wdis
 
+
 # Fp function
+
 
 @numba.njit(nogil=True, cache=True)
 def Fp(x, y, z1, z2, biga, order, d1, d2, a, b, nt):
@@ -216,7 +222,7 @@ def Fp(x, y, z1, z2, biga, order, d1, d2, a, b, nt):
     for n in range(1, nt + 1):
         zminzbar[n] = zminzbar[n - 1] * (zeta - zetabar)
 
-    eta = np.zeros((nt + 1, nt + 1), dtype=np.complex128) # lower triangular
+    eta = np.zeros((nt + 1, nt + 1), dtype=np.complex128)  # lower triangular
     etabar = np.zeros((nt + 1, nt + 1), dtype=np.complex128)
     for n in range(nt + 1):
         for m in range(0, n + 1):
@@ -255,7 +261,7 @@ def Fp(x, y, z1, z2, biga, order, d1, d2, a, b, nt):
         d = np.zeros(p + 1, dtype=np.complex128)
         dbar = np.zeros(p + 1, dtype=np.complex128)
         for m in range(p + 1):
-            d[m] = biga ** p * binom[p, m] * zeta ** (p - m)
+            d[m] = biga**p * binom[p, m] * zeta ** (p - m)
             dbar[m] = np.conj(d[m])
         for n in range(2 * nt + p + 1):
             for m in range(max(0, n - 2 * nt), min(p, n) + 1):
@@ -283,12 +289,16 @@ def Fp(x, y, z1, z2, biga, order, d1, d2, a, b, nt):
 
     return biga * omega
 
+
 # Bessel line elements
+
 
 @numba.njit(nogil=True, cache=True)
 def bessells_int_ho_new(x, y, z1, z2, lab, order, d1, d2, nt=20):
     """
-    docs
+    Docs.
+
+    To come here
     """
     L = np.abs(z2 - z1)
     ang = np.arctan2(lab.imag, lab.real)
@@ -297,16 +307,19 @@ def bessells_int_ho_new(x, y, z1, z2, lab, order, d1, d2, nt=20):
     exprange = np.exp(-complex(0, 2) * ang * nrange)
     ahat = a * exprange
     bhat = (b - a * complex(0, 2) * ang) * exprange
-    
+
     omega = Fp(x, y, z1, z2, biga, order, d1, d2, ahat, bhat, nt)
     return -L / (4 * np.pi) * omega
+
 
 @numba.njit(nogil=True, cache=True)
 def bessells_int_ho_qxqy_new(x, y, z1, z2, lab, order, d1, d2):
     """
-    docs
+    Docs.
+
+    To come here
     """
-    nt = 20 # number of terms in series is nt + 1
+    nt = 20  # number of terms in series is nt + 1
     bigz = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1)
     bigx = bigz.real
     bigy = bigz.imag
@@ -320,58 +333,62 @@ def bessells_int_ho_qxqy_new(x, y, z1, z2, lab, order, d1, d2):
     ahat = a * exprange
     bhat = (b - a * complex(0, 2) * ang) * exprange
 
-    atil = 2 * nrange[1:] * ahat[1:] 
+    atil = 2 * nrange[1:] * ahat[1:]
     btil = 2 * nrange[1:] * bhat[1:] + 2 * ahat[1:]
 
     omega = Fp(x, y, z1, z2, biga, order + 1, d1, d2, atil, btil, nt - 1)
     omegalap = lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2)
-    term1 = 1 / (2 * np.pi * biga ** 2) * bigx * omega[:-1]
-    term2 = -1 / (2 * np.pi * biga ** 2) * omega[1:]
+    term1 = 1 / (2 * np.pi * biga**2) * bigx * omega[:-1]
+    term2 = -1 / (2 * np.pi * biga**2) * omega[1:]
     term3 = 2 * ahat[0] * omegalap.imag
     qx = term1 + term2 + term3
-    term1 = 1 / (2 * np.pi * biga ** 2) * bigy * omega[:-1]
+    term1 = 1 / (2 * np.pi * biga**2) * bigy * omega[:-1]
     term3 = 2 * ahat[0] * omegalap.real
     qy = term1 + term3
-    
+
     qxqy = np.zeros(2 * order + 2, dtype=np.complex128)
-    qxqy[:order + 1] = qx * np.cos(angz) - qy * np.sin(angz)
-    qxqy[order + 1:] = qx * np.sin(angz) + qy * np.cos(angz)
+    qxqy[: order + 1] = qx * np.cos(angz) - qy * np.sin(angz)
+    qxqy[order + 1 :] = qx * np.sin(angz) + qy * np.cos(angz)
     return qxqy
+
 
 @numba.njit(nogil=True, cache=True)
 def besselld_int_ho_new(x, y, z1, z2, lab, order, d1, d2):
     """
-    docs
+    Docs.
+
+    To come here
     """
-    nt = 20 # number of terms in series is nt + 1
+    nt = 20  # number of terms in series is nt + 1
     bigz = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1)
     bigy = bigz.imag
     L = np.abs(z2 - z1)
     ang = np.arctan2(lab.imag, lab.real)
-    angz = np.arctan2((z2 - z1).imag, (z2 - z1).real)
     biglab = 2 * lab / L
     biga = np.abs(biglab)
 
     exprange = np.exp(-complex(0, 2) * ang * nrange)
     ahat = a1 * exprange
     bhat = (b1 - a1 * complex(0, 2) * ang) * exprange
-    
+
     omega = Fp(x, y, z1, z2, biga, order, d1, d2, ahat, bhat, nt)
-    omegalap = lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2)
 
     rv = (
-    bigy / (2.0 * np.pi * biglab ** 2) * omega
-    + lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2).real
+        bigy / (2.0 * np.pi * biglab**2) * omega
+        + lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2).real
     )
-    
+
     return rv
+
 
 @numba.njit(nogil=True, cache=True)
 def besselld_int_ho_qxqy_new(x, y, z1, z2, lab, order, d1, d2):
     """
-    docs
+    Docs.
+
+    To come here
     """
-    nt = 20 # number of terms in series is nt + 1
+    nt = 20  # number of terms in series is nt + 1
     bigz = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1)
     bigx = bigz.real
     bigy = bigz.imag
@@ -385,7 +402,7 @@ def besselld_int_ho_qxqy_new(x, y, z1, z2, lab, order, d1, d2):
     ahat = a1 * exprange
     bhat = (b1 - a1 * complex(0, 2) * ang) * exprange
 
-    atil = 2 * nrange[1:] * ahat[1:] 
+    atil = 2 * nrange[1:] * ahat[1:]
     btil = 2 * nrange[1:] * bhat[1:] + 2 * ahat[1:]
 
     omega_pot = Fp(x, y, z1, z2, biga, order, d1, d2, ahat, bhat, nt)
@@ -393,17 +410,17 @@ def besselld_int_ho_qxqy_new(x, y, z1, z2, lab, order, d1, d2):
     omegalap = lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2)
     wlap = lapld_int_ho_wdis_d1d2(x, y, z1, z2, order, d1, d2)
 
-    term1 = bigx / (2 * np.pi * biga ** 2) * omega[:-1]
-    term2 = -1 / (2 * np.pi * biga ** 2) * omega[1:]
+    term1 = bigx / (2 * np.pi * biga**2) * omega[:-1]
+    term2 = -1 / (2 * np.pi * biga**2) * omega[1:]
     term3 = 2 * ahat[0] * omegalap.imag
-    qx = -2 * bigy / (L * biglab ** 2) * (term1 + term2 + term3)# + wlap.real
+    qx = -2 * bigy / (L * biglab**2) * (term1 + term2 + term3)  # + wlap.real
 
-    term1 = 1 / (2.0 * np.pi * biglab ** 2) * 2 / L * omega_pot
-    term2 = bigy / (2 * np.pi * biga ** 2) * omega[:-1]
+    term1 = 1 / (2.0 * np.pi * biglab**2) * 2 / L * omega_pot
+    term2 = bigy / (2 * np.pi * biga**2) * omega[:-1]
     term3 = 2 * ahat[0] * omegalap.real
-    qy = -term1 - 2 * bigy / (L * biglab ** 2) * (term2 + term3)# - wlap.imag
-    
+    qy = -term1 - 2 * bigy / (L * biglab**2) * (term2 + term3)  # - wlap.imag
+
     qxqy = np.zeros(2 * order + 2, dtype=np.complex128)
-    qxqy[:order + 1] = qx * np.cos(angz) - qy * np.sin(angz) + wlap.real
-    qxqy[order + 1:] = qx * np.sin(angz) + qy * np.cos(angz) - wlap.imag
+    qxqy[: order + 1] = qx * np.cos(angz) - qy * np.sin(angz) + wlap.real
+    qxqy[order + 1 :] = qx * np.sin(angz) + qy * np.cos(angz) - wlap.imag
     return qxqy
