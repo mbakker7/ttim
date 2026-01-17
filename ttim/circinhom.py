@@ -195,9 +195,7 @@ class CircInhomRadial(Element, InhomEquation):
         self.yc = np.array([self.y0])
         self.thetacp = np.zeros(1)
         self.ncp = 1
-        self.aqin = self.model.aq.findAquiferData(
-            self.x0 + (1 - 1e-8) * self.R, self.y0
-        )
+        self.aqin = self.model.aq.findAquiferData(self.x0 + (1 - 1e-8) * self.R, self.y0)
         assert self.aqin.R == self.R, (
             "Radius of CircInhom and CircInhomData must be equal"
         )
@@ -293,9 +291,7 @@ class CircInhomRadial(Element, InhomEquation):
                             )
                         else:
                             qr[i, i, j, :] = (
-                                -self.approx.ivratiop(
-                                    r, self.R, self.aqin.lab2[i, j, :]
-                                )
+                                -self.approx.ivratiop(r, self.R, self.aqin.lab2[i, j, :])
                                 / self.aqin.lab2[i, j, :]
                             )
             qr.shape = (self.nparam, aq.naq, self.model.np)
@@ -317,9 +313,7 @@ class CircInhomRadial(Element, InhomEquation):
                             )
                         else:
                             qr[self.aqin.Naq + i, i, j, :] = (
-                                self.approx.kvratiop(
-                                    r, self.R, self.aqout.lab2[i, j, :]
-                                )
+                                self.approx.kvratiop(r, self.R, self.aqout.lab2[i, j, :])
                                 / self.aqout.lab2[i, j, :]
                             )
             qr.shape = (self.Nparam, aq.Naq, self.model.Np)

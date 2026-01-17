@@ -308,9 +308,7 @@ def test_bessells_gauss_ho_d1d2():
     d1 = 1.0
     d2 = -1.0
     # a = bessel.bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2)
-    a = np.array(
-        [-3.5838219513840075 + 0.0j, -0.4416936603433489 + 0.0j], dtype=complex
-    )
+    a = np.array([-3.5838219513840075 + 0.0j, -0.4416936603433489 + 0.0j], dtype=complex)
     b = besselnumba.bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2)
     assert np.allclose(a, b), "not equal"
 

@@ -387,14 +387,12 @@ class LineSinkStringBase(Element):
         self.dischargeinf = np.zeros(
             (self.nparam, self.aq.naq, self.model.npval), dtype=complex
         )
-        self.dischargeinflayers = np.zeros(
-            (self.nparam, self.model.npval), dtype=complex
-        )
+        self.dischargeinflayers = np.zeros((self.nparam, self.model.npval), dtype=complex)
         self.xc, self.yc = np.zeros(self.nls), np.zeros(self.nls)
         for i in range(self.nls):
-            self.dischargeinf[i * self.nlayers : (i + 1) * self.nlayers, :] = (
-                self.lslist[i].dischargeinf[:]
-            )
+            self.dischargeinf[i * self.nlayers : (i + 1) * self.nlayers, :] = self.lslist[
+                i
+            ].dischargeinf[:]
             self.dischargeinflayers[i * self.nlayers : (i + 1) * self.nlayers, :] = (
                 self.lslist[i].dischargeinflayers
             )

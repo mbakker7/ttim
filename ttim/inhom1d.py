@@ -196,9 +196,7 @@ class Xsection(AquiferData):
             )
             HstarXsection(self.model, self.x1, self.x2, tsandhstar=self.tsandhstar)
 
-    def plot(
-        self, ax=None, labels=False, params=False, names=False, fmt=None, **kwargs
-    ):
+    def plot(self, ax=None, labels=False, params=False, names=False, fmt=None, **kwargs):
         """Plot the cross-section.
 
         Parameters
@@ -308,8 +306,7 @@ class Xsection(AquiferData):
                     )
                 else:
                     paramtxt = (
-                        f"$k_h$ = {self.kaq[aqi]:{fmt}}, "
-                        f"$S_s$ = {self.Saq[aqi]:{ssfmt}}"
+                        f"$k_h$ = {self.kaq[aqi]:{fmt}}, $S_s$ = {self.Saq[aqi]:{ssfmt}}"
                     )
                 ax.text(
                     r0 + 0.75 * r if labels else r0 + 0.5 * r,

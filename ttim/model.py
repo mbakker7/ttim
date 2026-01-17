@@ -399,9 +399,9 @@ class TimModel:
                     )[:, 0]
             else:  # layer = 0, so top layer
                 if aq.naq == 1:  # only one layer
-                    h[1] = self.head(
-                        x, y, t, layers=[layer], aq=aq, neglect_steady=True
-                    )[:, 0]
+                    h[1] = self.head(x, y, t, layers=[layer], aq=aq, neglect_steady=True)[
+                        :, 0
+                    ]
                 else:
                     h[1:] = self.head(
                         x, y, t, layers=[layer, layer + 1], aq=aq, neglect_steady=True
@@ -953,9 +953,7 @@ class ModelXsection(TimModel):
             naqs[inhom.name] = inhom.naq
         check = np.array(list(naqs.values())) == self.aq.naq
         if not check.all():
-            raise ValueError(
-                f"Number of aquifers does not match {self.aq.naq}:\n{naqs}"
-            )
+            raise ValueError(f"Number of aquifers does not match {self.aq.naq}:\n{naqs}")
         # # shared boundary check
         # # NOTE: does not deal with nested inhoms
         # xcoords = np.concatenate(
