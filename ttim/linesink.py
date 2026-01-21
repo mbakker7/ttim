@@ -145,7 +145,7 @@ class LineSinkBase(Element):
                                 self.z2,
                                 self.aq.lab2[i, j, :],
                                 self.order,
-                                self.rzero * self.aq.lababs[i, j],
+                                self.rzero,
                             )
                             / self.L
                         )
@@ -945,7 +945,7 @@ class LineSinkHoBase(Element):
                                 self.z2,
                                 self.aq.lab2[i, j, :],
                                 self.order,
-                                self.rzero * self.aq.lababs[i, j],
+                                self.rzero,
                             )
                             / self.L
                         )
@@ -980,7 +980,7 @@ class LineSinkHoBase(Element):
                                 self.z2,
                                 self.aq.lab2[i, j, :],
                                 self.order,
-                                self.rzero * self.aq.lababs[i, j],
+                                self.rzero,
                             )
                             / self.L
                         )
