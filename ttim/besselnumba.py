@@ -308,64 +308,64 @@ def bessells_gauss(x, y, z1, z2, lab):
     return omega
 
 
-@numba.njit(nogil=True, cache=True)
-def bessellsuni(x, y, z1, z2, lab):
-    """Bessellsuni.
+# @numba.njit(nogil=True, cache=True)
+# def bessellsuni(x, y, z1, z2, lab):
+#     """Bessellsuni.
 
-    # Uniform strength
-    implicit none
-    real(kind=8), intent(in) :: x,y
-    complex(kind=8), intent(in) :: z1,z2
-    complex(kind=8), intent(in) :: lab
-    complex(kind=8) :: omega
+#     # Uniform strength
+#     implicit none
+#     real(kind=8), intent(in) :: x,y
+#     complex(kind=8), intent(in) :: z1,z2
+#     complex(kind=8), intent(in) :: lab
+#     complex(kind=8) :: omega
 
-    integer :: Nls, n
-    real(kind=8) :: Lnear, L
-    complex(kind=8) :: z, delz, za, zb
-    """
-    Lnear = 3.0
-    z = complex(x, y)
-    omega = complex(0.0, 0.0)
-    L = np.abs(z2 - z1)
-    if L < Lnear * np.abs(lab):  # No need to break integral up
-        if np.abs(z - 0.5 * (z1 + z2)) < 0.5 * Lnear * L:  # Do integration
-            omega = bessells_int(x, y, z1, z2, lab)
-        else:
-            omega = bessells_gauss(x, y, z1, z2, lab)
-    else:  # Break integral up in parts
-        Nls = int(np.ceil(L / (Lnear * np.abs(lab))))
-        delz = (z2 - z1) / Nls
-        L = np.abs(delz)
-        for n in range(1, Nls + 1):
-            za = z1 + (n - 1) * delz
-            zb = z1 + n * delz
-            if np.abs(z - 0.5 * (za + zb)) < 0.5 * Lnear * L:  # integration
-                omega = omega + bessells_int(x, y, za, zb, lab)
-            else:
-                omega = omega + bessells_gauss(x, y, za, zb, lab)
-    return omega
+#     integer :: Nls, n
+#     real(kind=8) :: Lnear, L
+#     complex(kind=8) :: z, delz, za, zb
+#     """
+#     Lnear = 3.0
+#     z = complex(x, y)
+#     omega = complex(0.0, 0.0)
+#     L = np.abs(z2 - z1)
+#     if L < Lnear * np.abs(lab):  # No need to break integral up
+#         if np.abs(z - 0.5 * (z1 + z2)) < 0.5 * Lnear * L:  # Do integration
+#             omega = bessells_int(x, y, z1, z2, lab)
+#         else:
+#             omega = bessells_gauss(x, y, z1, z2, lab)
+#     else:  # Break integral up in parts
+#         Nls = int(np.ceil(L / (Lnear * np.abs(lab))))
+#         delz = (z2 - z1) / Nls
+#         L = np.abs(delz)
+#         for n in range(1, Nls + 1):
+#             za = z1 + (n - 1) * delz
+#             zb = z1 + n * delz
+#             if np.abs(z - 0.5 * (za + zb)) < 0.5 * Lnear * L:  # integration
+#                 omega = omega + bessells_int(x, y, za, zb, lab)
+#             else:
+#                 omega = omega + bessells_gauss(x, y, za, zb, lab)
+#     return omega
 
 
-@numba.njit(nogil=True, cache=True)
-def bessellsuniv(x, y, z1, z2, lab, rzero):
-    """Bessellsuniv.
+# @numba.njit(nogil=True, cache=True)
+# def bessellsuniv(x, y, z1, z2, lab, rzero):
+#     """Bessellsuniv.
 
-    # Uniform strength
-    implicit none
-    real(kind=8), intent(in) :: x,y
-    complex(kind=8), intent(in) :: z1,z2
-    integer, intent(in) :: nlab
-    complex(kind=8), dimension(nlab), intent(in) :: lab
-    complex(kind=8), dimension(nlab), intent(inout) :: omega
-    integer :: n
-    """
-    nlab = len(lab)
-    omega = np.zeros(nlab, dtype=np.complex128)
-    za, zb, N = circle_line_intersection(z1, z2, x + y * 1j, rzero * abs(lab[0]))
-    if N > 0:
-        for n in range(nlab):
-            omega[n] = bessellsuni(x, y, za, zb, lab[n])
-    return omega
+#     # Uniform strength
+#     implicit none
+#     real(kind=8), intent(in) :: x,y
+#     complex(kind=8), intent(in) :: z1,z2
+#     integer, intent(in) :: nlab
+#     complex(kind=8), dimension(nlab), intent(in) :: lab
+#     complex(kind=8), dimension(nlab), intent(inout) :: omega
+#     integer :: n
+#     """
+#     nlab = len(lab)
+#     omega = np.zeros(nlab, dtype=np.complex128)
+#     za, zb, N = circle_line_intersection(z1, z2, x + y * 1j, rzero * abs(lab[0]))
+#     if N > 0:
+#         for n in range(nlab):
+#             omega[n] = bessellsuni(x, y, za, zb, lab[n])
+#     return omega
 
 
 @numba.njit(nogil=True, cache=True)

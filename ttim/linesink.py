@@ -112,8 +112,12 @@ class LineSinkBase(Element):
             pot = np.zeros(self.model.npint, dtype=complex)
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    pot[:] = besselnumba.bessellsuniv(
-                        x, y, self.z1, self.z2, self.aq.lab2[i, j, :], self.rzero
+                    # pot[:] = besselnumba.bessellsuniv(
+                    #     x, y, self.z1, self.z2, self.aq.lab2[i, j, :], self.rzero
+                    # )
+                    # note that self.order=0
+                    pot[:] = besselnumba.bessellsv2(
+                        x, y, self.z1, self.z2, self.aq.lab2[i, j, :], self.order, self.rzero
                     )
                     # Divide by L as the parameter is total discharge
                     rv[:, i, j, :] = self.term2[:, i, j, :] * pot / self.L
