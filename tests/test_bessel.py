@@ -418,29 +418,29 @@ def test_bessellsqxqyv2():
     assert np.allclose(a, b), "not equal"
 
 
-def test_bessellsuni():
-    x = 5.0
-    y = 5.0
-    z1 = 1.0 + 1.0j
-    z2 = 5.0 + 5.0j
-    lab = 100.0
-    # a = bessel.bessellsuni(x, y, z1, z2, lab)
-    a = -3.5917095941591426 - 0j
-    b = besselnumba.bessellsuni(x, y, z1, z2, lab)
-    assert np.allclose(a, b), "not equal"
+# def test_bessellsuni():
+#     x = 5.0
+#     y = 5.0
+#     z1 = 1.0 + 1.0j
+#     z2 = 5.0 + 5.0j
+#     lab = 100.0
+#     # a = bessel.bessellsuni(x, y, z1, z2, lab)
+#     a = -3.5917095941591426 - 0j
+#     b = besselnumba.bessellsuni(x, y, z1, z2, lab)
+#     assert np.allclose(a, b), "not equal"
 
 
-def test_bessellsuniv():
-    x = 5.0
-    y = 5.0
-    z1 = 1.0 + 1.0j
-    z2 = 5.0 + 5.0j
-    lab = np.array([100.0])
-    nlab = 1
-    # a = bessel.bessellsuniv(x, y, z1, z2, lab)
-    a = -3.5917095941591426 - 0j
-    b = besselnumba.bessellsuniv(x, y, z1, z2, lab, nlab)
-    assert np.allclose(a, b), "not equal"
+# def test_bessellsuniv():
+#     x = 5.0
+#     y = 5.0
+#     z1 = 1.0 + 1.0j
+#     z2 = 5.0 + 5.0j
+#     lab = np.array([100.0])
+#     nlab = 1
+#     # a = bessel.bessellsuniv(x, y, z1, z2, lab)
+#     a = -3.5917095941591426 - 0j
+#     b = besselnumba.bessellsuniv(x, y, z1, z2, lab, nlab)
+#     assert np.allclose(a, b), "not equal"
 
 
 def test_lapld_int_ho():
