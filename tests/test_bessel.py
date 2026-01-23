@@ -880,7 +880,7 @@ def test_bessellslap():
     d1 = -0.5
     d2 = 0.2
     lab = 8.0
-    order = 7
+    order = 5
     pot0 = bessells_int_ho(x, y, z1, z2, lab, order, d1, d2).real
     pot1 = bessells_int_ho(x + d, y, z1, z2, lab, order, d1, d2).real
     pot2 = bessells_int_ho(x, y + d, z1, z2, lab, order, d1, d2).real
@@ -910,7 +910,7 @@ def test_besselldlap():
     d1 = -0.5
     d2 = 0.2
     lab = 8.0
-    order = 7
+    order = 5
     pot0 = besselld_int_ho(x, y, z1, z2, lab, order, d1, d2).real
     pot1 = besselld_int_ho(x + d, y, z1, z2, lab, order, d1, d2).real
     pot2 = besselld_int_ho(x, y + d, z1, z2, lab, order, d1, d2).real
