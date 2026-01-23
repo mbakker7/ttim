@@ -117,7 +117,13 @@ class LineSinkBase(Element):
                     # )
                     # note that self.order=0
                     pot[:] = besselnumba.bessellsv2(
-                        x, y, self.z1, self.z2, self.aq.lab2[i, j, :], self.order, self.rzero
+                        x,
+                        y,
+                        self.z1,
+                        self.z2,
+                        self.aq.lab2[i, j, :],
+                        self.order,
+                        self.rzero,
                     )
                     # Divide by L as the parameter is total discharge
                     rv[:, i, j, :] = self.term2[:, i, j, :] * pot / self.L
