@@ -1,6 +1,16 @@
 import numpy as np
 
 from ttim import besselnumba
+from ttim.besselnumba import (
+    besselld_gauss_ho_d1d2,
+    besselld_gauss_ho_qxqy_d1d2,
+    besselld_int_ho,
+    besselld_int_ho_qxqy,
+    bessells_gauss_ho_d1d2,
+    bessells_gauss_ho_qxqy_d1d2,
+    bessells_int_ho,
+    bessells_int_ho_qxqy,
+)
 
 
 def test_variables():
@@ -750,10 +760,10 @@ def test_isinside():
     b = besselnumba.isinside(z1, z2, zc, R)
     assert np.allclose(a, b), "not equal"
 
-def test_bessellspot():
+
+def test_bessellspotnew():
     x = 2
     y = 3
-    d = 0.0001
     z1 = -1 - 2j
     z2 = 2 + 1j
     d1 = -0.5
@@ -769,7 +779,8 @@ def test_bessellspot():
     potgauss = bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2)
     assert np.allclose(pot, potgauss), "not equal"
 
-def test_bessellsqxqy():
+
+def test_bessellsqxqynew():
     x = 2
     y = 3
     d = 1e-4
@@ -785,10 +796,10 @@ def test_bessellsqxqy():
     qxqynum = np.zeros(2 * (order + 1))
     pot1 = bessells_int_ho(x + d, y, z1, z2, lab, order, d1, d2).real
     pot2 = bessells_int_ho(x - d, y, z1, z2, lab, order, d1, d2).real
-    qxqynum[:order + 1] = (pot2 - pot1) / (2 * d)
+    qxqynum[: order + 1] = (pot2 - pot1) / (2 * d)
     pot1 = bessells_int_ho(x, y + d, z1, z2, lab, order, d1, d2).real
     pot2 = bessells_int_ho(x, y - d, z1, z2, lab, order, d1, d2).real
-    qxqynum[order + 1:] = (pot2 - pot1) / (2 * d)
+    qxqynum[order + 1 :] = (pot2 - pot1) / (2 * d)
     assert np.allclose(qxqy, qxqynum), "not equal"
     lab = 8 + 3j
     order = 3
@@ -798,16 +809,16 @@ def test_bessellsqxqy():
     qxqynum = np.zeros(2 * (order + 1), dtype="complex")
     pot1 = bessells_int_ho(x + d, y, z1, z2, lab, order, d1, d2)
     pot2 = bessells_int_ho(x - d, y, z1, z2, lab, order, d1, d2)
-    qxqynum[:order + 1] = (pot2 - pot1) / (2 * d)
+    qxqynum[: order + 1] = (pot2 - pot1) / (2 * d)
     pot1 = bessells_int_ho(x, y + d, z1, z2, lab, order, d1, d2)
     pot2 = bessells_int_ho(x, y - d, z1, z2, lab, order, d1, d2)
-    qxqynum[order + 1:] = (pot2 - pot1) / (2 * d)
+    qxqynum[order + 1 :] = (pot2 - pot1) / (2 * d)
     assert np.allclose(qxqy, qxqynum), "not equal"
 
-def test_besselldpot():
+
+def test_besselldpotnew():
     x = 2
     y = 3
-    d = 0.0001
     z1 = -1 - 2j
     z2 = 2 + 1j
     d1 = -0.5
@@ -823,7 +834,8 @@ def test_besselldpot():
     potgauss = besselld_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2)
     assert np.allclose(pot, potgauss), "not equal"
 
-def test_besselldqxqy():
+
+def test_besselldqxqynew():
     x = 2
     y = 3
     d = 1e-4
@@ -839,10 +851,10 @@ def test_besselldqxqy():
     qxqynum = np.zeros(2 * (order + 1))
     pot1 = besselld_int_ho(x + d, y, z1, z2, lab, order, d1, d2).real
     pot2 = besselld_int_ho(x - d, y, z1, z2, lab, order, d1, d2).real
-    qxqynum[:order + 1] = (pot2 - pot1) / (2 * d)
+    qxqynum[: order + 1] = (pot2 - pot1) / (2 * d)
     pot1 = besselld_int_ho(x, y + d, z1, z2, lab, order, d1, d2).real
     pot2 = besselld_int_ho(x, y - d, z1, z2, lab, order, d1, d2).real
-    qxqynum[order + 1:] = (pot2 - pot1) / (2 * d)
+    qxqynum[order + 1 :] = (pot2 - pot1) / (2 * d)
     assert np.allclose(qxqy, qxqynum), "not equal"
     lab = 8 + 3j
     order = 3
@@ -852,8 +864,8 @@ def test_besselldqxqy():
     qxqynum = np.zeros(2 * (order + 1), dtype="complex")
     pot1 = besselld_int_ho(x + d, y, z1, z2, lab, order, d1, d2)
     pot2 = besselld_int_ho(x - d, y, z1, z2, lab, order, d1, d2)
-    qxqynum[:order + 1] = (pot2 - pot1) / (2 * d)
+    qxqynum[: order + 1] = (pot2 - pot1) / (2 * d)
     pot1 = besselld_int_ho(x, y + d, z1, z2, lab, order, d1, d2)
     pot2 = besselld_int_ho(x, y - d, z1, z2, lab, order, d1, d2)
-    qxqynum[order + 1:] = (pot2 - pot1) / (2 * d)
+    qxqynum[order + 1 :] = (pot2 - pot1) / (2 * d)
     assert np.allclose(qxqy, qxqynum), "not equal"
