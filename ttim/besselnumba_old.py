@@ -1,6 +1,11 @@
 import numba
 import numpy as np
 
+from ttim.besselnumbanew import besselld_int_ho_new as besselld_int_ho
+from ttim.besselnumbanew import besselld_int_ho_qxqy_new as besselld_int_ho_qxqy
+from ttim.besselnumbanew import bessells_int_ho_new as bessells_int_ho
+from ttim.besselnumbanew import bessells_int_ho_qxqy_new as bessells_int_ho_qxqy
+
 """
 real(kind=8) :: pi, tiny
 real(kind=8), dimension(0:20) :: a, b, afar, a1, b1
@@ -40,12 +45,6 @@ gam = np.zeros((21, 21), dtype=np.float64)
 for n in range(21):
     for m in range(n + 1):
         gam[n, m] = np.prod(nrange[m + 1 : n + 1]) / np.prod(nrange[1 : n - m + 1])
-
-# gotta predefine these i.o. gam which is used in the old code
-binom = np.zeros((21, 21), dtype=np.float64)
-for n in range(21):
-    for m in range(n + 1):
-        binom[n, m] = np.prod(nrange[m + 1 : n + 1]) / np.prod(nrange[1 : n - m + 1])
 
 afar = np.zeros(21, dtype=np.float64)
 afar[0] = np.sqrt(np.pi / 2.0)
@@ -188,10 +187,66 @@ def besselk0(x, y, lab):
     return omega
 
 
+# @numba.njit(nogil=True, cache=True)
+# def bessells_int_test1(x, y, z1, z2, lab):
+#     """bessells_int_test1.
+
+#     implicit none
+#     real(kind=8), intent(in) :: x,y
+#     complex(kind=8), intent(in) :: z1,z2,lab
+#     real(kind=8) :: biglab, biga, L, ang, tol
+#     complex(kind=8) :: zeta, zetabar, omega, log1, log2, term1, term2,
+#         d1minzeta, d2minzeta
+#     complex(kind=8), dimension(0:20) :: zminzbar, anew, bnew, exprange
+#     complex(kind=8), dimension(0:20,0:20) :: gamnew, gam2
+#     complex(kind=8), dimension(0:40) :: alpha, beta, alpha2
+#     integer :: n
+#     """
+#     # zminzbar = np.zeros(21, dtype=np.complex128)
+
+#     L = np.abs(z2 - z1)
+#     biga = np.abs(lab)
+#     ang = np.arctan2(lab.imag, lab.real)
+#     biglab = 2 * biga / L
+
+#     tol = 1e-12
+
+#     exprange = np.exp(-complex(0, 2) * ang * nrange)
+#     anew = a * exprange
+#     bnew = (b - a * complex(0, 2) * ang) * exprange
+
+
 # zminzbar = np.zeros(21, dtype=np.complex_)
 exprange = np.zeros(21, dtype=np.complex128)
 anew = np.zeros(21, dtype=np.complex128)
 bnew = np.zeros(21, dtype=np.complex128)
+
+
+# @numba.njit(nogil=True, cache=True)
+# def bessells_int_test2(x, y, z1, z2, lab, exprange=exprange, anew=anew, bnew=bnew):
+#     """bessells_int_test2.
+
+#     implicit none
+#     real(kind=8), intent(in) :: x,y
+#     complex(kind=8), intent(in) :: z1,z2,lab
+#     real(kind=8) :: biglab, biga, L, ang, tol
+#     complex(kind=8) :: zeta, zetabar, omega, log1, log2, term1, term2,
+#           d1minzeta, d2minzeta
+#     complex(kind=8), dimension(0:20) :: zminzbar, anew, bnew, exprange
+#     complex(kind=8), dimension(0:20,0:20) :: gamnew, gam2
+#     complex(kind=8), dimension(0:40) :: alpha, beta, alpha2
+#     integer :: n
+#     """
+#     L = np.abs(z2 - z1)
+#     biga = np.abs(lab)
+#     ang = np.arctan2(lab.imag, lab.real)
+#     biglab = 2 * biga / L
+
+#     tol = 1e-12
+#     for i in np.arange(21):
+#         exprange[i] = np.exp(-2j * ang * i)
+#         anew[i] = a[i] * exprange[i]
+#         bnew[i] = (b[i] - a[i] * 2j * ang) * exprange[i]
 
 
 @numba.njit(nogil=True, cache=True)
@@ -502,6 +557,118 @@ def bessells(x, y, z1, z2, lab, order, d1in, d2in):
     return omega
 
 
+# @numba.njit(nogil=True, cache=True)
+# def bessells_int_ho(x, y, z1, z2, lab, order, d1, d2):
+#     """bessells_int_ho.
+
+#     implicit none
+#     integer, intent(in) :: order
+#     real(kind=8), intent(in) :: x,y,d1,d2
+#     complex(kind=8), intent(in) :: z1,z2,lab
+#     complex(kind=8), dimension(0:order) :: omega
+#     real(kind=8) :: biglab, biga, L, ang, tol
+#     complex(kind=8) :: zeta, zetabar, log1, log2, term1, term2, d1minzeta, d2minzeta, cm
+#     complex(kind=8), dimension(0:20) :: zminzbar, anew, bnew, exprange
+#     complex(kind=8), dimension(0:20,0:20) :: gamnew, gam2
+#     complex(kind=8), dimension(0:40) :: alpha, beta, alpha2
+#     complex(kind=8), dimension(0:50) :: alphanew, betanew, alphanew2 ! Order fixed to 10
+#     integer :: m, n, p
+#     """
+#     L = np.abs(z2 - z1)
+#     biga = np.abs(lab)
+#     ang = np.arctan2(lab.imag, lab.real)
+#     biglab = 2 * biga / L
+
+#     tol = 1e-12
+
+#     exprange = np.exp(-complex(0, 2) * ang * nrange)
+#     anew = a * exprange
+#     bnew = (b - a * complex(0, 2) * ang) * exprange
+
+#     zeta = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1) / biglab
+#     zetabar = np.conj(zeta)
+
+#     # #for n in range(21):
+#     # #    zminzbar[n] = (zeta-zetabar)**(20-n)  # Ordered from high power to low power
+#     #
+#     zminzbar = np.zeros(21, dtype=np.complex128)
+#     zminzbar[20] = 1
+
+#     for n in range(1, 21):
+#         # Ordered from high power to low power
+#         zminzbar[20 - n] = zminzbar[21 - n] * (zeta - zetabar)
+
+#     gamnew = np.zeros((21, 21), dtype=np.complex128)
+#     gam2 = np.zeros((21, 21), dtype=np.complex128)
+#     for n in range(21):
+#         gamnew[n, 0 : n + 1] = gam[n, 0 : n + 1] * zminzbar[20 - n : 20 + 1]
+#         gam2[n, 0 : n + 1] = np.conj(gamnew[n, 0 : n + 1])
+
+#     alpha = np.zeros(41, dtype=np.complex128)
+#     beta = np.zeros(41, dtype=np.complex128)
+#     alpha2 = np.zeros(41, dtype=np.complex128)
+#     alpha[0] = anew[0]
+#     beta[0] = bnew[0]
+#     alpha2[0] = anew[0]
+#     for n in range(1, 21):
+#         alpha[n : 2 * n + 1] = alpha[n : 2 * n + 1] + anew[n] * gamnew[n, 0 : n + 1]
+#         beta[n : 2 * n + 1] = beta[n : 2 * n + 1] + bnew[n] * gamnew[n, 0 : n + 1]
+#         alpha2[n : 2 * n + 1] = alpha2[n : 2 * n + 1] + anew[n] * gam2[n, 0 : n + 1]
+
+#     d1minzeta = d1 / biglab - zeta
+#     d2minzeta = d2 / biglab - zeta
+#     # #d1minzeta = -1/biglab - zeta
+#     # #d2minzeta = 1/biglab - zeta
+#     if np.abs(d1minzeta) < tol:
+#         d1minzeta = d1minzeta + complex(tol, 0)
+#     if np.abs(d2minzeta) < tol:
+#         d2minzeta = d2minzeta + complex(tol, 0)
+#     log1 = np.log(d1minzeta)
+#     log2 = np.log(d2minzeta)
+
+#     alphanew = np.zeros(51, dtype=np.complex128)
+#     alphanew2 = np.zeros(51, dtype=np.complex128)
+#     betanew = np.zeros(51, dtype=np.complex128)
+
+#     omega = np.zeros(order + 1, dtype=np.complex128)
+
+#     for p in range(order + 1):
+#         alphanew[0 : 40 + p + 1] = 0
+#         betanew[0 : 40 + p + 1] = 0
+#         alphanew2[0 : 40 + p + 1] = 0
+
+#         for m in range(0, p + 1):
+#             cm = biglab**p * gam[p, m] * zeta ** (p - m)
+#             alphanew[m : 40 + m + 1] = alphanew[m : 40 + m + 1] + cm * alpha[0 : 40 + 1]
+#             betanew[m : 40 + m + 1] = betanew[m : 40 + m + 1] + cm * beta[0 : 40 + 1]
+#             cm = biglab**p * gam[p, m] * zetabar ** (p - m)
+#             alphanew2[m : 40 + m + 1] = (
+#                 alphanew2[m : 40 + m + 1] + cm * alpha2[0 : 40 + 1]
+#             )
+
+#         omega[p] = 0
+#         term1 = 1
+#         term2 = 1
+#         for n in range(41):
+#             term1 = term1 * d1minzeta
+#             term2 = term2 * d2minzeta
+#             omega[p] = omega[p] + (
+#                 alphanew[n] * log2 - alphanew[n] / (n + 1) + betanew[n]
+#             ) * term2 / (n + 1)
+#             omega[p] = omega[p] - (
+#                 alphanew[n] * log1 - alphanew[n] / (n + 1) + betanew[n]
+#             ) * term1 / (n + 1)
+#             omega[p] = omega[p] + (
+#                 alphanew2[n] * np.conj(log2) - alphanew2[n] / (n + 1)
+#             ) * np.conj(term2) / (n + 1)
+#             omega[p] = omega[p] - (
+#                 alphanew2[n] * np.conj(log1) - alphanew2[n] / (n + 1)
+#             ) * np.conj(term1) / (n + 1)
+
+#     omega = -biga / (2 * np.pi) * omega
+#     return omega
+
+
 @numba.njit(nogil=True, cache=True)
 def bessells_gauss_ho(x, y, z1, z2, lab, order):
     """bessells_gauss_ho.
@@ -663,6 +830,134 @@ def bessellsqxqy(x, y, z1, z2, lab, order, d1in, d2in):
                     x, y, z1, z2, lab, order, d1, d2
                 )
     return qxqy
+
+
+# @numba.njit(nogil=True, cache=True)
+# def bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
+#     """bessells_int_ho_qxqy.
+
+#     implicit none
+#     integer, intent(in) :: order
+#     real(kind=8), intent(in) :: x,y,d1,d2
+#     complex(kind=8), intent(in) :: z1,z2,lab
+#     complex(kind=8), dimension(0:2*order+1) :: qxqy
+#     complex(kind=8), dimension(0:order) :: qx, qy
+#     real(kind=8) :: biglab, biga, L, ang, angz, tol, bigx, bigy
+#     complex(kind=8) :: zeta, zetabar, log1, log2, term1, term2, d1minzeta,
+#         d2minzeta, bigz
+#     complex(kind=8) :: cm, biglabcomplex
+#     complex(kind=8), dimension(0:20) :: zminzbar, anew, bnew, exprange
+#     complex(kind=8), dimension(0:20,0:20) :: gamnew, gam2
+#     complex(kind=8), dimension(0:40) :: alpha, beta, alpha2
+#     complex(kind=8), dimension(0:51) :: alphanew, betanew, alphanew2 ! Order fixed to 10
+#     complex(kind=8), dimension(0:order+1) :: omega ! To store intermediate result
+#     complex(kind=8), dimension(0:order) :: omegalap ! To store intermediate result
+
+#     integer :: m, n, p
+#     """
+#     zminzbar = np.zeros(21, dtype=np.complex128)
+
+#     L = np.abs(z2 - z1)
+#     bigz = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1)
+#     bigx = bigz.real
+#     bigy = bigz.imag
+#     biga = np.abs(lab)
+#     ang = np.arctan2(lab.imag, lab.real)
+#     angz = np.arctan2((z2 - z1).imag, (z2 - z1).real)
+#     biglab = 2 * biga / L
+#     biglabcomplex = 2.0 * lab / L
+
+#     tol = 1e-12
+
+#     exprange = np.exp(-complex(0, 2) * ang * nrange)
+#     anew = a1 * exprange
+#     bnew = (b1 - a1 * complex(0, 2) * ang) * exprange
+
+#     zeta = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1) / biglab
+#     zetabar = np.conj(zeta)
+#     zminzbar[20] = 1
+
+#     for n in range(1, 21):
+#         # Ordered from high power to low po
+#         zminzbar[20 - n] = zminzbar[21 - n] * (zeta - zetabar)
+#     gamnew = np.zeros((21, 21), dtype=np.complex128)
+#     gam2 = np.zeros((21, 21), dtype=np.complex128)
+#     for n in range(21):
+#         gamnew[n, 0 : n + 1] = gam[n, 0 : n + 1] * zminzbar[20 - n : 20 + 1]
+#         gam2[n, 0 : n + 1] = np.conj(gamnew[n, 0 : n + 1])
+
+#     alpha = np.zeros(41, dtype=np.complex128)
+#     beta = np.zeros(41, dtype=np.complex128)
+#     alpha2 = np.zeros(41, dtype=np.complex128)
+
+#     alpha[0] = anew[0]
+#     beta[0] = bnew[0]
+#     alpha2[0] = anew[0]
+#     for n in range(1, 21):
+#         alpha[n : 2 * n + 1] = alpha[n : 2 * n + 1] + anew[n] * gamnew[n, 0 : n + 1]
+#         beta[n : 2 * n + 1] = beta[n : 2 * n + 1] + bnew[n] * gamnew[n, 0 : n + 1]
+#         alpha2[n : 2 * n + 1] = alpha2[n : 2 * n + 1] + anew[n] * gam2[n, 0 : n + 1]
+
+#     d1minzeta = d1 / biglab - zeta
+#     d2minzeta = d2 / biglab - zeta
+
+#     if np.abs(d1minzeta) < tol:
+#         d1minzeta = d1minzeta + complex(tol, 0)
+#     if np.abs(d2minzeta) < tol:
+#         d2minzeta = d2minzeta + complex(tol, 0)
+#     log1 = np.log(d1minzeta)
+#     log2 = np.log(d2minzeta)
+
+#     alphanew = np.zeros(52, dtype=np.complex128)
+#     alphanew2 = np.zeros(52, dtype=np.complex128)
+#     betanew = np.zeros(52, dtype=np.complex128)
+
+#     omega = np.zeros(order + 2, dtype=np.complex128)
+#     qxqy = np.zeros(2 * order + 2, dtype=np.complex128)
+
+#     for p in range(0, order + 2):
+#         alphanew[0 : 40 + p + 1] = 0
+#         betanew[0 : 40 + p + 1] = 0
+#         alphanew2[0 : 40 + p + 1] = 0
+#         for m in range(0, p + 1):
+#             cm = biglab**p * gam[p, m] * zeta ** (p - m)
+#             alphanew[m : 40 + m + 1] = alphanew[m : 40 + m + 1] + cm * alpha[0 : 40 + 1]
+#             betanew[m : 40 + m + 1] = betanew[m : 40 + m + 1] + cm * beta[0 : 40 + 1]
+#             cm = biglab**p * gam[p, m] * zetabar ** (p - m)
+#             alphanew2[m : 40 + m + 1] = (
+#                 alphanew2[m : 40 + m + 1] + cm * alpha2[0 : 40 + 1]
+#             )
+
+#         omega[p] = 0
+#         term1 = 1
+#         term2 = 1
+#         for n in range(40 + p + 1):
+#             term1 = term1 * d1minzeta
+#             term2 = term2 * d2minzeta
+#             omega[p] = omega[p] + (
+#                 alphanew[n] * log2 - alphanew[n] / (n + 1) + betanew[n]
+#             ) * term2 / (n + 1)
+#             omega[p] = omega[p] - (
+#                 alphanew[n] * log1 - alphanew[n] / (n + 1) + betanew[n]
+#             ) * term1 / (n + 1)
+#             omega[p] = omega[p] + (
+#                 alphanew2[n] * np.conj(log2) - alphanew2[n] / (n + 1)
+#             ) * np.conj(term2) / (n + 1)
+#             omega[p] = omega[p] - (
+#                 alphanew2[n] * np.conj(log1) - alphanew2[n] / (n + 1)
+#             ) * np.conj(term1) / (n + 1)
+
+#     omega = biglab / (2 * np.pi * biglabcomplex**2) * omega
+#     omegalap = lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2)
+
+#     # multiplication with 2/L inherently included
+#     qx = -(bigx * omega[0 : order + 1] - omega[1 : order + 2] + omegalap.imag)
+#     qy = -(bigy * omega[0 : order + 1] + omegalap.real)
+
+#     qxqy[0 : order + 1] = qx * np.cos(angz) - qy * np.sin(angz)
+#     qxqy[order + 1 : 2 * order + 2] = qx * np.sin(angz) + qy * np.cos(angz)
+
+#     return qxqy
 
 
 @numba.njit(nogil=True, cache=True)
@@ -990,6 +1285,124 @@ def besselld(x, y, z1, z2, lab, order, d1in, d2in):
     return omega
 
 
+# @numba.njit(nogil=True, cache=True)
+# def besselld_int_ho(x, y, z1, z2, lab, order, d1, d2):
+#     """besselld_int_ho.
+
+#     implicit none
+#     integer, intent(in) :: order
+#     real(kind=8), intent(in) :: x,y,d1,d2
+#     complex(kind=8), intent(in) :: z1,z2,lab
+#     complex(kind=8), dimension[0:order+1] :: omega
+#     real(kind=8) :: biglab, biga, L, ang, tol, bigy
+#     complex(kind=8) :: zeta, zetabar, log1, log2, term1, term2, d1minzeta,
+#         d2minzeta, bigz
+#     complex(kind=8) :: cm, biglabcomplex
+#     complex(kind=8), dimension(0:20) :: zminzbar, anew, bnew, exprange
+#     complex(kind=8), dimension(0:20,0:20) :: gamnew, gam2
+#     complex(kind=8), dimension[0:40+1] :: alpha, beta, alpha2
+#     complex(kind=8), dimension(0:50) :: alphanew, betanew, alphanew2 # Order fixed to 10
+
+#     integer :: m, n, p
+#     """
+#     zminzbar = np.zeros(21, dtype=np.complex128)
+#     omega = np.zeros(order + 1, dtype=np.complex128)
+
+#     L = np.abs(z2 - z1)
+#     bigz = (2.0 * complex(x, y) - (z1 + z2)) / (z2 - z1)
+#     bigy = bigz.imag
+#     biga = np.abs(lab)
+#     ang = np.arctan2(lab.imag, lab.real)
+#     biglab = 2.0 * biga / L
+#     biglabcomplex = 2.0 * lab / L
+
+#     tol = 1e-12
+
+#     exprange = np.exp(-complex(0, 2) * ang * nrange)
+#     anew = a1 * exprange
+#     bnew = (b1 - a1 * complex(0, 2) * ang) * exprange
+
+#     zeta = (2.0 * complex(x, y) - (z1 + z2)) / (z2 - z1) / biglab
+#     zetabar = np.conj(zeta)
+#     zminzbar[20] = 1.0
+#     for n in range(1, 21):
+#         # Ordered from high power to low power
+#         zminzbar[20 - n] = zminzbar[21 - n] * (zeta - zetabar)
+
+#     gamnew = np.zeros((21, 21), dtype=np.complex128)
+#     gam2 = np.zeros((21, 21), dtype=np.complex128)
+
+#     for n in range(21):
+#         gamnew[n, 0 : n + 1] = gam[n, 0 : n + 1] * zminzbar[20 - n : 20 + 1]
+#         gam2[n, 0 : n + 1] = np.conj(gamnew[n, 0 : n + 1])
+
+#     alpha = np.zeros(41, dtype=np.complex128)
+#     beta = np.zeros(41, dtype=np.complex128)
+#     alpha2 = np.zeros(41, dtype=np.complex128)
+#     alpha[0] = anew[0]
+#     beta[0] = bnew[0]
+#     alpha2[0] = anew[0]
+#     for n in range(1, 21):
+#         alpha[n : 2 * n + 1] = alpha[n : 2 * n + 1] + anew[n] * gamnew[n, 0 : n + 1]
+#         beta[n : 2 * n + 1] = beta[n : 2 * n + 1] + bnew[n] * gamnew[n, 0 : n + 1]
+#         alpha2[n : 2 * n + 1] = alpha2[n : 2 * n + 1] + anew[n] * gam2[n, 0 : n + 1]
+
+#     d1minzeta = d1 / biglab - zeta
+#     d2minzeta = d2 / biglab - zeta
+#     # d1minzeta = -1./biglab - zeta
+#     # d2minzeta = 1./biglab - zeta
+#     if np.abs(d1minzeta) < tol:
+#         d1minzeta = d1minzeta + complex(tol, 0.0)
+#     if np.abs(d2minzeta) < tol:
+#         d2minzeta = d2minzeta + complex(tol, 0.0)
+#     log1 = np.log(d1minzeta)
+#     log2 = np.log(d2minzeta)
+
+#     alphanew = np.zeros(51, dtype=np.complex128)
+#     alphanew2 = np.zeros(51, dtype=np.complex128)
+#     betanew = np.zeros(51, dtype=np.complex128)
+
+#     for p in range(order + 1):
+#         alphanew[0 : 40 + p + 1] = 0.0
+#         betanew[0 : 40 + p + 1] = 0.0
+#         alphanew2[0 : 40 + p + 1] = 0.0
+#         for m in range(p + 1):
+#             cm = biglab**p * gam[p, m] * zeta ** (p - m)
+#             alphanew[m : 40 + m + 1] = alphanew[m : 40 + m + 1] + cm * alpha[0 : 40 + 1]
+#             betanew[m : 40 + m + 1] = betanew[m : 40 + m + 1] + cm * beta[0 : 40 + 1]
+#             cm = biglab**p * gam[p, m] * zetabar ** (p - m)
+#             alphanew2[m : 40 + m + 1] = (
+#                 alphanew2[m : 40 + m + 1] + cm * alpha2[0 : 40 + 1]
+#             )
+
+#         omega[p] = 0.0
+#         term1 = 1.0
+#         term2 = 1.0
+#         for n in range(41):
+#             term1 = term1 * d1minzeta
+#             term2 = term2 * d2minzeta
+#             omega[p] = omega[p] + (
+#                 alphanew[n] * log2 - alphanew[n] / (n + 1) + betanew[n]
+#             ) * term2 / (n + 1)
+#             omega[p] = omega[p] - (
+#                 alphanew[n] * log1 - alphanew[n] / (n + 1) + betanew[n]
+#             ) * term1 / (n + 1)
+#             omega[p] = omega[p] + (
+#                 alphanew2[n] * np.conj(log2) - alphanew2[n] / (n + 1)
+#             ) * np.conj(term2) / (n + 1)
+#             omega[p] = omega[p] - (
+#                 alphanew2[n] * np.conj(log1) - alphanew2[n] / (n + 1)
+#             ) * np.conj(term1) / (n + 1)
+
+#     # omega = bigy * biglab / (2.*pi*biglabcomplex**2) * omega +
+#     # real( lapld_int_ho_d1d2(x,y,z1,z2,order,d1,d2) )
+#     omega = (
+#         bigy * biglab / (2.0 * np.pi * biglabcomplex**2) * omega
+#         + lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2).real
+#     )
+#     return omega
+
+
 @numba.njit(nogil=True, cache=True)
 def besselld_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2):
     """besselld_gauss_ho_d1d2.
@@ -1132,6 +1545,183 @@ def besselldqxqy(x, y, z1, z2, lab, order, d1in, d2in):
                     x, y, z1, z2, lab, order, d1, d2
                 )
     return qxqy
+
+
+# @numba.njit(nogil=True, cache=True)
+# def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
+#     """besselld_int_ho_qxqy.
+
+#     implicit none
+#     integer, intent(in) :: order
+#     real(kind=8), intent(in) :: x,y,d1,d2
+#     complex(kind=8), intent(in) :: z1,z2,lab
+#     complex(kind=8), dimension(0:2*order+1) :: qxqy
+#     complex(kind=8), dimension(0:order) :: rvz, rvzbar
+#     real(kind=8) :: biglab, biga, L, ang, angz, tol, bigy
+#     complex(kind=8) :: zeta, zetabar, log1, log2, term1, term2, d1minzeta,
+#         d2minzeta, bigz
+#     complex(kind=8) :: cm, biglabcomplex, azero
+#     complex(kind=8), dimension(0:20) :: zminzbar, anew, bnew, exprange
+#     complex(kind=8), dimension(0:20,0:20) :: gamnew, gam2
+#     complex(kind=8), dimension(0:40) :: alpha, beta, alpha2
+#     complex(kind=8), dimension(0:51) :: alphanew, betanew, alphanew2 ! Order fixed to 10
+#     complex(kind=8), dimension(0:order) :: omegalap, omegaom, wdis, qx, qy !
+#         To store intermediate result
+#     complex(kind=8), dimension(0:order+1) :: omega ! To store intermediate result
+#     integer :: m, n, p
+#     """
+#     zminzbar = np.zeros(21, dtype=np.complex128)
+#     omega = np.zeros(order + 2, dtype=np.complex128)
+#     qxqy = np.zeros(2 * order + 2, dtype=np.complex128)
+
+#     L = np.abs(z2 - z1)
+#     bigz = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1)
+#     bigy = bigz.imag
+#     biga = np.abs(lab)
+#     ang = np.arctan2(lab.imag, lab.real)
+#     angz = np.arctan2((z2 - z1).imag, (z2 - z1).real)
+#     biglab = 2 * biga / L
+#     biglabcomplex = 2.0 * lab / L
+
+#     tol = 1e-12
+
+#     exprange = np.exp(-complex(0, 2) * ang * nrange)
+#     anew = a1 * exprange
+#     bnew = (b1 - a1 * complex(0, 2) * ang) * exprange
+#     azero = anew[0]
+
+#     for n in range(20):
+#         bnew[n] = (n + 1) * bnew[n + 1] + anew[n + 1]
+#         anew[n] = (n + 1) * anew[n + 1]
+
+#     anew[20] = 0  # This is a bit lazy
+#     bnew[20] = 0
+
+#     zeta = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1) / biglab
+#     zetabar = np.conj(zeta)
+#     zminzbar[20] = 1
+#     for n in range(1, 21):
+#         # Ordered from high power to low power
+#         zminzbar[20 - n] = zminzbar[21 - n] * (zeta - zetabar)
+
+#     gamnew = np.zeros((21, 21), dtype=np.complex128)
+#     gam2 = np.zeros((21, 21), dtype=np.complex128)
+
+#     for n in range(21):
+#         gamnew[n, 0 : n + 1] = gam[n, 0 : n + 1] * zminzbar[20 - n : 20 + 1]
+#         gam2[n, 0 : n + 1] = np.conj(gamnew[n, 0 : n + 1])
+
+#     alpha = np.zeros(41, dtype=np.complex128)
+#     alpha2 = np.zeros(41, dtype=np.complex128)
+#     beta = np.zeros(41, dtype=np.complex128)
+#     alpha[0] = anew[0]
+#     beta[0] = bnew[0]
+#     alpha2[0] = anew[0]
+
+#     for n in range(1, 21):
+#         alpha[n : 2 * n + 1] = alpha[n : 2 * n + 1] + anew[n] * gamnew[n, 0 : n + 1]
+#         beta[n : 2 * n + 1] = beta[n : 2 * n + 1] + bnew[n] * gamnew[n, 0 : n + 1]
+#         alpha2[n : 2 * n + 1] = alpha2[n : 2 * n + 1] + anew[n] * gam2[n, 0 : n + 1]
+
+#     d1minzeta = d1 / biglab - zeta
+#     d2minzeta = d2 / biglab - zeta
+#     # d1minzeta = -1/biglab - zeta
+#     # d2minzeta = 1/biglab - zeta
+#     if np.abs(d1minzeta) < tol:
+#         d1minzeta = d1minzeta + complex(tol, 0)
+#     if np.abs(d2minzeta) < tol:
+#         d2minzeta = d2minzeta + complex(tol, 0)
+
+#     log1 = np.log(d1minzeta)
+#     log2 = np.log(d2minzeta)
+
+#     alphanew = np.zeros(52, dtype=np.complex128)
+#     alphanew2 = np.zeros(52, dtype=np.complex128)
+#     betanew = np.zeros(52, dtype=np.complex128)
+
+#     for p in range(order + 2):
+#         alphanew[0 : 40 + p + 1] = 0
+#         betanew[0 : 40 + p + 1] = 0
+#         alphanew2[0 : 40 + p + 1] = 0
+#         for m in range(p + 1):
+#             cm = biglab**p * gam[p, m] * zeta ** (p - m)
+#             alphanew[m : 40 + m + 1] = alphanew[m : 40 + m + 1] + cm * alpha[0 : 40 + 1]
+#             betanew[m : 40 + m + 1] = betanew[m : 40 + m + 1] + cm * beta[0 : 40 + 1]
+#             cm = biglab**p * gam[p, m] * zetabar ** (p - m)
+#             alphanew2[m : 40 + m + 1] = (
+#                 alphanew2[m : 40 + m + 1] + cm * alpha2[0 : 40 + 1]
+#             )
+
+#         omega[p] = 0
+#         term1 = 1.0 + 0j
+#         term2 = 1.0 + 0j
+#         for n in range(41):
+#             term1 = term1 * d1minzeta
+#             term2 = term2 * d2minzeta
+#             omega[p] = omega[p] + (
+#                 alphanew[n] * log2 - alphanew[n] / (n + 1) + betanew[n]
+#             ) * term2 / (n + 1)
+#             omega[p] = omega[p] - (
+#                 alphanew[n] * log1 - alphanew[n] / (n + 1) + betanew[n]
+#             ) * term1 / (n + 1)
+#             omega[p] = omega[p] + (
+#                 alphanew2[n] * np.conj(log2) - alphanew2[n] / (n + 1)
+#             ) * np.conj(term2) / (n + 1)
+#             omega[p] = omega[p] - (
+#                 alphanew2[n] * np.conj(log1) - alphanew2[n] / (n + 1)
+#             ) * np.conj(term1) / (n + 1)
+
+#     omegalap = lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2) / complex(0, 1)
+#     omegaom = besselldpart(x, y, z1, z2, lab, order, d1, d2)
+#     wdis = lapld_int_ho_wdis_d1d2(x, y, z1, z2, order, d1, d2)
+
+#     rvz = -biglab * bigy / (2 * np.pi * biglabcomplex**2) * (
+#         omega[1 : order + 1 + 1] / biglab - zetabar * omega[0 : order + 1]
+#     ) + biglab * omegaom / complex(0, 2)
+#     rvzbar = -biglab * bigy / (2 * np.pi * biglabcomplex**2) * (
+#         omega[1 : order + 1 + 1] / biglab - zeta * omega[0 : order + 1]
+#     ) - biglab * omegaom / complex(0, 2)
+#     # qxqy[0 : order + 1] = (
+#     #     -2.0 / L * (rvz + rvzbar) / biglab
+#     # )  # As we need to take derivative w.r.t. z not zeta
+#     # qxqy[order + 1 : 2 * order + 1 + 1] = (
+#     #     -2.0 / L * complex(0, 1) * (rvz - rvzbar) / biglab
+#     # )
+
+#     # qxqy[0 : order + 1] = qxqy[0 : order + 1] - 2.0 / L / biglabcomplex**2 * azero * (
+#     #     omegalap + np.conj(omegalap)
+#     # )
+#     # qxqy[order + 1 : 2 * order + 1 + 1] = qxqy[
+#     #     order + 1 : 2 * order + 1 + 1
+#     # ] - 2.0 / L / biglabcomplex**2 * azero * complex(0, 1) * (
+#     #     omegalap - np.conj(omegalap)
+#     # )
+
+#     # qxqy[0 : order + 1] = qxqy[0 : order + 1] + real(wdis)
+#     # qxqy[order + 1 : 2 * order + 1 + 1] = qxqy[order + 1 : 2 * order + 1 + 1] - aimag(
+#     #     wdis
+#     # )
+
+#     # As we need to take derivative w.r.t. z not zeta
+#     qx = -2.0 / L * (rvz + rvzbar) / biglab
+#     qy = -2.0 / L * complex(0, 1) * (rvz - rvzbar) / biglab
+
+#     qx = qx - 2.0 / L * bigy / biglabcomplex**2 * azero * (omegalap + np.conj(omegalap))
+#     qy = qy - 2.0 / L * bigy / biglabcomplex**2 * azero * complex(0, 1) * (
+#         omegalap - np.conj(omegalap)
+#     )
+
+#     # qx = qx + real(wdis * (z2-z1) / L)
+#     # qy = qy - aimag(wdis * (z2-z1) / L)
+
+#     # print *,'angz ',angz
+#     # wdis already includes the correct rotation
+#     qxqy[0 : order + 1] = qx * np.cos(angz) - qy * np.sin(angz) + wdis.real
+#     qxqy[order + 1 : 2 * order + 1 + 1] = (
+#         qx * np.sin(angz) + qy * np.cos(angz) - wdis.imag
+#     )
+
+#     return qxqy
 
 
 @numba.njit(nogil=True, cache=True)
@@ -1412,217 +2002,3 @@ def lapld_int_ho_wdis(x, y, z1, z2, order):
 
     wdis = -wdis / (np.pi * complex(0.0, 1.0) * (z2 - z1))
     return wdis
-
-
-# Fp function
-
-
-@numba.njit(nogil=True, cache=True)
-def Fp(x, y, z1, z2, biga, order, d1, d2, a, b, nt):
-    tol = 1e-12
-    zeta = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1) / biga
-    zetabar = np.conj(zeta)
-    zminzbar = np.zeros(nt + 1, dtype=np.complex128)
-    zminzbar[0] = 1
-    for n in range(1, nt + 1):
-        zminzbar[n] = zminzbar[n - 1] * (zeta - zetabar)
-
-    eta = np.zeros((nt + 1, nt + 1), dtype=np.complex128)  # lower triangular
-    etabar = np.zeros((nt + 1, nt + 1), dtype=np.complex128)
-    for n in range(nt + 1):
-        for m in range(0, n + 1):
-            eta[n, m] = binom[n, m] * zminzbar[n - m]
-            etabar[n, m] = np.conj(eta[n, m])
-
-    atil = np.zeros(2 * nt + 1, dtype=np.complex128)
-    btil = np.zeros(2 * nt + 1, dtype=np.complex128)
-    ctil = np.zeros(2 * nt + 1, dtype=np.complex128)
-    for n in range(2 * nt + 1):
-        for m in range(max(0, n - nt), int(n / 2) + 1):
-            atil[n] = atil[n] + a[n - m] * eta[n - m, m]
-            btil[n] = btil[n] + b[n - m] * eta[n - m, m]
-            ctil[n] = ctil[n] + a[n - m] * etabar[n - m, m]
-
-    d1minzeta = d1 / biga - zeta
-    d2minzeta = d2 / biga - zeta
-    if np.abs(d1minzeta) < tol:
-        d1minzeta = d1minzeta + complex(tol, 0)
-    if np.abs(d2minzeta) < tol:
-        d2minzeta = d2minzeta + complex(tol, 0)
-    log1 = np.log(d1minzeta)
-    log2 = np.log(d2minzeta)
-
-    alpha = np.zeros(2 * nt + order + 1, dtype=np.complex128)
-    beta = np.zeros(2 * nt + order + 1, dtype=np.complex128)
-    gamma = np.zeros(2 * nt + order + 1, dtype=np.complex128)
-
-    omega = np.zeros(order + 1, dtype=np.complex128)
-
-    for p in range(order + 1):
-        alpha[0 : 2 * nt + p + 1] = 0
-        beta[0 : 2 * nt + p + 1] = 0
-        gamma[0 : 2 * nt + p + 1] = 0
-
-        d = np.zeros(p + 1, dtype=np.complex128)
-        dbar = np.zeros(p + 1, dtype=np.complex128)
-        for m in range(p + 1):
-            d[m] = biga**p * binom[p, m] * zeta ** (p - m)
-            dbar[m] = np.conj(d[m])
-        for n in range(2 * nt + p + 1):
-            for m in range(max(0, n - 2 * nt), min(p, n) + 1):
-                alpha[n] = alpha[n] + d[m] * atil[n - m]
-                beta[n] = beta[n] + d[m] * btil[n - m]
-                gamma[n] = gamma[n] + dbar[m] * ctil[n - m]
-
-        term1 = 1
-        term2 = 1
-        for n in range(2 * nt + p + 1):
-            term1 = term1 * d1minzeta
-            term2 = term2 * d2minzeta
-            omega[p] = omega[p] + (
-                alpha[n] * log2 - alpha[n] / (n + 1) + beta[n]
-            ) * term2 / (n + 1)
-            omega[p] = omega[p] - (
-                alpha[n] * log1 - alpha[n] / (n + 1) + beta[n]
-            ) * term1 / (n + 1)
-            omega[p] = omega[p] + (
-                gamma[n] * np.conj(log2) - gamma[n] / (n + 1)
-            ) * np.conj(term2) / (n + 1)
-            omega[p] = omega[p] - (
-                gamma[n] * np.conj(log1) - gamma[n] / (n + 1)
-            ) * np.conj(term1) / (n + 1)
-
-    return biga * omega
-
-
-@numba.njit(nogil=True, cache=True)
-def bessells_int_ho(x, y, z1, z2, lab, order, d1, d2, nt=20):
-    """
-    Docs.
-
-    To come here
-    """
-    L = np.abs(z2 - z1)
-    ang = np.arctan2(lab.imag, lab.real)
-    biga = 2 * np.abs(lab) / L
-
-    exprange = np.exp(-complex(0, 2) * ang * nrange)
-    ahat = a * exprange
-    bhat = (b - a * complex(0, 2) * ang) * exprange
-
-    omega = Fp(x, y, z1, z2, biga, order, d1, d2, ahat, bhat, nt)
-    return -L / (4 * np.pi) * omega
-
-
-@numba.njit(nogil=True, cache=True)
-def bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
-    """
-    Docs.
-
-    To come here
-    """
-    nt = 20  # number of terms in series is nt + 1
-    bigz = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1)
-    bigx = bigz.real
-    bigy = bigz.imag
-    L = np.abs(z2 - z1)
-    ang = np.arctan2(lab.imag, lab.real)
-    angz = np.arctan2((z2 - z1).imag, (z2 - z1).real)
-    biglab = 2 * lab / L
-    biga = np.abs(biglab)
-
-    exprange = np.exp(-complex(0, 2) * ang * nrange)
-    ahat = a * exprange
-    bhat = (b - a * complex(0, 2) * ang) * exprange
-
-    atil = 2 * nrange[1:] * ahat[1:]
-    btil = 2 * nrange[1:] * bhat[1:] + 2 * ahat[1:]
-
-    omega = Fp(x, y, z1, z2, biga, order + 1, d1, d2, atil, btil, nt - 1)
-    omegalap = lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2)
-    term1 = 1 / (2 * np.pi * biga**2) * bigx * omega[:-1]
-    term2 = -1 / (2 * np.pi * biga**2) * omega[1:]
-    term3 = 2 * ahat[0] * omegalap.imag
-    qx = term1 + term2 + term3
-    term1 = 1 / (2 * np.pi * biga**2) * bigy * omega[:-1]
-    term3 = 2 * ahat[0] * omegalap.real
-    qy = term1 + term3
-
-    qxqy = np.zeros(2 * order + 2, dtype=np.complex128)
-    qxqy[: order + 1] = qx * np.cos(angz) - qy * np.sin(angz)
-    qxqy[order + 1 :] = qx * np.sin(angz) + qy * np.cos(angz)
-    return qxqy
-
-
-@numba.njit(nogil=True, cache=True)
-def besselld_int_ho(x, y, z1, z2, lab, order, d1, d2):
-    """
-    Docs.
-
-    To come here
-    """
-    nt = 20  # number of terms in series is nt + 1
-    bigz = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1)
-    bigy = bigz.imag
-    L = np.abs(z2 - z1)
-    ang = np.arctan2(lab.imag, lab.real)
-    biglab = 2 * lab / L
-    biga = np.abs(biglab)
-
-    exprange = np.exp(-complex(0, 2) * ang * nrange)
-    ahat = a1 * exprange
-    bhat = (b1 - a1 * complex(0, 2) * ang) * exprange
-
-    omega = Fp(x, y, z1, z2, biga, order, d1, d2, ahat, bhat, nt)
-
-    rv = (
-        bigy / (2.0 * np.pi * biglab**2) * omega
-        + lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2).real
-    )
-
-    return rv
-
-
-@numba.njit(nogil=True, cache=True)
-def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
-    """
-    Docs.
-
-    To come here
-    """
-    nt = 20  # number of terms in series is nt + 1
-    bigz = (2 * complex(x, y) - (z1 + z2)) / (z2 - z1)
-    bigx = bigz.real
-    bigy = bigz.imag
-    L = np.abs(z2 - z1)
-    ang = np.arctan2(lab.imag, lab.real)
-    angz = np.arctan2((z2 - z1).imag, (z2 - z1).real)
-    biglab = 2 * lab / L
-    biga = np.abs(biglab)
-
-    exprange = np.exp(-complex(0, 2) * ang * nrange)
-    ahat = a1 * exprange
-    bhat = (b1 - a1 * complex(0, 2) * ang) * exprange
-
-    atil = 2 * nrange[1:] * ahat[1:]
-    btil = 2 * nrange[1:] * bhat[1:] + 2 * ahat[1:]
-
-    omega_pot = Fp(x, y, z1, z2, biga, order, d1, d2, ahat, bhat, nt)
-    omega = Fp(x, y, z1, z2, biga, order + 1, d1, d2, atil, btil, nt - 1)
-    omegalap = lapld_int_ho_d1d2(x, y, z1, z2, order, d1, d2)
-    wlap = lapld_int_ho_wdis_d1d2(x, y, z1, z2, order, d1, d2)
-
-    term1 = bigx / (2 * np.pi * biga**2) * omega[:-1]
-    term2 = -1 / (2 * np.pi * biga**2) * omega[1:]
-    term3 = 2 * ahat[0] * omegalap.imag
-    qx = -2 * bigy / (L * biglab**2) * (term1 + term2 + term3)  # + wlap.real
-
-    term1 = 1 / (2.0 * np.pi * biglab**2) * 2 / L * omega_pot
-    term2 = bigy / (2 * np.pi * biga**2) * omega[:-1]
-    term3 = 2 * ahat[0] * omegalap.real
-    qy = -term1 - 2 * bigy / (L * biglab**2) * (term2 + term3)  # - wlap.imag
-
-    qxqy = np.zeros(2 * order + 2, dtype=np.complex128)
-    qxqy[: order + 1] = qx * np.cos(angz) - qy * np.sin(angz) + wlap.real
-    qxqy[order + 1 :] = qx * np.sin(angz) + qy * np.cos(angz) - wlap.imag
-    return qxqy
