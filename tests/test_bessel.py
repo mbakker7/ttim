@@ -869,3 +869,63 @@ def test_besselldqxqynew():
     pot2 = besselld_int_ho(x, y - d, z1, z2, lab, order, d1, d2)
     qxqynum[order + 1 :] = (pot2 - pot1) / (2 * d)
     assert np.allclose(qxqy, qxqynum), "not equal"
+
+
+def test_bessellslap():
+    x = 2
+    y = 3
+    d = 1e-3
+    z1 = -1 - 2j
+    z2 = 2 + 1j
+    d1 = -0.5
+    d2 = 0.2
+    lab = 8.0
+    order = 7
+    pot0 = bessells_int_ho(x, y, z1, z2, lab, order, d1, d2).real
+    pot1 = bessells_int_ho(x + d, y, z1, z2, lab, order, d1, d2).real
+    pot2 = bessells_int_ho(x, y + d, z1, z2, lab, order, d1, d2).real
+    pot3 = bessells_int_ho(x - d, y, z1, z2, lab, order, d1, d2).real
+    pot4 = bessells_int_ho(x, y - d, z1, z2, lab, order, d1, d2).real
+    lapnum = (pot1 + pot2 + pot3 + pot4 - 4 * pot0) / (d**2)
+    lap = pot0 / (lab**2)
+    assert np.allclose(lapnum, lap, atol=1e-6), "not equal"
+    lab = 8 + 3j
+    order = 3
+    pot0 = bessells_int_ho(x, y, z1, z2, lab, order, d1, d2)
+    pot1 = bessells_int_ho(x + d, y, z1, z2, lab, order, d1, d2)
+    pot2 = bessells_int_ho(x, y + d, z1, z2, lab, order, d1, d2)
+    pot3 = bessells_int_ho(x - d, y, z1, z2, lab, order, d1, d2)
+    pot4 = bessells_int_ho(x, y - d, z1, z2, lab, order, d1, d2)
+    lapnum = (pot1 + pot2 + pot3 + pot4 - 4 * pot0) / (d**2)
+    lap = pot0 / (lab**2)
+    assert np.allclose(lapnum, lap, atol=1e-6), "not equal"
+
+
+def test_besselldlap():
+    x = 2
+    y = 3
+    d = 1e-3
+    z1 = -1 - 2j
+    z2 = 2 + 1j
+    d1 = -0.5
+    d2 = 0.2
+    lab = 8.0
+    order = 7
+    pot0 = besselld_int_ho(x, y, z1, z2, lab, order, d1, d2).real
+    pot1 = besselld_int_ho(x + d, y, z1, z2, lab, order, d1, d2).real
+    pot2 = besselld_int_ho(x, y + d, z1, z2, lab, order, d1, d2).real
+    pot3 = besselld_int_ho(x - d, y, z1, z2, lab, order, d1, d2).real
+    pot4 = besselld_int_ho(x, y - d, z1, z2, lab, order, d1, d2).real
+    lapnum = (pot1 + pot2 + pot3 + pot4 - 4 * pot0) / (d**2)
+    lap = pot0 / (lab**2)
+    assert np.allclose(lapnum, lap, atol=1e-6), "not equal"
+    lab = 8 + 3j
+    order = 3
+    pot0 = besselld_int_ho(x, y, z1, z2, lab, order, d1, d2)
+    pot1 = besselld_int_ho(x + d, y, z1, z2, lab, order, d1, d2)
+    pot2 = besselld_int_ho(x, y + d, z1, z2, lab, order, d1, d2)
+    pot3 = besselld_int_ho(x - d, y, z1, z2, lab, order, d1, d2)
+    pot4 = besselld_int_ho(x, y - d, z1, z2, lab, order, d1, d2)
+    lapnum = (pot1 + pot2 + pot3 + pot4 - 4 * pot0) / (d**2)
+    lap = pot0 / (lab**2)
+    assert np.allclose(lapnum, lap, atol=1e-8), "not equal"
