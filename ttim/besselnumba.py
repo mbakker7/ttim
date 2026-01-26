@@ -698,7 +698,7 @@ def bessells_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2):
         qxqy[n + order + 1] = (0.5 * (d2 - d1)) ** n * qxqy[n + order + 1]
 
     return qxqy
-    
+
 
 @numba.njit(nogil=True, cache=True)
 def lapls_int_ho(x, y, z1, z2, order):
@@ -723,7 +723,7 @@ def lapls_int_ho(x, y, z1, z2, order):
         zplus1 = tiny
     if np.abs(zmin1) < tiny:
         zmin1 = tiny
-    
+
     qm = np.zeros(order + 2, dtype=np.complex128)
     qm[1] = 2.0
     for m in range(3, order + 2, 2):
@@ -735,16 +735,16 @@ def lapls_int_ho(x, y, z1, z2, order):
     logzmin1 = np.log(zmin1)
     logzplus1 = np.log(zplus1)
     for p in range(order + 1):
-        omega[p] = z ** (p + 1) * logterm + qm[p + 1] - logzmin1 + (-1) ** (p + 1) * logzplus1
+        omega[p] = (
+            z ** (p + 1) * logterm + qm[p + 1] - logzmin1 + (-1) ** (p + 1) * logzplus1
+        )
         omega[p] = -L / (4 * np.pi * (p + 1)) * omega[p]
     return omega.real
-    
+
+
 @numba.njit(nogil=True, cache=True)
 def lapls_int_ho_wdis(x, y, z1, z2, order):
-    """
-    Note this is W
-    Returns Qx - iQy
-    """
+    """Note this is W andReturns Qx - iQy."""
     wdis = np.zeros(order + 1, dtype=np.complex128)
     L = np.abs(z2 - z1)
     z = (2.0 * complex(x, y) - (z1 + z2)) / (z2 - z1)
@@ -762,11 +762,11 @@ def lapls_int_ho_wdis(x, y, z1, z2, order):
             qm[m] = qm[m] + (m - 2 * n + 1) * z ** (m - 2 * n) / (2 * n - 1)
         qm[m] = 2 * qm[m]
 
-    termzmin = 1.0 / zmin1 
+    termzmin = 1.0 / zmin1
     termzplus = 1.0 / zplus1
     termlog = np.log(zmin1 / zplus1)
     for p in range(0, order + 1):
-        wdis[p] = (p + 1) * z ** p * termlog + z ** (p + 1) * (termzmin - termzplus) 
+        wdis[p] = (p + 1) * z**p * termlog + z ** (p + 1) * (termzmin - termzplus)
         wdis[p] = wdis[p] + qm[p + 1] - termzmin + (-1) ** (p + 1) * termzplus
         wdis[p] = L / (2 * np.pi * (z2 - z1) * (p + 1)) * wdis[p]
     return wdis
@@ -1699,12 +1699,10 @@ def besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2):
     qxqy[order + 1 :] = qx * np.sin(angz) + qy * np.cos(angz) - wlap.imag
     return qxqy
 
+
 @numba.njit(nogil=True, cache=True)
 def potbeslsv(x, y, z1, z2, lab, order, ilap, naq):
-    """
-    Potential of line-sink for use in timml.
-    """
-    
+    """Potential of line-sink for use in timml."""
     pot = np.zeros((order + 1, naq))
     if ilap:
         pot[:, 0] = lapls_int_ho(x, y, z1, z2, order).real
@@ -1715,20 +1713,21 @@ def potbeslsv(x, y, z1, z2, lab, order, ilap, naq):
             pot[:, n] = bessells(x, y, z1, z2, lab[n], order, -1, 1).real
     return pot
 
+
 @numba.njit(nogil=True, cache=True)
 def disbeslsv(x, y, z1, z2, lab, order, ilap, naq):
     qxqy = np.zeros((2 * (order + 1), naq))
     if ilap:
         wdis = lapls_int_ho_wdis(x, y, z1, z2, order)
         qxqy[: order + 1, 0] = wdis.real
-        qxqy[order + 1:, 0] = -wdis.imag
+        qxqy[order + 1 :, 0] = -wdis.imag
         for n in range(1, len(lab)):
             qxqylab = bessellsqxqy(x, y, z1, z2, lab[n], order, -1, 1).real
-            qxqy[:order + 1, n] = qxqylab[0 : order + 1]
+            qxqy[: order + 1, n] = qxqylab[0 : order + 1]
             qxqy[order + 1 :, n] = qxqylab[order + 1 :]
     else:
         for n in range(0, len(lab)):
             qxqylab = bessellsqxqy(x, y, z1, z2, lab[n], order, -1, 1).real
-            qxqy[:order + 1, n] = qxqylab[0 : order + 1]
+            qxqy[: order + 1, n] = qxqylab[0 : order + 1]
             qxqy[order + 1 :, n] = qxqylab[order + 1 :]
     return qxqy
