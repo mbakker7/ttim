@@ -1,10 +1,14 @@
-# %%
 import os
+import tempfile
+from pathlib import Path
 
-# import tempfile
 import nbformat
 import pytest
-from nbconvert.preprocessors import ExecutePreprocessor
+from nbconvert.preprocessors import (
+    ClearMetadataPreprocessor,
+    ClearOutputPreprocessor,
+    ExecutePreprocessor,
+)
 
 # import subprocess
 
@@ -100,3 +104,21 @@ def test_notebook_py(pth):
             ), f"Got empty notebook for {os.path.basename(pth)}"
         except Exception as e:
             pytest.fail(reason=f"Failed executing {os.path.basename(pth)}: {e}")
+
+
+# %% clear output and metadata of all notebooks
+if __name__ == "__main__":
+    clear_output = ClearOutputPreprocessor()
+    clear_metadata = ClearMetadataPreprocessor()
+
+    for notebook in get_notebooks():
+        print("Clearing notebook:", notebook)
+        with open(notebook, "r", encoding="utf-8") as f:
+            nb = nbformat.read(f, as_version=4)
+
+        # run nbconvert preprocessors to clear outputs and metadata
+        clear_output.preprocess(nb, {})
+        clear_metadata.preprocess(nb, {})
+
+        with open(notebook, "w", encoding="utf-8") as f:
+            nbformat.write(nb, f)
