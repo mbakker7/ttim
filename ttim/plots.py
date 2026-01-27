@@ -196,6 +196,10 @@ class PlotTtim:
         ax.axhline(self._ml.aq.z[-1], color="k", lw=3.0)
         # add y-label
         ax.set_ylabel("elevation")
+        # remove x-ticks if no coordinates provided
+        if xy is None:
+            ax.xaxis.set_ticks([])
+            ax.xaxis.set_ticklabels([])
         return ax
 
     def head_along_line(
