@@ -88,16 +88,13 @@ class CircAreaSink(Element):
                     for j in range(self.model.nint):
                         # if r / abs(self.aq.lab2[i,j,0]) < self.rzero:
                         rv[0, i, j] = (
-                            -self.termin[i, j] * self.K1RI0r(r, i, j)
-                            + self.termin2[i, j]
+                            -self.termin[i, j] * self.K1RI0r(r, i, j) + self.termin2[i, j]
                         )
             else:
                 for i in range(self.aq.naq):
                     for j in range(self.model.nint):
                         if (r - self.R) / abs(self.aq.lab2[i, j, 0]) < self.rzero:
-                            rv[0, i, j, :] = self.termout[i, j, :] * self.I1RK0r(
-                                r, i, j
-                            )
+                            rv[0, i, j, :] = self.termout[i, j, :] * self.I1RK0r(r, i, j)
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
 
