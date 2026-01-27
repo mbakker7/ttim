@@ -4,7 +4,16 @@ Tutorials
 Tutorials for getting started with TTim.
 
 .. toctree::
-    :maxdepth: 1
-    :glob:
+    :maxdepth: 4
+    :hidden:
 
-    models.rst
+    tutorial_model
+
+
+* `tutorial_model`_
+
+
+.. _tutorial_model: tutorial_0_models.html
+
+    
+
