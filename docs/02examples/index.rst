@@ -32,7 +32,7 @@ Modeling rivers
 ---------------
 
 * `meandering_river`_
-* `watex_example`_
+* `river_in_cross_section`_
 
 Recharge
 --------
@@ -54,4 +54,4 @@ Pathlines
 .. _well_near_river_or_wall: well_near_river_or_wall.html
 .. _well_near_wall: well_near_wall.html
 .. _wells_in_different_systems: wells_in_different_systems.html
-.. _watex_example: watex_example.html
+.. _river_in_cross_section: river_in_cross_section.html
