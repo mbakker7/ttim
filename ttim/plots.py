@@ -49,6 +49,7 @@ class PlotTtim:
         labels=True,
         params=False,
         ax=None,
+        fmt=None,
     ):
         """Plot cross-section of model.
 
@@ -66,6 +67,8 @@ class PlotTtim:
             add parameter values to plot
         ax : matplotlib.Axes, optional
             axes to plot on, default is None which creates a new figure
+        fmt : str, optional
+            format string for parameter values, e.g. '.2f' for 2 decimals.
 
         Returns
         -------
@@ -77,13 +80,22 @@ class PlotTtim:
 
         # if SimpleAquifer, plot inhoms and return
         if isinstance(self._ml.aq, SimpleAquifer):
+            if xy is not None:
+                (x1, _), (x2, _) = xy
+            else:
+                x1, x2 = ax.get_xlim()
             for inhom in self._ml.aq.inhomdict.values():
-                inhom.plot(ax=ax, labels=labels, params=params)
+                inhom.plot(ax=ax, labels=labels, params=params, x1=x1, x2=x2, fmt=fmt)
             for e in self._ml.elementlist:
                 e.plot(ax=ax)
+            ax.set_xlim(x1, x2)
             ax.set_ylabel("elevation")
             ax.set_xlabel("x")
             return ax
+
+        if fmt is None:
+            fmt = ""
+        ssfmt = ".2e"
 
         # else get cross-section line
         if xy is not None:
@@ -103,7 +115,7 @@ class PlotTtim:
             r = 1.0
 
         # get values for layer and aquifer numbering
-        if labels:
+        if labels or params:
             lli = 1 if self._ml.aq.topboundary == "con" else 0
             aqi = 0
         else:
@@ -132,8 +144,8 @@ class PlotTtim:
                         r0 + 0.75 * r if labels else r0 + 0.5 * r,
                         np.mean(self._ml.aq.z[i : i + 2]),
                         (
-                            f"$c$ = {self._ml.aq.c[lli]}, "
-                            f"$S_s$ = {self._ml.aq.Sll[lli]:.2e}"
+                            f"$c$ = {self._ml.aq.c[lli]:{fmt}}, "
+                            f"$S_s$ = {self._ml.aq.Sll[lli]:{ssfmt}}"
                         ),
                         ha="center",
                         va="center",
@@ -153,15 +165,16 @@ class PlotTtim:
             if params and self._ml.aq.ltype[i] == "a":
                 if aqi == 0 and self._ml.aq.phreatictop:
                     paramtxt = (
-                        f"$k_h$ = {self._ml.aq.kaq[aqi]}, $S$ = {self._ml.aq.Saq[aqi]}"
+                        f"$k_h$ = {self._ml.aq.kaq[aqi]:{fmt}}, "
+                        f"$S$ = {self._ml.aq.Saq[aqi]:{fmt}}"
                     )
                 else:
                     paramtxt = (
-                        f"$k_h$ = {self._ml.aq.kaq[aqi]}, "
-                        f"$S_s$ = {self._ml.aq.Saq[aqi]:.2e}"
+                        f"$k_h$ = {self._ml.aq.kaq[aqi]:{fmt}}, "
+                        f"$S_s$ = {self._ml.aq.Saq[aqi]:{ssfmt}}"
                     )
                 if self._ml.aq.model3d:
-                    paramtxt += f", $k_z/k_h$ = {self._ml.aq.kzoverkh[aqi]:.2f}"
+                    paramtxt += f", $k_z/k_h$ = {self._ml.aq.kzoverkh[aqi]:{fmt}}"
                 ax.text(
                     r0 + 0.75 * r if labels else r0 + 0.5 * r,
                     np.mean(self._ml.aq.z[i : i + 2]),
@@ -183,6 +196,10 @@ class PlotTtim:
         ax.axhline(self._ml.aq.z[-1], color="k", lw=3.0)
         # add y-label
         ax.set_ylabel("elevation")
+        # remove x-ticks if no coordinates provided
+        if xy is None:
+            ax.xaxis.set_ticks([])
+            ax.xaxis.set_ticklabels([])
         return ax
 
     def head_along_line(

@@ -138,9 +138,9 @@ class Calibrate:
             return
 
         if inhoms is None:
-            pname = name
+            pname = f"{name}_{from_lay}_{to_lay}"
         else:
-            pname = f"{name}_{'_'.join([iaq.name for iaq in aq])}"
+            pname = f"{name}_{from_lay}_{to_lay}_{'_'.join([iaq.name for iaq in aq])}"
         self.parameters.loc[pname] = {
             "layers": layers,
             "optimal": float(initial),
@@ -292,9 +292,7 @@ class Calibrate:
         # Call residuals to specify optimal values for model
         res = self.residuals(self.fitresult.x)
         for ipar in self.parameters.index:
-            self.parameters.loc[ipar, "optimal"] = self.parameters.loc[ipar, "parray"][
-                0
-            ]
+            self.parameters.loc[ipar, "optimal"] = self.parameters.loc[ipar, "parray"][0]
         nparam = len(self.fitresult.x)
         H = self.fitresult.jac.T @ self.fitresult.jac
         sigsq = np.var(res, ddof=nparam)
@@ -330,9 +328,9 @@ class Calibrate:
         print(self.fitresult.message)
         if self.fitresult.success:
             for name in self.parameters.index:
-                self.parameters.loc[name, "optimal"] = (
-                    self.fitresult.params.valuesdict()[name]
-                )
+                self.parameters.loc[name, "optimal"] = self.fitresult.params.valuesdict()[
+                    name
+                ]
             if hasattr(self.fitresult, "covar"):
                 self.parameters["std"] = np.sqrt(np.diag(self.fitresult.covar))
                 self.parameters["perc_std"] = (
@@ -358,9 +356,7 @@ class Calibrate:
         # Call residuals to specify optimal values for model
         self.residuals(params)
         for ipar in self.parameters.index:
-            self.parameters.loc[ipar, "optimal"] = self.parameters.loc[ipar, "parray"][
-                0
-            ]
+            self.parameters.loc[ipar, "optimal"] = self.parameters.loc[ipar, "parray"][0]
         # nparam = len(self.fitresult.x)
         # H = self.fitresult.jac.T @ self.fitresult.jac
         # sigsq = np.var(res, ddof=nparam)

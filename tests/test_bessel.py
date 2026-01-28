@@ -1,6 +1,16 @@
 import numpy as np
 
 from ttim import besselnumba
+from ttim.besselnumba import (
+    besselld_gauss_ho_d1d2,
+    besselld_gauss_ho_qxqy_d1d2,
+    besselld_int_ho,
+    besselld_int_ho_qxqy,
+    bessells_gauss_ho_d1d2,
+    bessells_gauss_ho_qxqy_d1d2,
+    bessells_int_ho,
+    bessells_int_ho_qxqy,
+)
 
 
 def test_variables():
@@ -308,9 +318,7 @@ def test_bessells_gauss_ho_d1d2():
     d1 = 1.0
     d2 = -1.0
     # a = bessel.bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2)
-    a = np.array(
-        [-3.5838219513840075 + 0.0j, -0.4416936603433489 + 0.0j], dtype=complex
-    )
+    a = np.array([-3.5838219513840075 + 0.0j, -0.4416936603433489 + 0.0j], dtype=complex)
     b = besselnumba.bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2)
     assert np.allclose(a, b), "not equal"
 
@@ -420,29 +428,29 @@ def test_bessellsqxqyv2():
     assert np.allclose(a, b), "not equal"
 
 
-def test_bessellsuni():
-    x = 5.0
-    y = 5.0
-    z1 = 1.0 + 1.0j
-    z2 = 5.0 + 5.0j
-    lab = 100.0
-    # a = bessel.bessellsuni(x, y, z1, z2, lab)
-    a = -3.5917095941591426 - 0j
-    b = besselnumba.bessellsuni(x, y, z1, z2, lab)
-    assert np.allclose(a, b), "not equal"
+# def test_bessellsuni():
+#     x = 5.0
+#     y = 5.0
+#     z1 = 1.0 + 1.0j
+#     z2 = 5.0 + 5.0j
+#     lab = 100.0
+#     # a = bessel.bessellsuni(x, y, z1, z2, lab)
+#     a = -3.5917095941591426 - 0j
+#     b = besselnumba.bessellsuni(x, y, z1, z2, lab)
+#     assert np.allclose(a, b), "not equal"
 
 
-def test_bessellsuniv():
-    x = 5.0
-    y = 5.0
-    z1 = 1.0 + 1.0j
-    z2 = 5.0 + 5.0j
-    lab = np.array([100.0])
-    nlab = 1
-    # a = bessel.bessellsuniv(x, y, z1, z2, lab)
-    a = -3.5917095941591426 - 0j
-    b = besselnumba.bessellsuniv(x, y, z1, z2, lab, nlab)
-    assert np.allclose(a, b), "not equal"
+# def test_bessellsuniv():
+#     x = 5.0
+#     y = 5.0
+#     z1 = 1.0 + 1.0j
+#     z2 = 5.0 + 5.0j
+#     lab = np.array([100.0])
+#     nlab = 1
+#     # a = bessel.bessellsuniv(x, y, z1, z2, lab)
+#     a = -3.5917095941591426 - 0j
+#     b = besselnumba.bessellsuniv(x, y, z1, z2, lab, nlab)
+#     assert np.allclose(a, b), "not equal"
 
 
 def test_lapld_int_ho():
@@ -751,3 +759,173 @@ def test_isinside():
     a = 1
     b = besselnumba.isinside(z1, z2, zc, R)
     assert np.allclose(a, b), "not equal"
+
+
+def test_bessellspotnew():
+    x = 2
+    y = 3
+    z1 = -1 - 2j
+    z2 = 2 + 1j
+    d1 = -0.5
+    d2 = 0.2
+    lab = 8.0
+    order = 7
+    pot = bessells_int_ho(x, y, z1, z2, lab, order, d1, d2).real
+    potgauss = bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2).real
+    assert np.allclose(pot, potgauss), "not equal"
+    lab = 8 + 3j
+    order = 3
+    pot = bessells_int_ho(x, y, z1, z2, lab, order, d1, d2)
+    potgauss = bessells_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2)
+    assert np.allclose(pot, potgauss), "not equal"
+
+
+def test_bessellsqxqynew():
+    x = 2
+    y = 3
+    d = 1e-4
+    z1 = -1 - 2j
+    z2 = 2 + 1j
+    d1 = -0.5
+    d2 = 0.2
+    lab = 8.0
+    order = 7
+    qxqy = bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2).real
+    qxqygauss = bessells_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2).real
+    assert np.allclose(qxqy, qxqygauss), "not equal"
+    qxqynum = np.zeros(2 * (order + 1))
+    pot1 = bessells_int_ho(x + d, y, z1, z2, lab, order, d1, d2).real
+    pot2 = bessells_int_ho(x - d, y, z1, z2, lab, order, d1, d2).real
+    qxqynum[: order + 1] = (pot2 - pot1) / (2 * d)
+    pot1 = bessells_int_ho(x, y + d, z1, z2, lab, order, d1, d2).real
+    pot2 = bessells_int_ho(x, y - d, z1, z2, lab, order, d1, d2).real
+    qxqynum[order + 1 :] = (pot2 - pot1) / (2 * d)
+    assert np.allclose(qxqy, qxqynum), "not equal"
+    lab = 8 + 3j
+    order = 3
+    qxqy = bessells_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2)
+    qxqygauss = bessells_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2)
+    assert np.allclose(qxqy, qxqygauss), "not equal"
+    qxqynum = np.zeros(2 * (order + 1), dtype="complex")
+    pot1 = bessells_int_ho(x + d, y, z1, z2, lab, order, d1, d2)
+    pot2 = bessells_int_ho(x - d, y, z1, z2, lab, order, d1, d2)
+    qxqynum[: order + 1] = (pot2 - pot1) / (2 * d)
+    pot1 = bessells_int_ho(x, y + d, z1, z2, lab, order, d1, d2)
+    pot2 = bessells_int_ho(x, y - d, z1, z2, lab, order, d1, d2)
+    qxqynum[order + 1 :] = (pot2 - pot1) / (2 * d)
+    assert np.allclose(qxqy, qxqynum), "not equal"
+
+
+def test_besselldpotnew():
+    x = 2
+    y = 3
+    z1 = -1 - 2j
+    z2 = 2 + 1j
+    d1 = -0.5
+    d2 = 0.2
+    lab = 8.0
+    order = 7
+    pot = besselld_int_ho(x, y, z1, z2, lab, order, d1, d2).real
+    potgauss = besselld_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2).real
+    assert np.allclose(pot, potgauss), "not equal"
+    lab = 8 + 3j
+    order = 3
+    pot = besselld_int_ho(x, y, z1, z2, lab, order, d1, d2)
+    potgauss = besselld_gauss_ho_d1d2(x, y, z1, z2, lab, order, d1, d2)
+    assert np.allclose(pot, potgauss), "not equal"
+
+
+def test_besselldqxqynew():
+    x = 2
+    y = 3
+    d = 1e-4
+    z1 = -1 - 2j
+    z2 = 2 + 1j
+    d1 = -0.5
+    d2 = 0.2
+    lab = 8.0
+    order = 7
+    qxqy = besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2).real
+    qxqygauss = besselld_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2).real
+    assert np.allclose(qxqy, qxqygauss), "not equal"
+    qxqynum = np.zeros(2 * (order + 1))
+    pot1 = besselld_int_ho(x + d, y, z1, z2, lab, order, d1, d2).real
+    pot2 = besselld_int_ho(x - d, y, z1, z2, lab, order, d1, d2).real
+    qxqynum[: order + 1] = (pot2 - pot1) / (2 * d)
+    pot1 = besselld_int_ho(x, y + d, z1, z2, lab, order, d1, d2).real
+    pot2 = besselld_int_ho(x, y - d, z1, z2, lab, order, d1, d2).real
+    qxqynum[order + 1 :] = (pot2 - pot1) / (2 * d)
+    assert np.allclose(qxqy, qxqynum), "not equal"
+    lab = 8 + 3j
+    order = 3
+    qxqy = besselld_int_ho_qxqy(x, y, z1, z2, lab, order, d1, d2)
+    qxqygauss = besselld_gauss_ho_qxqy_d1d2(x, y, z1, z2, lab, order, d1, d2)
+    assert np.allclose(qxqy, qxqygauss), "not equal"
+    qxqynum = np.zeros(2 * (order + 1), dtype="complex")
+    pot1 = besselld_int_ho(x + d, y, z1, z2, lab, order, d1, d2)
+    pot2 = besselld_int_ho(x - d, y, z1, z2, lab, order, d1, d2)
+    qxqynum[: order + 1] = (pot2 - pot1) / (2 * d)
+    pot1 = besselld_int_ho(x, y + d, z1, z2, lab, order, d1, d2)
+    pot2 = besselld_int_ho(x, y - d, z1, z2, lab, order, d1, d2)
+    qxqynum[order + 1 :] = (pot2 - pot1) / (2 * d)
+    assert np.allclose(qxqy, qxqynum), "not equal"
+
+
+def test_bessellslap():
+    x = 2
+    y = 3
+    d = 1e-3
+    z1 = -1 - 2j
+    z2 = 2 + 1j
+    d1 = -0.5
+    d2 = 0.2
+    lab = 8.0
+    order = 5
+    pot0 = bessells_int_ho(x, y, z1, z2, lab, order, d1, d2).real
+    pot1 = bessells_int_ho(x + d, y, z1, z2, lab, order, d1, d2).real
+    pot2 = bessells_int_ho(x, y + d, z1, z2, lab, order, d1, d2).real
+    pot3 = bessells_int_ho(x - d, y, z1, z2, lab, order, d1, d2).real
+    pot4 = bessells_int_ho(x, y - d, z1, z2, lab, order, d1, d2).real
+    lapnum = (pot1 + pot2 + pot3 + pot4 - 4 * pot0) / (d**2)
+    lap = pot0 / (lab**2)
+    assert np.allclose(lapnum, lap, atol=1e-6), "not equal"
+    lab = 8 + 3j
+    order = 3
+    pot0 = bessells_int_ho(x, y, z1, z2, lab, order, d1, d2)
+    pot1 = bessells_int_ho(x + d, y, z1, z2, lab, order, d1, d2)
+    pot2 = bessells_int_ho(x, y + d, z1, z2, lab, order, d1, d2)
+    pot3 = bessells_int_ho(x - d, y, z1, z2, lab, order, d1, d2)
+    pot4 = bessells_int_ho(x, y - d, z1, z2, lab, order, d1, d2)
+    lapnum = (pot1 + pot2 + pot3 + pot4 - 4 * pot0) / (d**2)
+    lap = pot0 / (lab**2)
+    assert np.allclose(lapnum, lap, atol=1e-6), "not equal"
+
+
+def test_besselldlap():
+    x = 2
+    y = 3
+    d = 1e-3
+    z1 = -1 - 2j
+    z2 = 2 + 1j
+    d1 = -0.5
+    d2 = 0.2
+    lab = 8.0
+    order = 5
+    pot0 = besselld_int_ho(x, y, z1, z2, lab, order, d1, d2).real
+    pot1 = besselld_int_ho(x + d, y, z1, z2, lab, order, d1, d2).real
+    pot2 = besselld_int_ho(x, y + d, z1, z2, lab, order, d1, d2).real
+    pot3 = besselld_int_ho(x - d, y, z1, z2, lab, order, d1, d2).real
+    pot4 = besselld_int_ho(x, y - d, z1, z2, lab, order, d1, d2).real
+    lapnum = (pot1 + pot2 + pot3 + pot4 - 4 * pot0) / (d**2)
+    lap = pot0 / (lab**2)
+    assert np.allclose(lapnum, lap, atol=1e-6), "not equal"
+    lab = 8 + 3j
+    order = 3
+    pot0 = besselld_int_ho(x, y, z1, z2, lab, order, d1, d2)
+    pot1 = besselld_int_ho(x + d, y, z1, z2, lab, order, d1, d2)
+    pot2 = besselld_int_ho(x, y + d, z1, z2, lab, order, d1, d2)
+    pot3 = besselld_int_ho(x - d, y, z1, z2, lab, order, d1, d2)
+    pot4 = besselld_int_ho(x, y - d, z1, z2, lab, order, d1, d2)
+    lapnum = (pot1 + pot2 + pot3 + pot4 - 4 * pot0) / (d**2)
+    lap = pot0 / (lab**2)
+    assert np.allclose(lapnum, lap, atol=1e-8), "not equal"

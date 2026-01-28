@@ -112,8 +112,18 @@ class LineSinkBase(Element):
             pot = np.zeros(self.model.npint, dtype=complex)
             for i in range(self.aq.naq):
                 for j in range(self.model.nint):
-                    pot[:] = besselnumba.bessellsuniv(
-                        x, y, self.z1, self.z2, self.aq.lab2[i, j, :], self.rzero
+                    # pot[:] = besselnumba.bessellsuniv(
+                    #     x, y, self.z1, self.z2, self.aq.lab2[i, j, :], self.rzero
+                    # )
+                    # note that self.order=0
+                    pot[:] = besselnumba.bessellsv2(
+                        x,
+                        y,
+                        self.z1,
+                        self.z2,
+                        self.aq.lab2[i, j, :],
+                        self.order,
+                        self.rzero,
                     )
                     # Divide by L as the parameter is total discharge
                     rv[:, i, j, :] = self.term2[:, i, j, :] * pot / self.L
@@ -145,7 +155,7 @@ class LineSinkBase(Element):
                                 self.z2,
                                 self.aq.lab2[i, j, :],
                                 self.order,
-                                self.rzero * self.aq.lababs[i, j],
+                                self.rzero,
                             )
                             / self.L
                         )
@@ -387,14 +397,12 @@ class LineSinkStringBase(Element):
         self.dischargeinf = np.zeros(
             (self.nparam, self.aq.naq, self.model.npval), dtype=complex
         )
-        self.dischargeinflayers = np.zeros(
-            (self.nparam, self.model.npval), dtype=complex
-        )
+        self.dischargeinflayers = np.zeros((self.nparam, self.model.npval), dtype=complex)
         self.xc, self.yc = np.zeros(self.nls), np.zeros(self.nls)
         for i in range(self.nls):
-            self.dischargeinf[i * self.nlayers : (i + 1) * self.nlayers, :] = (
-                self.lslist[i].dischargeinf[:]
-            )
+            self.dischargeinf[i * self.nlayers : (i + 1) * self.nlayers, :] = self.lslist[
+                i
+            ].dischargeinf[:]
             self.dischargeinflayers[i * self.nlayers : (i + 1) * self.nlayers, :] = (
                 self.lslist[i].dischargeinflayers
             )
@@ -945,7 +953,7 @@ class LineSinkHoBase(Element):
                                 self.z2,
                                 self.aq.lab2[i, j, :],
                                 self.order,
-                                self.rzero * self.aq.lababs[i, j],
+                                self.rzero,
                             )
                             / self.L
                         )
@@ -980,7 +988,7 @@ class LineSinkHoBase(Element):
                                 self.z2,
                                 self.aq.lab2[i, j, :],
                                 self.order,
-                                self.rzero * self.aq.lababs[i, j],
+                                self.rzero,
                             )
                             / self.L
                         )

@@ -132,9 +132,7 @@ class LineDoubletHoBase(Element):
                             / self.L
                         )
                         for k in range(self.nlayers):
-                            rv[k :: self.nlayers, i, j, :] = (
-                                self.term2[k, i, j, :] * pot
-                            )
+                            rv[k :: self.nlayers, i, j, :] = self.term2[k, i, j, :] * pot
         rv.shape = (self.nparam, aq.naq, self.model.npval)
         return rv
 

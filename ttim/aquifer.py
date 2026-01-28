@@ -148,7 +148,7 @@ class AquiferData:
         )
         d0 = p / self.D
         if B is not None:
-            d0 = d0 * B  # B is vector of load efficiency paramters
+            d0 = d0 * B  # B is vector of load efficiency parameters
         d0[:-1] += a[1:] / (self.c[1:] * self.T[:-1])
         d0[1:] += a[1:] / (self.c[1:] * self.T[1:])
         if self.topboundary[:3] == "lea":

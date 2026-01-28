@@ -14,9 +14,7 @@ class HeadEquation:
         Well: q_s = Q / (2*pi*r_w*H)
         LineSink: q_s = sigma / H = Q / (L*H)
         """
-        mat = np.empty(
-            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
-        )
+        mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
         # rhs needs be initialized zero
         rhs = np.zeros(
             (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
@@ -56,9 +54,7 @@ class WellBoreStorageEquation:
         Element with total given discharge, uniform but unknown head and
         InternalStorageEquation.
         """
-        mat = np.zeros(
-            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
-        )
+        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
         rhs = np.zeros(
             (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
         )
@@ -109,9 +105,7 @@ class HeadEquationNores:
         (really written as constant potential element) Returns matrix part nunknowns,
         neq, npval, complex Returns rhs part nunknowns, nvbc, npval, complex
         """
-        mat = np.empty(
-            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
-        )
+        mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
         rhs = np.zeros(
             (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
         )
@@ -144,9 +138,7 @@ class LeakyWallEquation:
         Returns matrix part (nunknowns,neq,npval), complex
         Returns rhs part (nunknowns,nvbc,npval), complex.
         """
-        mat = np.empty(
-            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
-        )
+        mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
         rhs = np.zeros(
             (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
         )
@@ -161,9 +153,7 @@ class LeakyWallEquation:
                     )
                     if e == self:
                         hmin = (
-                            e.potinflayers(
-                                self.xcneg[icp], self.ycneg[icp], self.layers
-                            )
+                            e.potinflayers(self.xcneg[icp], self.ycneg[icp], self.layers)
                             / self.aq.T[self.layers][:, np.newaxis, np.newaxis]
                         )
                         hplus = (
@@ -201,9 +191,7 @@ class MscreenEquation:
         head_out - c * q_s = h_in
         Set h_i - h_(i + 1) = 0 and Sum Q_i = Q
         """
-        mat = np.zeros(
-            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
-        )
+        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
         rhs = np.zeros(
             (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
         )
@@ -272,9 +260,7 @@ class MscreenDitchEquation:
         In case of storage:
         Sum Q_i - A * p^2 * headin = Q
         """
-        mat = np.zeros(
-            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
-        )
+        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
         rhs = np.zeros(
             (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
         )
@@ -391,9 +377,7 @@ class MscreenDitchEquation:
 class InhomEquation:
     def equation(self):
         """Mix-in class that returns matrix rows for inhomogeneity conditions."""
-        mat = np.zeros(
-            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
-        )
+        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
         rhs = np.zeros(
             (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
         )
@@ -403,9 +387,7 @@ class InhomEquation:
             for e in self.model.elementlist:
                 if e.nunknowns > 0:
                     mat[istart : istart + self.nlayers, ieq : ieq + e.nunknowns, :] = (
-                        e.potinflayers(
-                            self.xc[icp], self.yc[icp], self.layers, self.aqin
-                        )
+                        e.potinflayers(self.xc[icp], self.yc[icp], self.layers, self.aqin)
                         / self.aqin.T[self.layers][:, np.newaxis, np.newaxis]
                         - e.potinflayers(
                             self.xc[icp], self.yc[icp], self.layers, self.aqout
@@ -445,18 +427,14 @@ class InhomEquation:
                 )
                 rhs[istart + self.nlayers : istart + 2 * self.nlayers, i, :] -= (
                     qxin - qxout
-                ) * np.cos(self.thetacp[icp]) + (qyin - qyout) * np.sin(
-                    self.thetacp[icp]
-                )
+                ) * np.cos(self.thetacp[icp]) + (qyin - qyout) * np.sin(self.thetacp[icp])
         return mat, rhs
 
 
 class HeadDiffEquation:
     def equation(self):
         """Mix-in class that returns matrix rows for continuity of head."""
-        mat = np.empty(
-            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
-        )
+        mat = np.empty((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
         rhs = np.zeros(
             (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
         )
@@ -493,9 +471,7 @@ class HeadDiffEquation:
 class FluxDiffEquation:
     def equation(self):
         """Mix-in class that returns matrix rows for continuity of flow."""
-        mat = np.zeros(
-            (self.nunknowns, self.model.neq, self.model.npval), dtype=complex
-        )
+        mat = np.zeros((self.nunknowns, self.model.neq, self.model.npval), dtype=complex)
         rhs = np.zeros(
             (self.nunknowns, self.model.ngvbc, self.model.npval), dtype=complex
         )
