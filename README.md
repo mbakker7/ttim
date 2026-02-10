@@ -1,6 +1,9 @@
 [![ttim](https://github.com/mbakker7/ttim/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mbakker7/ttim/actions/workflows/ci.yml)
 ![PyPI](https://img.shields.io/pypi/v/ttim?color=green)
 
+> [!IMPORTANT]  
+> TTim has moved! See [timflow](https://github.com/timflow-org/timflow). TTim is available through `timflow.transient`. `TTim` will no longer be developed. It will be maintained for the time being. All future development will focus on `timflow`.
+
 # TTim, A Multi-Layer, Transient, Analytic Element Model
 
 ## Introduction
@@ -15,7 +18,9 @@ New analytic elements may be added to the code without making any changes in the
 TTim is coded in Python and uses numba to speed up evaluation of the line elements and inverse laplace transforms.
 
 ## Latest version
+
 New in version 0.6.6:
+
 * Many documentation improvements: new look, better organization, tutorials, how-to guides, etc. Check it out [here](https://ttim.readthedocs.io)!
 
 ## Installation
@@ -24,10 +29,11 @@ New in version 0.6.6:
 
 TTim requires Python >= 3.8 and can be installed from PyPI.
 
-Required packages: 
+Required packages:
+
 * numpy
 * scipy
-* matplotlib 
+* matplotlib
 * numba
 * lmfit
 
@@ -56,4 +62,3 @@ Some of the papers that you may want to cite when using TTim are:
 
 * M. Bakker. 2013. Semi-analytic modeling of transient multi-layer flow with TTim. Hydrogeology Journal, 21: 935-943. Available [here](https://github.com/mbakker7/ttim/blob/master/papers/2013_bakker_ttim_hgj.pdf).
 * M .Bakker. 2013. Analytic modeling of transient multi-layer flow. In: Advances in Hydrogeology, edited by P Mishra and K Kuhlman, Springer, Heidelberg, 95-114. Available [here](https://github.com/mbakker7/ttim/blob/master/papers/2013_bakker_ttim_theory.pdf).
-
